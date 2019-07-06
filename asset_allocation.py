@@ -114,6 +114,7 @@ def asset_allocation(filename,
 
     if dump_balances_tree:
         print()
+        print('Account balances:')
         dformat = options_map['dcontext'].build(alignment=display_context.Align.DOT,
                                                 reserved=2)
         realization.dump_balances(realacc, dformat, file=sys.stdout)

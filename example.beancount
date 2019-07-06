@@ -1,0 +1,55 @@
+; Run example by executing:
+; ./asset_allocation.py example.beancount --accounts "Assets:Investments:" --dump
+
+
+; Asset Type              Percentage    Amount
+; --------------------  ------------  --------
+; bond                         17.8%       240
+; bond_municipal               38.9%       525
+; equity                        5.6%        75
+; equity_international         26.7%       360
+; realestate                   11.1%       150
+; ---                            ---       ---
+; Total                       100.0%     1,350
+
+; Account balances:
+; `-- Assets                  
+;     `-- Investments         
+;         |-- Brokerage           1 BNCT
+;         `-- XTrade              2 BNCT
+;                                10 COFE
+
+
+2010-01-01 open Assets:Investments:Brokerage
+2010-01-01 open Assets:Investments:XTrade
+2010-01-01 open Assets:Bank
+
+2010-01-01 commodity BNCT
+ asset_allocation_equity_international: 60
+ asset_allocation_bond: 40
+
+2010-01-01 commodity COFE
+ asset_allocation_equity: 10
+ asset_allocation_bond_municipal: 70
+ asset_allocation_realestate: 20
+
+2011-03-02 * "Buy stock"
+ Assets:Investments:Brokerage 1 BNCT {200 USD}
+ Assets:Bank
+
+2011-01-02 * "Buy stock"
+ Assets:Investments:XTrade 2 BNCT {200 USD}
+ Assets:Bank
+
+2011-01-10 * "Buy stock"
+ Assets:Investments:XTrade 10 COFE {75 USD}
+ Assets:Bank
+
+; This will not be considered in our asset allocation since we are filtering by children of 'Assets:Investments'
+2011-01-02 * "Buy stock"
+ Assets:Investments 7 BNCT {200 USD}
+ Assets:Bank
+
+2011-03-02 price BNCT 200 USD
+2011-03-02 price COFE  75 USD
+
