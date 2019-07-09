@@ -54,6 +54,10 @@ def asset_allocation(filename,
     # first, filter out accounts that are not specified:
     realacc = realization.filter(realroot, is_included_account)
 
+    if not realacc:
+        sys.stderr.write("No included accounts found. (Your --accounts <regex> failed to match any account)")
+        sys.exit(1)
+
     # However, realacc includes all ancestor accounts of specified accounts, and their balances. For example,
     # if we specified 'Accounts:Investments:Brokerage', balances due to transactions on 'Accounts:Investments'
     # will also be included. We need to filter these out:
