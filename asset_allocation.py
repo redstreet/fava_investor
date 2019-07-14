@@ -29,49 +29,9 @@ def init_entries(filename, args):
     entries, _, options_map = loader.load_file(filename)
     argsmap = SimpleNamespace(**args)
 
-@argh.arg('--accounts', nargs='+')
-def asset_allocation(filename,
-    accounts: 'Regex patterns of accounts to include in asset allocation.' = '',
-    base_currency='USD',
-    show_balance=False,
-    dump_balances_tree=False,
-    debug=False):
-
-    if not accounts:
-        accounts = ['.*']
-    global argsmap
-    argsmap = locals()
-    init_entries(filename, argsmap)
-
-    def is_included_account(realacc):
-        for pattern in accounts:
-            if re.match(pattern, realacc.account):
-                return True
-        return False
-
-    realroot = realization.realize(entries)
-
-    # first, filter out accounts that are not specified:
-    realacc = realization.filter(realroot, is_included_account)
-
-    if not realacc:
-        sys.stderr.write("No included accounts found. (Your --accounts <regex> failed to match any account)")
-        sys.exit(1)
-
-    # However, realacc includes all ancestor accounts of specified accounts, and their balances. For example,
-    # if we specified 'Accounts:Investments:Brokerage', balances due to transactions on 'Accounts:Investments'
-    # will also be included. We need to filter these out:
-    for acc in realization.iter_children(realacc):
-        if not is_included_account(acc):
-            acc.balance = inventory.Inventory()
-
-    balance = realization.compute_balance(realacc)
-    vbalance = balance.reduce(convert.get_units)
+def bucketize(vbalance, base_currency, entries):
     price_map = prices.build_price_map(entries)
     commodity_map = getters.get_commodity_map(entries)
-
-    if show_balance:
-        print(tabulate(vbalance.get_positions(), tablefmt='plain'))
 
     # Main part: put each commodity's value into asset buckets
     asset_buckets = defaultdict(int)
@@ -93,7 +53,9 @@ def asset_allocation(filename,
         if unallocated:
             print("Warning: {} asset_allocation_* metadata does not add up to 100%. Padding with 'unknown'.".format(commodity))
             asset_buckets['unknown'] += amount.number * (unallocated / 100)
+    return asset_buckets
 
+def pretty_print_buckets(asset_buckets):
     # Convert results into a pretty printed table
     # print(balance.reduce(convert.get_units))
     total_assets = sum(asset_buckets[k] for k in asset_buckets)
@@ -116,12 +78,65 @@ def asset_allocation(filename,
         tablefmt='simple'
         ))
 
+def build_interesting_realacc(entries, accounts):
+    def is_included_account(realacc):
+        for pattern in accounts:
+            if re.match(pattern, realacc.account):
+                return True
+        return False
+
+    realroot = realization.realize(entries)
+
+    # first, filter out accounts that are not specified:
+    realacc = realization.filter(realroot, is_included_account)
+
+    if not realacc:
+        sys.stderr.write("No included accounts found. (Your --accounts <regex> failed to match any account)")
+        sys.exit(1)
+
+    # However, realacc includes all ancestor accounts of specified accounts, and their balances. For example,
+    # if we specified 'Accounts:Investments:Brokerage', balances due to transactions on 'Accounts:Investments'
+    # will also be included. We need to filter these out:
+    for acc in realization.iter_children(realacc):
+        if not is_included_account(acc):
+            acc.balance = inventory.Inventory()
+    return realacc
+
+
+def print_balances_tree(realacc):
+    print()
+    print('Account balances:')
+    dformat = options_map['dcontext'].build(alignment=display_context.Align.DOT,
+                                            reserved=2)
+    realization.dump_balances(realacc, dformat, file=sys.stdout)
+
+@argh.arg('--accounts', nargs='+')
+def asset_allocation(filename,
+    accounts: 'Regex patterns of accounts to include in asset allocation.' = '',
+    base_currency='USD',
+    show_balance=False,
+    dump_balances_tree=False,
+    debug=False):
+
+    if not accounts:
+        accounts = ['.*']
+    global argsmap
+    argsmap = locals()
+    init_entries(filename, argsmap)
+
+    realacc = build_interesting_realacc(entries, accounts)
+    balance = realization.compute_balance(realacc)
+    vbalance = balance.reduce(convert.get_units)
+
+    if show_balance:
+        print(tabulate(vbalance.get_positions(), tablefmt='plain'))
+
+    asset_buckets = bucketize(vbalance, base_currency, entries)
+
+    # print output
+    pretty_print_buckets(asset_buckets)
     if dump_balances_tree:
-        print()
-        print('Account balances:')
-        dformat = options_map['dcontext'].build(alignment=display_context.Align.DOT,
-                                                reserved=2)
-        realization.dump_balances(realacc, dformat, file=sys.stdout)
+        print_balances_tree(realacc)
 
 #-----------------------------------------------------------------------------
 def main():
