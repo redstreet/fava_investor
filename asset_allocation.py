@@ -7,7 +7,8 @@ import sys
 
 from collections import defaultdict
 from dateutil.parser import parse
-from tabulate import tabulate
+import tabulate
+tabulate.PRESERVE_WHITESPACE = True
 from types import SimpleNamespace
 
 from beancount import loader
@@ -55,24 +56,45 @@ def bucketize(vbalance, base_currency, entries):
             asset_buckets['unknown'] += amount.number * (unallocated / 100)
     return asset_buckets
 
+def compute_percent(asset_buckets, asset):
+    total_assets = sum(asset_buckets[k] for k in asset_buckets)
+    return (asset_buckets[asset]/total_assets)*100
+
+def compute_percent_subtotal(asset_buckets, asset):
+    total_assets = sum(asset_buckets[k] for k in asset_buckets)
+    return (compute_balance_subtotal(asset_buckets, asset) / total_assets) * 100
+
+def compute_balance_subtotal(asset_buckets, asset):
+    children = [k for k in asset_buckets.keys() if k.startswith(asset) and k != asset]
+    subtotal = asset_buckets[asset]
+    for c in children:
+        subtotal += compute_balance_subtotal(asset_buckets, c)
+    return subtotal
+
+def tree_indent(a):
+    splits = a.split('_')
+    spaces = len(splits)
+    return ' '*spaces + splits[-1]
+
 def pretty_print_buckets(asset_buckets):
     # Convert results into a pretty printed table
     # print(balance.reduce(convert.get_units))
-    total_assets = sum(asset_buckets[k] for k in asset_buckets)
-    max_width = max(len(k) for k in asset_buckets)
+
     table = []
-    for a in asset_buckets:
-        table.append([a,
-            '{:.1f}%'.format((asset_buckets[a]/total_assets)*100),
-            '{:,.0f}'.format(asset_buckets[a]) ])
-            
-    table.sort()
-    table.append(['---', '---', '---'])
-    table.append(["Total",
+    total_assets = sum(asset_buckets[k] for k in asset_buckets)
+    table.append(["total",
         '{:.1f}%'.format(100),
         '{:,.0f}'.format(total_assets) ])
 
-    print(tabulate(table, 
+    max_width = max(len(k) for k in asset_buckets)
+    buckets = list(asset_buckets.keys())
+    buckets.sort()
+    for a in buckets:
+        table.append([tree_indent(a),
+            '{:.1f}%'.format(compute_percent_subtotal(asset_buckets, a)),
+            '{:,.0f}'.format(compute_balance_subtotal(asset_buckets, a)) ])
+            
+    print(tabulate.tabulate(table, 
         headers=['Asset Type', 'Percentage', 'Amount'], 
         colalign=('left', 'decimal', 'right'),
         tablefmt='simple'
@@ -129,7 +151,7 @@ def asset_allocation(filename,
     vbalance = balance.reduce(convert.get_units)
 
     if show_balance:
-        print(tabulate(vbalance.get_positions(), tablefmt='plain'))
+        print(tabulate.tabulate(vbalance.get_positions(), tablefmt='plain'))
 
     asset_buckets = bucketize(vbalance, base_currency, entries)
 

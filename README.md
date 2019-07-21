@@ -59,20 +59,23 @@ $ ./asset_allocation.py example.beancount --accounts "Assets:Investments:" --dum
 ```
 Output:
 ```
-Asset Type              Percentage    Amount
---------------------  ------------  --------
-bond                         17.8%       240
-bond_municipal               38.9%       525
-equity                        5.6%        75
-equity_international         26.7%       360
-realestate                   11.1%       150
----                            ---       ---
-Total                       100.0%     1,350
+Asset Type         Percentage    Amount
+---------------  ------------  --------
+total                  100.0%     2,750
+ bond                   48.2%     1,325
+  municipal             19.1%       525
+ equity                 46.4%     1,275
+  international         43.6%     1,200
+ realestate              5.5%       150
 
 Account balances:
 `-- Assets                  
-    `-- Investments         
+    `-- Investments             7 BNCT
         |-- Brokerage           1 BNCT
         `-- XTrade              2 BNCT
                                10 COFE
 ```
+
+Asset allocations are displayed hierarchically. Percentages and amounts include the
+children. For example, the 'bond' percentage and amount above includes municipal bonds.
+
