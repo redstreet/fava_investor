@@ -91,7 +91,7 @@ def build_interesting_realacc(entries, accounts):
     realacc = realization.filter(realroot, is_included_account)
 
     if not realacc:
-        sys.stderr.write("No included accounts found. (Your --accounts <regex> failed to match any account)")
+        sys.stderr.write("No included accounts found. (Your --accounts <regex> failed to match any account)\n")
         sys.exit(1)
 
     # However, realacc includes all ancestor accounts of specified accounts, and their balances. For example,
