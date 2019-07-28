@@ -87,6 +87,14 @@ def tabulate_asset_buckets(asset_buckets):
 
     max_width = max(len(k) for k in asset_buckets)
     buckets = list(asset_buckets.keys())
+
+    # add all parents in the asset allocation hierarchy
+    parents = set()
+    for b in buckets:
+        for i in range(1, b.count('_')+1):
+            parents.add( b.rsplit('_', i)[0] )
+    buckets = list(set(list(parents) + buckets))
+
     buckets.sort()
     for a in buckets:
         table.append([tree_indent(a),

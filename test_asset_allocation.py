@@ -104,3 +104,26 @@ class TestScriptCheck(test_utils.TestCase):
         self.assertEqual(0, result)
         self.assertRegex(stdout.getvalue(), "equity *60.0% *120 *")
         self.assertRegex(stdout.getvalue(), "bond *40.0% *80")
+
+    @test_utils.docfile
+    def test_tree_empty_parent(self, filename):
+        """
+        2010-01-01 open Assets:Investments:XTrade
+        2010-01-01 open Assets:Bank
+
+        2010-01-01 commodity BNCT
+          asset_allocation_equity_international: 100
+
+
+        2011-01-02 * "Buy stock"
+          Assets:Investments:XTrade 700 BNCT {200 USD}
+          Assets:Bank
+
+        2011-03-02 price BNCT 200 USD
+        """
+        with test_utils.capture('stdout', 'stderr') as (stdout, _):
+            result = test_utils.run_with_args(asset_allocation.main, [filename,
+                '--accounts', 'Assets:Investments'])
+        self.assertEqual(0, result)
+        self.assertRegex(stdout.getvalue(), "equity *100.0%")
+        self.assertRegex(stdout.getvalue(), " international *100.0%")
