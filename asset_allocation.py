@@ -110,6 +110,8 @@ def build_interesting_realacc(entries, accounts):
     def is_included_account(realacc):
         for pattern in accounts:
             if re.match(pattern, realacc.account):
+                if realacc.balance == inventory.Inventory():
+                    return False # Remove empty accounts to "clean up" the tree
                 return True
         return False
 
