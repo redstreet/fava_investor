@@ -14,11 +14,11 @@ from fava.core.tree import Tree
 from fava.core.helpers import FavaAPIException
 
 
-class AssetAllocation(FavaExtensionBase):  # pragma: no cover
+class Investor(FavaExtensionBase):  # pragma: no cover
     """Sample Extension Report that just prints out an Portfolio List.
     """
 
-    report_title = "Asset Allocation"
+    report_title = "Investor"
 
     def portfolio_accounts(self, begin=None, end=None):
         """An account tree based on matching regex patterns."""
