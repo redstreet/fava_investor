@@ -7,6 +7,7 @@ consider for implementation.
 ## Reports
 
 ### Asset allocation: By asset class:
+- port [this](https://github.com/redstreet/beancount_asset_allocation) to fava
 - Pie chart, hierarchical
   - Reference chart
   - top level alone chart (to simplify complex portfolios)?
@@ -20,8 +21,17 @@ consider for implementation.
 - taxable, tax-deferred, etc.
 - configure using parent account or metadata
 
+### IRR (internal rate of return):
+- across specified portfolio
+- drillable down to account-level and holding-leve
+- advanced: show tax drag (difficult to quantify)
+
 ### Net worth:
 - across time (redundant?)
+- show split of contributions, income (dividends, gains, etc.), and appreciation
+  - filterable (by account?)
+  - across arbitrary time periods
+  - related to IRR above
 
 ### Savings rate:
 - absolute number across time
