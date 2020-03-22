@@ -1,2 +1,3 @@
-# fava-asset-allocation
-Asset allocation plugin for fava/beancount (personal finance software)
+# fava-investor
+Investment tools plugin for fava/beancount (personal finance software)
+
