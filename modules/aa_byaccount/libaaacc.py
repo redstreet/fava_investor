@@ -26,16 +26,13 @@ def by_account_name(tree, date, config, ledger):
 
     pattern = config['pattern']
     include_children = config.get('include_children', False)
-    title = "Account names matching: '" + pattern + "'"
+    title = config.get('title', "Account names matching: '" + pattern + "'")
+
     selected_accounts = []
     regexer = re.compile(pattern)
     for acct in tree.keys():
-        if (regexer.match(acct) is not None) and (
-            acct not in selected_accounts
-        ):
+        if regexer.match(acct) is not None and acct not in selected_accounts:
             selected_accounts.append(acct)
-            # if '$' in pattern:
-            #     print("Match! {} against {}".format(acct, pattern))
 
     selected_nodes = [tree[x] for x in selected_accounts]
     portfolio_data = _portfolio_data(selected_nodes, date, ledger, include_children)
@@ -46,19 +43,12 @@ def by_account_open_metadata(tree, date, config, ledger):
 
     metadata_key = config['metadata_key']
     pattern = config['pattern']
-    title = (
-        "Accounts with '"
-        + metadata_key
-        + "' metadata matching: '"
-        + pattern
-        + "'"
-    )
+    title = config.get('title', 'Accounts with {} metadata matching {}'.format(metadata_key, pattern))
+
     selected_accounts = []
     regexer = re.compile(pattern)
     for entry in ledger.all_entries_by_type[Open]:
-        if (metadata_key in entry.meta) and (
-            regexer.match(entry.meta[metadata_key]) is not None
-        ):
+        if metadata_key in entry.meta and regexer.match(entry.meta[metadata_key]) is not None:
             selected_accounts.append(entry.account)
 
     selected_nodes = [tree[x] for x in selected_accounts]
@@ -83,19 +73,17 @@ def _portfolio_data(nodes, date, ledger, include_children):
     types = [acct_type, bal_type, alloc_type]
 
     rows = []
-    portfolio_total = ZERO
     for node in nodes:
         row = {}
         row["account"] = node.name
         balance = cost_or_value(node.balance_children, date) if include_children else cost_or_value(node.balance, date)
         if operating_currency in balance:
-            balance_dec = balance[operating_currency]
-            portfolio_total += balance_dec
-            row["balance"] = balance_dec
+            row["balance"] = balance[operating_currency]
             rows.append(row)
 
+    portfolio_total = sum(row['balance'] for row in rows)
     for row in rows:
         if "balance" in row:
-            row["allocation %"] = round( (row["balance"] / portfolio_total) * 100, 2)
+            row["allocation %"] = round( (row["balance"] / portfolio_total) * 100, 1)
 
     return types, rows
