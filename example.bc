@@ -4,6 +4,7 @@ option "render_commas" "True"
 
 2010-01-01 open Assets:Investments:Taxable:XTrade
 2010-01-01 open Assets:Investments:Tax-Deferred:YTrade
+2010-01-01 open Assets:Investments:Tax-Free:YTrade
 2010-01-01 open Assets:Bank
 
 2020-02-01 * "Buy stock"
@@ -23,7 +24,11 @@ option "render_commas" "True"
  Assets:Bank
 
 2020-02-20 * "Buy stock"
- Assets:Investments:Tax-Deferred:YTrade 20 DNRCNT {10 USD}
+ Assets:Investments:Tax-Deferred:YTrade 20 DNRCNT {100 USD}
+ Assets:Bank
+
+2020-02-20 * "Buy stock"
+ Assets:Investments:Tax-Free:YTrade 1000 HOOLI {800 USD}
  Assets:Bank
 
 2020-02-20 * "Buy stock"
@@ -37,7 +42,7 @@ option "render_commas" "True"
 2020-03-08 price BNCT   150   USD
 2020-03-08 price COFE    95   USD
 2020-03-08 price UPUP    25   USD
-2020-03-08 price DNRCNT   5   USD
+2020-03-08 price DNRCNT  98   USD
 
 2010-01-01 custom "fava-extension" "fava-investor" "{
   'tlh' : {
