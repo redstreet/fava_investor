@@ -39,15 +39,12 @@ option "render_commas" "True"
 2020-03-08 price UPUP    25   USD
 2020-03-08 price DNRCNT   5   USD
 
-2010-01-01 custom "fava-extension" "fava-investor" "{
+2010-01-01 custom "fava-extension" "plugins.fava.investor" "{
   'tlh' : {
      'account_field': 'account',
      'accounts_pattern': 'Assets:Investments:Taxable',
      'loss_threshold': 50,
      'wash_pattern': 'Assets:Investments',
-  },
-
- 'asset_alloc_class': [
-     ('account_name_pattern', 'Assets:Investments:[^:]*$', 'include_children')
- ]
+  }
 }"
+

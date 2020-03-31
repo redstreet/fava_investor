@@ -1,0 +1,51 @@
+features:
+
+- top annoyances
+----------------
+  - separate units and currency in main table @done(2020-03-18 22:28)
+  - export to csv
+
+- data:
+-------
+  - losses by account
+  - sale price per currency
+  - sale price per account
+  - total units per account, per currency (to match against broker)
+
+- pricing:
+----------
+  - show current prices table (just to verify)
+  - plugin to project MF price using equivalent ETF price (for TLH)
+
+- fund info:
+------------
+  - TLH partners
+  - tickers: mutual funds ETF equivalents
+  - ticker description
+
+- notes:
+--------
+- customizable notes display
+
+display main table:
+  - test cases for wash sales (can't have bought within 30 days; edge cases of 29/30/31 days)
+  - will grouping by cost_date mean multiple lots with different costs on the same day be rendered
+    incorrectly?
+  - assert specid / "STRICT"
+
+bells and whistles:
+  - print TLH substitute (where?)
+  - add wash amount to summary
+  - add wash * to by commodity wash
+  - use query context (dates? future and past?)
+  - csv download
+  - warn if price entries are older than the most recent weekday (approximation of trading day)
+
+
+Command line client:
+----------------------------------------------------------------------------------------
+# TODO:
+# - print TLH pairs
+# - analysis of TLH pairs: can't be present in both sell and buy columns!
+# - print DO-NOT-BUY-UNTIL-WARNING list
+

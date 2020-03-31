@@ -1,6 +1,4 @@
-"""Portfolio list extension for Fava.
-
-This is a simple example of Fava's extension reports system.
+"""Fava Investor: Investing related reports and tools for Beancount/Fava
 """
 import re
 
@@ -13,12 +11,29 @@ from fava.template_filters import cost_or_value
 from fava.core.tree import Tree
 from fava.core.helpers import FavaAPIException
 
+from tlh import libtlh
 
-class Investor(FavaExtensionBase):  # pragma: no cover
+# -----------------------------------------------------------------------------------------------------------
+class TaxLossHarvester(FavaExtensionBase):  # pragma: no cover
+    '''Tax Loss Harvester Fava (Beancount) Plugin
+    '''
+    report_title = "Investor: Tax Loss Harvester"
+
+    def query_func(self, sql):
+        contents, rtypes, rrows = self.ledger.query_shell.execute_query(sql)
+        return rtypes, rrows
+
+    def build_tlh_tables(self, begin=None, end=None):
+        """Build fava TLH tables using TLH library
+        """
+        return libtlh.get_tables(self.query_func, self.config.get('tlh', {}))
+
+# -----------------------------------------------------------------------------------------------------------
+
+class AssetAllocAccount(FavaExtensionBase):  # pragma: no cover
     """Sample Extension Report that just prints out an Portfolio List.
     """
-
-    report_title = "Investor"
+    report_title = "Investor: AA by Account"
 
     def portfolio_accounts(self, begin=None, end=None):
         """An account tree based on matching regex patterns."""
@@ -29,7 +44,7 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
         portfolios = []
 
-        for option in self.config:
+        for option in self.config['asset_alloc_class']:
             opt_key = option[0]
             if opt_key == "account_name_pattern":
                 portfolio = self._account_name_pattern(tree, end, option[1], option[2])
