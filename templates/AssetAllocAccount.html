@@ -1,19 +1,8 @@
 {% import "_query_table.html" as querytable with context %}
 
-<h2>Investor</h2>
-Reports, analyses, and tools for investments.
-<br />
-<br />
-
-<h2>Portfolio: Asset Allocation by Class</h2>
-TBD
-<br />
-<br />
-
-
+<i>Investor: Reports, analyses, and tools for investments.</i>
 
 <h2>Portfolio: Asset Allocation by Accounts</h2>
-<br />
 {% for portfolio in extension.build_aa_by_account(None, None) %}
     <h3>{{portfolio[0]}}</h3>
     {{ querytable.querytable(None, *portfolio[1]) }}
