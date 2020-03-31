@@ -3,7 +3,9 @@ option "operating_currency" "USD"
 option "render_commas" "True"
 
 2010-01-01 open Assets:Investments:Taxable:XTrade
+2010-01-01 open Assets:Investments:Taxable:FreeTrader
 2010-01-01 open Assets:Investments:Tax-Deferred:YTrade
+2010-01-01 open Assets:Investments:Tax-Deferred:ZTrade
 2010-01-01 open Assets:Investments:Tax-Free:YTrade
 2010-01-01 open Assets:Bank
 
@@ -28,6 +30,10 @@ option "render_commas" "True"
  Assets:Bank
 
 2020-02-20 * "Buy stock"
+ Assets:Investments:Tax-Deferred:ZTrade 50 HOOLI {800 USD}
+ Assets:Bank
+
+2020-02-20 * "Buy stock"
  Assets:Investments:Tax-Free:YTrade 1000 HOOLI {800 USD}
  Assets:Bank
 
@@ -37,6 +43,10 @@ option "render_commas" "True"
 
 2020-02-21 * "Sell stock"
  Assets:Investments:Taxable:XTrade -2 BNCT {200 USD}
+ Assets:Bank
+
+2020-02-22 * "Buy stock"
+ Assets:Investments:Taxable:FreeTrader 500 HOOLI {800 USD}
  Assets:Bank
 
 2020-03-08 price BNCT   150   USD
@@ -52,10 +62,15 @@ option "render_commas" "True"
      'wash_pattern': 'Assets:Investments',
   },
 
- 'asset_alloc_class': [{
-     'title':            'Investment Accounts',
-     'pattern_type':     'account_name',
-     'pattern':          'Assets:Investments:[^:]*$',
-     'include_children': True,
- }],
+  'asset_alloc_class': [{
+      'title':            'Allocation by Account',
+      'pattern_type':     'account_name',
+      'pattern':          'Assets:Investments:.*',
+  },
+  {
+      'title':            'Allocation by Taxability',
+      'pattern_type':     'account_name',
+      'pattern':          'Assets:Investments:[^:]*$',
+      'include_children': True,
+  }],
 }"

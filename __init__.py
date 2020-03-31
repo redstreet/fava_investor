@@ -3,8 +3,8 @@
 
 from fava.ext import FavaExtensionBase
 
-from modules.tlh import libtlh
-from modules.aa_byaccount import libaaacc
+from .modules.tlh import libtlh
+from .modules.aa_byaccount import libaaacc
 
 # -----------------------------------------------------------------------------------------------------------
 class TaxLossHarvester(FavaExtensionBase):  # pragma: no cover
