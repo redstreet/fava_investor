@@ -47,7 +47,9 @@ option "render_commas" "True"
      'wash_pattern': 'Assets:Investments',
   },
 
- 'asset_alloc_class': [
-     ('account_name_pattern', 'Assets:Investments:[^:]*$', 'include_children')
- ]
+ 'asset_alloc_class': [{
+     'pattern_type':     'account_name',
+     'pattern':          'Assets:Investments:[^:]*$',
+     'include_children': True,
+ }],
 }"

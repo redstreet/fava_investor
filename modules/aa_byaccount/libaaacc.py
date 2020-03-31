@@ -9,33 +9,23 @@ from fava.template_filters import cost_or_value
 from fava.core.tree import Tree
 from fava.core.helpers import FavaAPIException
 
-def portfolio_accounts(tree, config, ledger, end):
+def portfolio_accounts(tree, configs, ledger, end):
     """An account tree based on matching regex patterns."""
 
     portfolios = []
-    for option in config:
-        opt_key = option[0]
-        if opt_key == "account_name_pattern":
-            portfolio = _account_name_pattern(tree, end, option[1], ledger, option[2])
-        elif opt_key == "account_open_metadata_pattern":
-            portfolio = _account_metadata_pattern(tree, end, option[1][0], option[1][1], ledger)
-        else:
-            raise FavaAPIException("Portfolio List: Invalid option.")
+    for config in configs:
+        pattern_type = config['pattern_type']
+        func = globals()['by_' + pattern_type]
+        portfolio = func(tree, end, config, ledger)
         portfolios.append(portfolio)
 
     return portfolios
 
-def _account_name_pattern(tree, date, pattern, ledger, include_children):
-    """
-    Returns portfolio info based on matching account name.
+def by_account_name(tree, date, config, ledger):
+    """Returns portfolio info based on matching account name."""
 
-    Args:
-        tree: Ledger root tree node.
-        date: Date.
-        pattern: Account name regex pattern.
-    Return:
-        Data structured for use with a querytable (types, rows).
-    """
+    pattern = config['pattern']
+    include_children = config.get('include_children', False)
     title = "Account names matching: '" + pattern + "'"
     selected_accounts = []
     regexer = re.compile(pattern)
@@ -51,18 +41,11 @@ def _account_name_pattern(tree, date, pattern, ledger, include_children):
     portfolio_data = _portfolio_data(selected_nodes, date, ledger, include_children)
     return title, portfolio_data
 
-def _account_metadata_pattern(tree, date, metadata_key, pattern, ledger):
-    """
-    Returns portfolio info based on matching account open metadata.
+def by_account_open_metadata(tree, date, config, ledger):
+    """ Returns portfolio info based on matching account open metadata. """
 
-    Args:
-        tree: Ledger root tree node.
-        date: Date.
-        metadata_key: Metadata key to match for in account open.
-        pattern: Metadata value's regex pattern to match for.
-    Return:
-        Data structured for use with a querytable - (types, rows).
-    """
+    metadata_key = config['metadata_key']
+    pattern = config['pattern']
     title = (
         "Accounts with '"
         + metadata_key
@@ -79,10 +62,10 @@ def _account_metadata_pattern(tree, date, metadata_key, pattern, ledger):
             selected_accounts.append(entry.account)
 
     selected_nodes = [tree[x] for x in selected_accounts]
-    portfolio_data = _portfolio_data(selected_nodes, date, ledger)
+    portfolio_data = _portfolio_data(selected_nodes, date, ledger, include_children)
     return title, portfolio_data
 
-def _portfolio_data(nodes, date, ledger, include_children=''):
+def _portfolio_data(nodes, date, ledger, include_children):
     """
     Turn a portfolio of tree nodes into querytable-style data.
 
@@ -96,7 +79,7 @@ def _portfolio_data(nodes, date, ledger, include_children=''):
     operating_currency = ledger.options["operating_currency"][0]
     acct_type = ("account", str(str))
     bal_type = ("balance", str(Decimal))
-    alloc_type = ("allocation", str(Decimal))
+    alloc_type = ("allocation %", str(Decimal))
     types = [acct_type, bal_type, alloc_type]
 
     rows = []
@@ -110,13 +93,9 @@ def _portfolio_data(nodes, date, ledger, include_children=''):
             portfolio_total += balance_dec
             row["balance"] = balance_dec
             rows.append(row)
-        # if node.name == "Assets:Investments:Taxable":
-        #     import pdb; pdb.set_trace()
 
     for row in rows:
         if "balance" in row:
-            row["allocation"] = round(
-                (row["balance"] / portfolio_total) * 100, 2
-            )
+            row["allocation %"] = round( (row["balance"] / portfolio_total) * 100, 2)
 
     return types, rows
