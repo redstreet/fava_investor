@@ -28,5 +28,3 @@ pip install ./fava-investor
 git clone https://github.com/redstreet/fava-investor.git
 pip install -e ./fava-investor
 ```
-
-
