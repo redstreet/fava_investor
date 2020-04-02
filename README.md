@@ -20,13 +20,13 @@ git clone https://github.com/redstreet/fava-investor.git
 ## Install via pip to use extension
 ```bash
 git clone https://github.com/redstreet/fava-investor.git
-pip install <path to>/fava-investor
+pip install ./fava-investor
 ```
 
 ## Install via pip to develop extension
 ```bash
 git clone https://github.com/redstreet/fava-investor.git
-pip install -e <path to>/fava-investor
+pip install -e ./fava-investor
 ```
 
 
