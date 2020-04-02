@@ -53,6 +53,17 @@ class AssetAllocClass(FavaExtensionBase):  # pragma: no cover
         return retval
 
 # -----------------------------------------------------------------------------------------------------------
+class NetWorth(FavaExtensionBase):  # pragma: no cover
+    report_title = "Investor: NetWorth"
+
+    def get_net_worth(self, begin=None, end=None):
+        """An account tree based on matching regex patterns."""
+        from fava_investor.modules.net_worth import net_worth as nw
+
+        return nw.get_net_worth(self.ledger)
+
+# -----------------------------------------------------------------------------------------------------------
+
 class AssetAllocAccount(FavaExtensionBase):  # pragma: no cover
     report_title = "Investor: AA by Account"
 

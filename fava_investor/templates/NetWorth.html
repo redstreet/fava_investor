@@ -1,0 +1,11 @@
+{% import "_query_table.html" as querytable with context %}
+<i>Investor: Reports, analyses, and tools for investments.</i>
+
+<h2>Net worth</h2>
+{% set nw = extension.get_net_worth() %}
+
+<table>
+    {% for key, value in nw.items() %}
+        <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
+    {% endfor %}
+</table>

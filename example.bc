@@ -14,6 +14,8 @@ option "render_commas" "True"
 
 2010-01-01 open Assets:Investments:Tax-Free:YTrade
 2010-01-01 open Assets:Bank
+2010-01-01 open Income:Dividends
+2010-01-01 open Income:Gains
 
 2010-01-01 commodity BNCT
  asset_allocation_equity_international: 80
@@ -41,6 +43,10 @@ option "render_commas" "True"
  Assets:Investments:Taxable:XTrade 20 DNRCNT {10 USD}
  Assets:Bank
 
+2020-02-15 * "Dividend"
+ Assets:Investments:Taxable:XTrade
+ Income:Dividends  -10.05 USD
+
 2020-02-20 * "Buy stock"
  Assets:Investments:Tax-Deferred:YTrade 20 DNRCNT {100 USD}
  Assets:Bank
@@ -48,6 +54,10 @@ option "render_commas" "True"
 2020-02-20 * "Buy stock"
  Assets:Investments:Tax-Deferred:ZTrade 50 HOOLI {800 USD}
  Assets:Bank
+
+2020-02-15 * "Dividend"
+ Assets:Investments:Taxable:XTrade
+ Income:Dividends  -12.10 USD
 
 2020-02-20 * "Buy stock"
  Assets:Investments:Tax-Free:YTrade 1000 HOOLI {800 USD}
