@@ -8,25 +8,23 @@ It currently has two modules: a simple asset allocation (by account), and a tax 
 harvester:
 ![Screenshot](./screenshot.png)
 
-# Install fava-investor
+# Installation
 
-## Install locally
+### Install locally
 
 In the folder of your beancount journal file
 ```bash
 git clone https://github.com/redstreet/fava-investor.git
 ```
 
-## Install via pip to use extension
+### Install via pip to use extension
 ```bash
 git clone https://github.com/redstreet/fava-investor.git
 pip install ./fava-investor
 ```
 
-## Install via pip to develop extension
+### Install via pip to develop extension
 ```bash
 git clone https://github.com/redstreet/fava-investor.git
 pip install -e ./fava-investor
 ```
-
-
