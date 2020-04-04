@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import List, Dict
+from typing import Dict
 
 from beancount.core.inventory import Inventory
 from fava.core import FavaLedger
@@ -7,12 +7,16 @@ from fava.core import FavaLedger
 
 class InventoryTools:
     @staticmethod
-    def subtract(first: Inventory, second: Inventory):
-        second_inverted = InventoryTools.invert(second)
-        return first.add_inventory(second_inverted)
+    def clone(first: Inventory):
+        return Inventory(positions=first.get_positions())
 
     @staticmethod
-    def invert(inventory: Inventory):
+    def subtract(first: Inventory, second: Inventory) -> Inventory:
+        second_inverted = InventoryTools.invert(second)
+        return InventoryTools.clone(first).add_inventory(second_inverted)
+
+    @staticmethod
+    def invert(inventory: Inventory) -> Inventory:
         return Inventory(positions=[p.get_negative() for p in inventory.get_positions()])
 
     @staticmethod
@@ -49,13 +53,16 @@ def get_net_worth(ledger: FavaLedger) -> Dict[str, Dict[str, Decimal]]:
     dividends_reinvested = query_get_one(
         ledger, "select sum(cost(position)) where account ~ 'investments' and joinstr(other_accounts) ~ 'dividends'")
 
+    gains_realized = query_get_one(ledger,
+           "select sum(cost(position)) where account ~'gains' and joinstr(other_accounts) ~ 'investment'")
+
     inv_dict = {
         'contributions': contr,
         'dividends_total': dividends_all,
         'dividends_reinvested': dividends_reinvested,
         'dividends_withdrawn': InventoryTools.subtract(dividends_all, dividends_reinvested),
         'gains_unrealized': calculate_unrealised_gains(ledger),
-        'gains_realized': Inventory()
+        'gains_realized': InventoryTools.invert(gains_realized)
     }
     return {k: InventoryTools.to_dict(v) for (k, v) in inv_dict.items()}
 

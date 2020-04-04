@@ -12,6 +12,7 @@ def get_ledger(filename):
     _, errors, _ = loader.load_file(filename, extra_validations=validation.HARDCORE_VALIDATIONS)
     if errors:
         raise ValueError("Errors in ledger file: \n" + pformat(errors))
+
     ledger = FavaLedger(filename)
     return ledger
 
@@ -62,8 +63,8 @@ class TestNetWorth(test_utils.TestCase):
         2010-01-01 open Income:Rent
 
         2010-02-01 * "reinvested dividends"
-          Income:Dividends  -20 USD
-          Income:Dividends  -21 GBP
+          Income:Dividends  -1 USD
+          Income:Dividends  -2 GBP
           Assets:Investments
 
         2010-02-01 * "irrelevant income"
@@ -71,15 +72,15 @@ class TestNetWorth(test_utils.TestCase):
           Assets:Investments
 
         2010-02-01 * "withdrawn dividends"
-          Income:Dividends  -10 USD
-          Income:Dividends  -11 GBP
+          Income:Dividends  -2 USD
+          Income:Dividends  -3 GBP
           Assets:Bank
         """
 
         result = nw.get_net_worth(get_ledger(filename))
-        assert result['dividends_reinvested'] == {"USD": 20, "GBP": 21}
-        assert result['dividends_withdrawn'] == {"USD": 10, "GBP": 11}
-        assert result['dividends_total'] == {"USD": 30, "GBP": 32}
+        assert result['dividends_reinvested'] == {"USD": 1, "GBP": 2}
+        assert result['dividends_withdrawn'] == {"USD": 2, "GBP": 3}
+        assert result['dividends_total'] == {"USD": 3, "GBP": 5}
 
     @test_utils.docfile
     def test_gains_unrealized(self, filename: str):
@@ -98,3 +99,26 @@ class TestNetWorth(test_utils.TestCase):
 
         result = nw.get_net_worth(get_ledger(filename))
         assert result['gains_unrealized'] == {"USD": 1, "GBP": -1}
+
+    @test_utils.docfile
+    def test_gains_realized(self, filename: str):
+        """
+        2010-01-01 open Assets:Investments
+        2010-01-01 open Assets:Bank
+        2010-01-01 open Income:Gains
+
+        2010-02-01 * "buy"
+          Assets:Investments  1 STK {10 USD}
+          Assets:Investments  1 ZXC {2 GBP}
+          Assets:Bank
+
+        2010-02-01 * "sell"
+          Assets:Investments  -1 STK {10 USD}
+          Assets:Investments  -1 ZXC {2 GBP}
+          Assets:Investments  12 USD
+          Assets:Investments  1 GBP
+          Income:Gains
+        """
+
+        result = nw.get_net_worth(get_ledger(filename))
+        assert result['gains_realized'] == {"USD": 2, "GBP": -1}
