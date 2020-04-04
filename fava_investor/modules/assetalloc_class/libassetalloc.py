@@ -13,9 +13,10 @@ from beancount.core import inventory
 from beancount.core import realization
 from beancount.core.number import Decimal
 
-def bucketize(vbalance, base_currency, accapi):
+def bucketize(vbalance, accapi):
     price_map = accapi.build_price_map()
     commodity_map = accapi.get_commodity_map()
+    base_currency = accapi.get_operating_currency()
 
     # Main part: put each commodity's value into asset buckets
     asset_buckets = defaultdict(int)
@@ -114,7 +115,6 @@ def scale_inventory(balance, tax_adj):
         scaled_balance.add_amount(scaled_pos)
     return scaled_balance
 
-
 def tax_adjust(realacc, accapi):
     account_open_close = accapi.get_account_open_close()
     for acc in realization.iter_children(realacc):
@@ -125,10 +125,10 @@ def tax_adjust(realacc, accapi):
 
 def assetalloc(accapi, config={}):
     realacc = build_interesting_realacc(accapi, config.get('accounts_pattern', ['.*']))
-    if not config['skip_tax_adjustment']:
+    if not config.get('skip_tax_adjustment', False):
         tax_adjust(realacc, accapi)
     balance = realization.compute_balance(realacc)
     vbalance = balance.reduce(convert.get_units)
-    asset_buckets = bucketize(vbalance, config['base_currency'], accapi)
+    asset_buckets = bucketize(vbalance, accapi)
 
     return asset_buckets, tabulate_asset_buckets(asset_buckets), realacc

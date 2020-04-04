@@ -22,5 +22,9 @@ class AccAPI:
         rtypes, rrows = query.run_query(self.entries, self.options_map, sql)
         return rtypes, rrows
 
+    def get_operating_currency(self):
+        # TODO
+        import pdb; pdb.set_trace()
+
     def get_account_open_close(self):
         return getters.get_account_open_close(self.entries)
