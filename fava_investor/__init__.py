@@ -9,27 +9,27 @@ from .modules.aa_byaccount import libaaacc
 
 from beancount.core import getters
 class FavaInvestorAPI:
-    def __init__(self, favaself):
-        self.favaself = favaself
+    def __init__(self, ledger):
+        self.ledger = ledger
 
     def build_price_map(self):
-        return self.favaself.ledger.price_map
+        return self.ledger.price_map
 
     def get_commodity_map(self):
-        return getters.get_commodity_map(self.favaself.ledger.entries)
+        return getters.get_commodity_map(self.ledger.entries)
 
     def realize(self):
-        return self.favaself.ledger.root_account
+        return self.ledger.root_account
 
     def query_func(self, sql):
-        contents, rtypes, rrows = self.favaself.ledger.query_shell.execute_query(sql)
+        contents, rtypes, rrows = self.ledger.query_shell.execute_query(sql)
         return rtypes, rrows
 
     def get_operating_currency(self):
-        return self.favaself.options["operating_currency"]
+        return self.ledger.options["operating_currency"][0] #TBD: error check
 
     def get_account_open_close(self):
-        return getters.get_account_open_close(self.favaself.ledger.entries)
+        return getters.get_account_open_close(self.ledger.entries)
 
 # -----------------------------------------------------------------------------------------------------------
 class TaxLossHarvester(FavaExtensionBase):  # pragma: no cover
@@ -48,8 +48,8 @@ class AssetAllocClass(FavaExtensionBase):  # pragma: no cover
 
 
     def build_assetalloc_by_class(self, begin=None, end=None):
-        accapi = FavaInvestorAPI(self)
-        retval = libassetalloc.assetalloc(accapi, self.config.get('asset_alloc_XXX', {}))
+        accapi = FavaInvestorAPI(self.ledger)
+        retval = libassetalloc.assetalloc(accapi, self.config.get('asset_alloc_by_class', {}))
         return retval
 
 # -----------------------------------------------------------------------------------------------------------
@@ -62,4 +62,4 @@ class AssetAllocAccount(FavaExtensionBase):  # pragma: no cover
         else:
             tree = self.ledger.root_tree
 
-        return libaaacc.portfolio_accounts(tree, self.config.get('asset_alloc_account', []), self.ledger, end)
+        return libaaacc.portfolio_accounts(tree, self.config.get('asset_alloc_by_account', []), self.ledger, end)
