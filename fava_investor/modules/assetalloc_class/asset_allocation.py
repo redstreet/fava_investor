@@ -2,6 +2,7 @@
 # Description: CLI for asset allocation
 
 import argparse,argcomplete,argh
+import os
 import sys
 import tabulate
 tabulate.PRESERVE_WHITESPACE = True
@@ -9,7 +10,9 @@ tabulate.PRESERVE_WHITESPACE = True
 from beancount.core import display_context
 from beancount.core import realization
 
-import beancountapi
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+import beancountinvestorapi as api
+
 import libassetalloc
 
 def print_balances_tree(realacc, accapi):
@@ -42,7 +45,7 @@ def asset_allocation(beancount_file,
     debug=False):
 
     argsmap = locals()
-    accapi = beancountapi.AccAPI(beancount_file, argsmap)
+    accapi = api.AccAPI(beancount_file, argsmap)
     if not accounts_patterns:
         del argsmap['accounts_patterns']
     asset_buckets, hierarchicalized, formatted, realacc = libassetalloc.assetalloc(accapi, argsmap)
