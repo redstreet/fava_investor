@@ -6,14 +6,8 @@ import re
 import sys
 
 from collections import defaultdict
-from dateutil.parser import parse
-import tabulate
-tabulate.PRESERVE_WHITESPACE = True
-from types import SimpleNamespace
 
-from beancount import loader
 from beancount.core import convert
-from beancount.core import display_context
 from beancount.core import getters
 from beancount.core import amount
 from beancount.core import inventory
@@ -60,10 +54,6 @@ def compute_balance_subtotal(asset_buckets, asset):
         subtotal += compute_balance_subtotal(asset_buckets, c)
     return subtotal
 
-def tree_indent(a):
-    splits = a.split('_')
-    spaces = len(splits)
-    return ' '*spaces + splits[-1]
 
 def tabulate_asset_buckets(asset_buckets):
     ''' Convert asset allocation into a hierarchical tabulation '''
@@ -71,11 +61,6 @@ def tabulate_asset_buckets(asset_buckets):
 
     table = []
     total_assets = sum(asset_buckets[k] for k in asset_buckets)
-    table.append(["total",
-        '{:.1f}%'.format(100),
-        '{:,.0f}'.format(total_assets) ])
-
-    max_width = max(len(k) for k in asset_buckets)
     buckets = list(asset_buckets.keys())
 
     # add all parents in the asset allocation hierarchy
@@ -86,15 +71,16 @@ def tabulate_asset_buckets(asset_buckets):
     buckets = list(set(list(parents) + buckets))
 
     buckets.sort()
-    for a in buckets:
-        table.append([tree_indent(a),
-            '{:.1f}%'.format(compute_percent_subtotal(asset_buckets, a, total_assets)),
-            '{:,.0f}'.format(compute_balance_subtotal(asset_buckets, a)) ])
+    for bucket in buckets:
+        table.append([len(bucket.split('_')),
+            bucket,
+            compute_percent_subtotal(asset_buckets, bucket, total_assets),
+            compute_balance_subtotal(asset_buckets, bucket)
+            ])
             
-    return tabulate.tabulate(table, 
-        headers=['Asset Type', 'Percentage', 'Amount'], 
-        colalign=('left', 'decimal', 'right'),
-        tablefmt='simple')
+    headers=['Hierarchy', 'Asset Type', 'Percentage', 'Amount']
+    return headers, table
+
 
 def build_interesting_realacc(entries, accounts):
     def is_included_account(realacc):
@@ -122,14 +108,6 @@ def build_interesting_realacc(entries, accounts):
             acc.balance = inventory.Inventory()
     return realacc
 
-
-def print_balances_tree(realacc):
-    print()
-    print('Account balances:')
-    dformat = options_map['dcontext'].build(alignment=display_context.Align.DOT,
-                                            reserved=2)
-    realization.dump_balances(realacc, dformat, file=sys.stdout)
-
 def scale_inventory(balance, tax_adj):
     '''Scale inventory by tax adjustment'''
     scaled_balance = inventory.Inventory()
@@ -155,7 +133,4 @@ def assetalloc(entries, options_map, query_func, config={}):
     vbalance = balance.reduce(convert.get_units)
     asset_buckets = bucketize(vbalance, config['base_currency'], entries)
 
-    # print output
-    print(tabulate_asset_buckets(asset_buckets))
-    if config['dump_balances_tree']:
-        print_balances_tree(realacc)
+    return asset_buckets, tabulate_asset_buckets(asset_buckets), realacc
