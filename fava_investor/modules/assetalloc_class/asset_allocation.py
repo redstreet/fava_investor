@@ -12,10 +12,10 @@ from beancount.core import realization
 import beancountapi
 import libassetalloc
 
-def print_balances_tree(realacc):
+def print_balances_tree(realacc, accapi):
     print()
     print('Account balances:')
-    dformat = options_map['dcontext'].build(alignment=display_context.Align.DOT,
+    dformat = accapi.options_map['dcontext'].build(alignment=display_context.Align.DOT,
                                             reserved=2)
     realization.dump_balances(realacc, dformat, file=sys.stdout)
 
@@ -32,7 +32,7 @@ def print_asset_table(asset_buckets, headers, table):
         '{:,.0f}'.format(total_assets) ])
 
     for row in table:
-        newtable.append([' '*row[0] + row[1], 
+        newtable.append([' '*row[0] + row[1].split('_')[-1], 
             '{:.1f}%'.format(row[2]),
             '{:,.0f}'.format(row[3]) ])
 
@@ -57,7 +57,7 @@ def asset_allocation(beancount_file,
 
     print_asset_table(asset_buckets, *tabulated_buckets)
     if dump_balances_tree:
-        print_balances_tree(realacc)
+        print_balances_tree(realacc, accapi)
 
 #-----------------------------------------------------------------------------
 def main():

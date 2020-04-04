@@ -22,3 +22,5 @@ class AccAPI:
         rtypes, rrows = query.run_query(self.entries, self.options_map, sql)
         return rtypes, rrows
 
+    def get_account_open_close(self):
+        return getters.get_account_open_close(self.entries)

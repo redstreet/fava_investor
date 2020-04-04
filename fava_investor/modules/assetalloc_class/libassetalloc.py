@@ -115,19 +115,18 @@ def scale_inventory(balance, tax_adj):
     return scaled_balance
 
 
-# TODO
-# def tax_adjust(realacc, accapi):
-#     account_open_close = getters.get_account_open_close(accapi)
-#     for acc in realization.iter_children(realacc):
-#         if acc.account in account_open_close:
-#             tax_adj = account_open_close[acc.account][0].meta.get('asset_allocation_tax_adjustment', 100)
-#             acc.balance = scale_inventory(acc.balance, tax_adj)
-#     return realacc
+def tax_adjust(realacc, accapi):
+    account_open_close = accapi.get_account_open_close()
+    for acc in realization.iter_children(realacc):
+        if acc.account in account_open_close:
+            tax_adj = account_open_close[acc.account][0].meta.get('asset_allocation_tax_adjustment', 100)
+            acc.balance = scale_inventory(acc.balance, tax_adj)
+    return realacc
 
 def assetalloc(accapi, config={}):
     realacc = build_interesting_realacc(accapi, config.get('accounts_pattern', ['.*']))
-    # if not config['skip_tax_adjustment']:
-    #     tax_adjust(realacc, accapi)
+    if not config['skip_tax_adjustment']:
+        tax_adjust(realacc, accapi)
     balance = realization.compute_balance(realacc)
     vbalance = balance.reduce(convert.get_units)
     asset_buckets = bucketize(vbalance, config['base_currency'], accapi)
