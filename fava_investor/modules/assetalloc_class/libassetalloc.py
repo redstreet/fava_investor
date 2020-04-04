@@ -8,16 +8,14 @@ import sys
 from collections import defaultdict
 
 from beancount.core import convert
-from beancount.core import getters
 from beancount.core import amount
 from beancount.core import inventory
-from beancount.core import prices
 from beancount.core import realization
 from beancount.core.number import Decimal
 
-def bucketize(vbalance, base_currency, entries):
-    price_map = prices.build_price_map(entries)
-    commodity_map = getters.get_commodity_map(entries)
+def bucketize(vbalance, base_currency, accapi):
+    price_map = accapi.build_price_map()
+    commodity_map = accapi.get_commodity_map()
 
     # Main part: put each commodity's value into asset buckets
     asset_buckets = defaultdict(int)
@@ -82,7 +80,7 @@ def tabulate_asset_buckets(asset_buckets):
     return headers, table
 
 
-def build_interesting_realacc(entries, accounts):
+def build_interesting_realacc(accapi, accounts):
     def is_included_account(realacc):
         for pattern in accounts:
             if re.match(pattern, realacc.account):
@@ -91,7 +89,7 @@ def build_interesting_realacc(entries, accounts):
                 return True
         return False
 
-    realroot = realization.realize(entries)
+    realroot = accapi.realize()
 
     # first, filter out accounts that are not specified:
     realacc = realization.filter(realroot, is_included_account)
@@ -117,20 +115,21 @@ def scale_inventory(balance, tax_adj):
     return scaled_balance
 
 
-def tax_adjust(realacc, entries):
-    account_open_close = getters.get_account_open_close(entries)
-    for acc in realization.iter_children(realacc):
-        if acc.account in account_open_close:
-            tax_adj = account_open_close[acc.account][0].meta.get('asset_allocation_tax_adjustment', 100)
-            acc.balance = scale_inventory(acc.balance, tax_adj)
-    return realacc
+# TODO
+# def tax_adjust(realacc, accapi):
+#     account_open_close = getters.get_account_open_close(accapi)
+#     for acc in realization.iter_children(realacc):
+#         if acc.account in account_open_close:
+#             tax_adj = account_open_close[acc.account][0].meta.get('asset_allocation_tax_adjustment', 100)
+#             acc.balance = scale_inventory(acc.balance, tax_adj)
+#     return realacc
 
-def assetalloc(entries, options_map, query_func, config={}):
-    realacc = build_interesting_realacc(entries, config.get('accounts_pattern', ['.*']))
-    if not config['skip_tax_adjustment']:
-        tax_adjust(realacc, entries)
+def assetalloc(accapi, config={}):
+    realacc = build_interesting_realacc(accapi, config.get('accounts_pattern', ['.*']))
+    # if not config['skip_tax_adjustment']:
+    #     tax_adjust(realacc, accapi)
     balance = realization.compute_balance(realacc)
     vbalance = balance.reduce(convert.get_units)
-    asset_buckets = bucketize(vbalance, config['base_currency'], entries)
+    asset_buckets = bucketize(vbalance, config['base_currency'], accapi)
 
     return asset_buckets, tabulate_asset_buckets(asset_buckets), realacc
