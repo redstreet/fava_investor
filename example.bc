@@ -90,4 +90,8 @@ option "render_commas" "True"
       'pattern':          'Assets:Investments:[^:]*$',
       'include_children': True,
   }],
+
+  'asset_alloc_by_class' : {
+      'accounts_patterns': ['Assets:.*'],
+  },
 }"

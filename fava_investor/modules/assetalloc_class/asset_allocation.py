@@ -41,9 +41,9 @@ def print_asset_table(asset_buckets, headers, table):
         colalign=('left', 'decimal', 'right'),
         tablefmt='simple'))
 
-@argh.arg('--accounts_pattern', nargs='+')
+@argh.arg('--accounts_patterns', nargs='+')
 def asset_allocation(beancount_file,
-    accounts_pattern: 'Regex patterns of accounts to include in asset allocation.' = '',
+    accounts_patterns: 'Regex patterns of accounts to include in asset allocation.' = '',
     base_currency='USD',
     dump_balances_tree=False,
     skip_tax_adjustment=False,
@@ -51,8 +51,8 @@ def asset_allocation(beancount_file,
 
     accapi = beancountapi.AccAPI(beancount_file)
     argsmap = locals()
-    if not accounts_pattern:
-        del argsmap['accounts_pattern']
+    if not accounts_patterns:
+        del argsmap['accounts_patterns']
     asset_buckets, tabulated_buckets, realacc = libassetalloc.assetalloc(accapi, argsmap)
 
     print_asset_table(asset_buckets, *tabulated_buckets)

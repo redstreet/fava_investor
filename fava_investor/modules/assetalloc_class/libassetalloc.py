@@ -57,7 +57,6 @@ def tabulate_asset_buckets(asset_buckets):
     ''' Convert asset allocation into a hierarchical tabulation '''
     # print(balance.reduce(convert.get_units))
 
-    table = []
     total_assets = sum(asset_buckets[k] for k in asset_buckets)
     buckets = list(asset_buckets.keys())
 
@@ -70,16 +69,19 @@ def tabulate_asset_buckets(asset_buckets):
 
     retrow_types = [('hierarchy',  int),
                     ('asset_type', str),
+                    ('amount',     Decimal),
                     ('percentage', Decimal),
-                    ('amount',     Decimal)]
+                    ]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+    table = []
 
+    table.append(RetRow(0, 'total', Decimal(total_assets), Decimal(100)))
     buckets.sort()
     for bucket in buckets:
         table.append(RetRow(len(bucket.split('_')),
             bucket,
+            compute_balance_subtotal(asset_buckets, bucket),
             compute_percent_subtotal(asset_buckets, bucket, total_assets),
-            compute_balance_subtotal(asset_buckets, bucket)
             ))
             
     return retrow_types, table
@@ -128,7 +130,7 @@ def tax_adjust(realacc, accapi):
     return realacc
 
 def assetalloc(accapi, config={}):
-    realacc = build_interesting_realacc(accapi, config.get('accounts_pattern', ['.*']))
+    realacc = build_interesting_realacc(accapi, config.get('accounts_patterns', ['.*']))
 
     if not config.get('skip_tax_adjustment', False):
         tax_adjust(realacc, accapi)
