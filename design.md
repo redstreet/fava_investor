@@ -51,5 +51,7 @@ consider for implementation.
 - suck this in
 
 ### Rebalancing:
-- consider plugging into a rebalancing tool ([example1](https://github.com/AlexisDeschamps/portfolio-rebalancer))
+- consider plugging into a rebalancing tool
+  ([example1](https://github.com/AlexisDeschamps/portfolio-rebalancer),
+  [example2](https://github.com/hoostus/lazy_rebalance))
 
