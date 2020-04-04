@@ -1,35 +1,16 @@
 #!/usr/bin/env python3
-# Description: Beancount script for asset allocation reporting
+# Description: CLI for asset allocation
 
 import argparse,argcomplete,argh
 import sys
 import tabulate
 tabulate.PRESERVE_WHITESPACE = True
 
-from beancount import loader
 from beancount.core import display_context
-from beancount.core import getters
-from beancount.core import prices
 from beancount.core import realization
 
+import beancountapi
 import libassetalloc
-
-class AccAPI:
-    def __init__(self, beancount_file):
-        self.entries, _, self.options_map = loader.load_file(beancount_file)
-
-    def build_price_map(self):
-        return prices.build_price_map(self.entries)
-
-    def get_commodity_map(self):
-        return getters.get_commodity_map(self.entries)
-
-    def realize(self):
-        return realization.realize(self.entries)
-
-    def query_func(self, sql):
-        rtypes, rrows = query.run_query(self.entries, self.options_map, sql)
-        return rtypes, rrows
 
 def print_balances_tree(realacc):
     print()
@@ -68,7 +49,7 @@ def asset_allocation(beancount_file,
     skip_tax_adjustment=False,
     debug=False):
 
-    accapi = AccAPI(beancount_file)
+    accapi = beancountapi.AccAPI(beancount_file)
     argsmap = locals()
     if not accounts_pattern:
         del argsmap['accounts_pattern']
