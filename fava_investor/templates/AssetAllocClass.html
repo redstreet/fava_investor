@@ -5,21 +5,28 @@
 <h2>Portfolio: Asset Allocation by Class</h2>
 {% set results = extension.build_assetalloc_by_class(None, None) %}
 
-<h3 style="text-align:left">Summary</h3>
-<table class="sortable">
-  <thead>
-    <tr>
-      <th data-sort="string">{{ _('Summary') }}</th>
-      <th data-sort="string">{{ _('Val') }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for key, value in results[0].items() %}
-    <tr>
-      <td>{{ key }}</td>
-      <td align="right">{{ value }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+
+<h3>Candidates for tax loss harvesting</h3>
+{{ querytable.querytable(None, *results[1]) }}
 <br />
+
+
+
+<!-- <h3 style="text-align:left">Summary</h3> -->
+<!-- <table class="sortable"> -->
+<!--   <thead> -->
+<!--     <tr> -->
+<!--       <th data-sort="string">{{ _('Summary') }}</th> -->
+<!--       <th data-sort="string">{{ _('Val') }}</th> -->
+<!--     </tr> -->
+<!--   </thead> -->
+<!--   <tbody> -->
+<!--     {% for key, value in results[0].items() %} -->
+<!--     <tr> -->
+<!--       <td>{{ key }}</td> -->
+<!--       <td align="right">{{ value }}</td> -->
+<!--     </tr> -->
+<!--     {% endfor %} -->
+<!--   </tbody> -->
+<!-- </table> -->
+<!-- <br /> -->

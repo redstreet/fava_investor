@@ -2,10 +2,9 @@
 # Description: Beancount script for asset allocation reporting
 
 import argparse,argcomplete,argh
+import collections
 import re
 import sys
-
-from collections import defaultdict
 
 from beancount.core import convert
 from beancount.core import amount
@@ -19,7 +18,7 @@ def bucketize(vbalance, accapi):
     base_currency = accapi.get_operating_currency()
 
     # Main part: put each commodity's value into asset buckets
-    asset_buckets = defaultdict(int)
+    asset_buckets = collections.defaultdict(int)
     for pos in vbalance.get_positions():
         amount = convert.convert_position(pos, base_currency, price_map)
         if amount.number < 0:
@@ -69,16 +68,21 @@ def tabulate_asset_buckets(asset_buckets):
             parents.add( b.rsplit('_', i)[0] )
     buckets = list(set(list(parents) + buckets))
 
+    retrow_types = [('hierarchy',  int),
+                    ('asset_type', str),
+                    ('percentage', Decimal),
+                    ('amount',     Decimal)]
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+
     buckets.sort()
     for bucket in buckets:
-        table.append([len(bucket.split('_')),
+        table.append(RetRow(len(bucket.split('_')),
             bucket,
             compute_percent_subtotal(asset_buckets, bucket, total_assets),
             compute_balance_subtotal(asset_buckets, bucket)
-            ])
+            ))
             
-    headers=['Hierarchy', 'Asset Type', 'Percentage', 'Amount']
-    return headers, table
+    return retrow_types, table
 
 
 def build_interesting_realacc(accapi, accounts):
@@ -125,8 +129,10 @@ def tax_adjust(realacc, accapi):
 
 def assetalloc(accapi, config={}):
     realacc = build_interesting_realacc(accapi, config.get('accounts_pattern', ['.*']))
+
     if not config.get('skip_tax_adjustment', False):
         tax_adjust(realacc, accapi)
+
     balance = realization.compute_balance(realacc)
     vbalance = balance.reduce(convert.get_units)
     asset_buckets = bucketize(vbalance, accapi)
