@@ -6,8 +6,6 @@ from beancount.core.data import iter_entry_dates, Open
 from beancount.core.number import ZERO, Decimal
 
 from fava.template_filters import cost_or_value
-from fava.core.tree import Tree
-from fava.core.helpers import FavaAPIException
 
 def portfolio_accounts(tree, configs, ledger, end):
     """An account tree based on matching regex patterns."""
@@ -35,7 +33,7 @@ def by_account_name(tree, date, config, ledger):
             selected_accounts.append(acct)
 
     selected_nodes = [tree[x] for x in selected_accounts]
-    portfolio_data = _portfolio_data(selected_nodes, date, ledger, include_children)
+    portfolio_data = asset_allocation(selected_nodes, date, ledger, include_children)
     return title, portfolio_data
 
 def by_account_open_metadata(tree, date, config, ledger):
@@ -52,20 +50,12 @@ def by_account_open_metadata(tree, date, config, ledger):
             selected_accounts.append(entry.account)
 
     selected_nodes = [tree[x] for x in selected_accounts]
-    portfolio_data = _portfolio_data(selected_nodes, date, ledger, include_children)
+    portfolio_data = asset_allocation(selected_nodes, date, ledger, include_children)
     return title, portfolio_data
 
-def _portfolio_data(nodes, date, ledger, include_children):
-    """
-    Turn a portfolio of tree nodes into querytable-style data.
+def asset_allocation(nodes, date, ledger, include_children):
+    """Compute percentage of assets in each of the given nodes."""
 
-    Args:
-        nodes: Account tree nodes.
-        date: Date.
-    Return:
-        types: Tuples of column names and types as strings.
-        rows: Dictionaries of row data by column names.
-    """
     operating_currency = ledger.options["operating_currency"][0]
     acct_type = ("account", str(str))
     bal_type = ("balance", str(Decimal))
