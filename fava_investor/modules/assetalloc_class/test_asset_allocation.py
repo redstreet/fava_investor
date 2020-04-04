@@ -68,7 +68,7 @@ class TestScriptCheck(test_utils.TestCase):
         """
         with test_utils.capture('stdout', 'stderr') as (stdout, _):
             result = test_utils.run_with_args(asset_allocation.main, [filename,
-                '--accounts', 'Assets:Investments:Brokerage'])
+                '--accounts_pattern', 'Assets:Investments:Brokerage'])
         self.assertEqual(0, result)
         self.assertRegex(stdout.getvalue(), "equity *60.0% *120 *")
         self.assertRegex(stdout.getvalue(), "bond *40.0% *80")
@@ -100,7 +100,7 @@ class TestScriptCheck(test_utils.TestCase):
         """
         with test_utils.capture('stdout', 'stderr') as (stdout, _):
             result = test_utils.run_with_args(asset_allocation.main, [filename,
-                '--accounts', 'Assets:Investments:Brokerage'])
+                '--accounts_pattern', 'Assets:Investments:Brokerage'])
         self.assertEqual(0, result)
         self.assertRegex(stdout.getvalue(), "equity *60.0% *120 *")
         self.assertRegex(stdout.getvalue(), "bond *40.0% *80")
@@ -123,7 +123,7 @@ class TestScriptCheck(test_utils.TestCase):
         """
         with test_utils.capture('stdout', 'stderr') as (stdout, _):
             result = test_utils.run_with_args(asset_allocation.main, [filename,
-                '--accounts', 'Assets:Investments'])
+                '--accounts_pattern', 'Assets:Investments'])
         self.assertEqual(0, result)
         self.assertRegex(stdout.getvalue(), "equity *100.0%")
         self.assertRegex(stdout.getvalue(), " international *100.0%")
