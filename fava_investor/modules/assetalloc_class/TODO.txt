@@ -1,0 +1,11 @@
+TODO:
+----------------------------------------------------------------------------------------
+features - small:
+- additional column showing percentage of parent
+- debugging/info output
+
+fava plugin:
+- hierarchical asset allocation
+  - display flattened / tree
+- chart
+- csv output

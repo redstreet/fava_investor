@@ -34,14 +34,9 @@
 </div>
 
 
-
-
-
-
 <h3>Candidates for tax loss harvesting</h3>
 {{ querytable.querytable(None, *harvests[0]) }}
 <br />
-
 
 
 <h3>Purchases within the past 30 days creating wash sales</h3>
@@ -50,5 +45,3 @@
 {% else %}
 {{ querytable.querytable(None, *harvests[2]) }}
 {% endif %}
-
-
