@@ -18,7 +18,7 @@ def get_ledger(filename):
 
 class TestNetWorth(test_utils.TestCase):
     @test_utils.docfile
-    def test_contributions_with_multiple_currencies(self, filename: str):
+    def test_contributions(self, filename: str):
         """
         2010-01-01 open Assets:Bank
         2010-01-01 open Assets:Investments
@@ -36,7 +36,7 @@ class TestNetWorth(test_utils.TestCase):
         assert result['contributions'] == {"USD": 20, "GBP": 18}
 
     @test_utils.docfile
-    def test_transactions_with_various_splits(self, filename: str):
+    def test_contributions_with_extra_splits(self, filename: str):
         """
         2010-01-01 open Assets:Bank
         2010-01-01 open Assets:Cash
@@ -54,42 +54,35 @@ class TestNetWorth(test_utils.TestCase):
         assert result['contributions'] == {"USD": 20}
 
     @test_utils.docfile
-    def test_income(self, filename: str):
+    def test_dividends(self, filename: str):
         """
         2010-01-01 open Assets:Investments
+        2010-01-01 open Assets:Bank
         2010-01-01 open Income:Dividends
         2010-01-01 open Income:Rent
 
-        2010-02-01 * "dividend"
+        2010-02-01 * "reinvested dividends"
           Income:Dividends  -20 USD
+          Income:Dividends  -21 GBP
           Assets:Investments
 
         2010-02-01 * "irrelevant income"
           Income:Rent  -500 USD
           Assets:Investments
-        """
 
-        result = nw.get_net_worth(get_ledger(filename))
-        assert result['dividends_reinvested'] == {"USD": 20}
-
-    @test_utils.docfile
-    def test_appreciation(self, filename: str):
-        """
-        2010-01-01 open Assets:Investments
-        2010-01-01 open Assets:Bank
-
-        2010-02-01 * "buy"
-          Assets:Investments  1 STK {12 USD}
+        2010-02-01 * "withdrawn dividends"
+          Income:Dividends  -10 USD
+          Income:Dividends  -11 GBP
           Assets:Bank
-
-        2010-02-02 price  STK  13 USD
         """
 
         result = nw.get_net_worth(get_ledger(filename))
-        assert result['gains_unrealized'] == {"USD": 1}
+        assert result['dividends_reinvested'] == {"USD": 20, "GBP": 21}
+        assert result['dividends_withdrawn'] == {"USD": 10, "GBP": 11}
+        assert result['dividends_total'] == {"USD": 30, "GBP": 32}
 
     @test_utils.docfile
-    def test_appreciation_multiple_currencies(self, filename: str):
+    def test_gains_unrealized(self, filename: str):
         """
         2010-01-01 open Assets:Investments
         2010-01-01 open Assets:Bank
