@@ -19,23 +19,20 @@ def print_balances_tree(realacc, accapi):
                                             reserved=2)
     realization.dump_balances(realacc, dformat, file=sys.stdout)
 
-def print_asset_table(asset_buckets, headers, table):
+def print_asset_table(asset_buckets, row_types, table):
     def tree_indent(a):
         splits = a.split('_')
         spaces = len(splits)
         return ' '*spaces + splits[-1]
 
     newtable = []
-    total_assets = sum(asset_buckets[k] for k in asset_buckets)
-    newtable.append(["total",
-        '{:.1f}%'.format(100),
-        '{:,.0f}'.format(total_assets) ])
-
     for row in table:
         newtable.append([' '*row[0] + row[1].split('_')[-1], 
-            '{:.1f}%'.format(row[2]),
-            '{:,.0f}'.format(row[3]) ])
+            '{:,.0f}'.format(row[2]),
+            '{:.1f}%'.format(row[3]),
+            ])
 
+    headers = [i[0] for i in row_types]
     print(tabulate.tabulate(newtable, 
         headers=headers[1:],
         colalign=('left', 'decimal', 'right'),
@@ -49,8 +46,8 @@ def asset_allocation(beancount_file,
     skip_tax_adjustment=False,
     debug=False):
 
-    accapi = beancountapi.AccAPI(beancount_file)
     argsmap = locals()
+    accapi = beancountapi.AccAPI(beancount_file, argsmap)
     if not accounts_patterns:
         del argsmap['accounts_patterns']
     asset_buckets, tabulated_buckets, realacc = libassetalloc.assetalloc(accapi, argsmap)

@@ -6,8 +6,9 @@ from beancount.core import prices
 from beancount.core import realization
 
 class AccAPI:
-    def __init__(self, beancount_file):
+    def __init__(self, beancount_file, options):
         self.entries, _, self.options_map = loader.load_file(beancount_file)
+        self.options = options
 
     def build_price_map(self):
         return prices.build_price_map(self.entries)
@@ -23,8 +24,7 @@ class AccAPI:
         return rtypes, rrows
 
     def get_operating_currency(self):
-        # TODO
-        import pdb; pdb.set_trace()
+        return self.options['base_currency']
 
     def get_account_open_close(self):
         return getters.get_account_open_close(self.entries)
