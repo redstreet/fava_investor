@@ -3,9 +3,9 @@ from typing import Dict
 
 from beancount.utils import test_utils
 
-from fava_investor.modules.net_worth import net_worth as nw
-from fava_investor.modules.net_worth.net_worth import InventoryTools
-from fava_investor.modules.net_worth.test_common import get_ledger, ACCOUNTS_CONFIG
+from fava_investor.modules.performance import performance as nw
+from fava_investor.modules.performance.performance import InventoryTools
+from fava_investor.modules.performance.test_common import get_ledger, ACCOUNTS_CONFIG
 
 
 class TestNetWorth(test_utils.TestCase):

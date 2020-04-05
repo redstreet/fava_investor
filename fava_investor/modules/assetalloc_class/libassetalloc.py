@@ -53,8 +53,8 @@ def compute_balance_subtotal(asset_buckets, asset):
     return subtotal
 
 
-def tabulate_asset_buckets(asset_buckets):
-    ''' Convert asset allocation into a hierarchical tabulation '''
+def hierarchicalize(asset_buckets):
+    ''' Convert asset allocation into a hierarchy of classes and percentages'''
     # print(balance.reduce(convert.get_units))
 
     total_assets = sum(asset_buckets[k] for k in asset_buckets)
@@ -86,6 +86,15 @@ def tabulate_asset_buckets(asset_buckets):
             
     return retrow_types, table
 
+def formatted_hierarchy(rtypes, table):
+    def tree_indent(level, label):
+        splits = label.split('_')
+        return '-'*level + splits[-1]
+
+    retrow_types = rtypes[1:]
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+    newtable = [RetRow(tree_indent(r[0], r[1]), *r[2:]) for r in table]
+    return retrow_types, newtable
 
 def build_interesting_realacc(accapi, accounts):
     def is_included_account(realacc):
@@ -139,4 +148,6 @@ def assetalloc(accapi, config={}):
     vbalance = balance.reduce(convert.get_units)
     asset_buckets = bucketize(vbalance, accapi)
 
-    return asset_buckets, tabulate_asset_buckets(asset_buckets), realacc
+    hierarchicalized = hierarchicalize(asset_buckets)
+    formatted = formatted_hierarchy(*hierarchicalized)
+    return asset_buckets, hierarchicalized, formatted, realacc

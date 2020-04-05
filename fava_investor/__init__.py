@@ -3,37 +3,13 @@
 
 from fava.ext import FavaExtensionBase
 
-from .modules import net_worth
-from .modules.net_worth.net_worth import AccountsConfig
+from .modules.performance.performance import AccountsConfig
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
+from .modules.performance import performance
 from .modules.aa_byaccount import libaaacc
+from .common.favainvestorapi import *
 
-from beancount.core import getters
-
-
-class FavaInvestorAPI:
-    def __init__(self, ledger):
-        self.ledger = ledger
-
-    def build_price_map(self):
-        return self.ledger.price_map
-
-    def get_commodity_map(self):
-        return getters.get_commodity_map(self.ledger.entries)
-
-    def realize(self):
-        return self.ledger.root_account
-
-    def query_func(self, sql):
-        contents, rtypes, rrows = self.ledger.query_shell.execute_query(sql)
-        return rtypes, rrows
-
-    def get_operating_currency(self):
-        return self.ledger.options["operating_currency"][0] #TBD: error check
-
-    def get_account_open_close(self):
-        return getters.get_account_open_close(self.ledger.entries)
 
 # -----------------------------------------------------------------------------------------------------------
 class TaxLossHarvester(FavaExtensionBase):  # pragma: no cover
@@ -62,21 +38,9 @@ class Contributions(FavaExtensionBase):  # pragma: no cover
 
     def contributions(self, begin=None, end=None):
         """An account tree based on matching regex patterns."""
-        from fava_investor.modules.net_worth import net_worth as nw
 
-        contributions = nw.contributions(self.ledger, self.config.get('net_worth', []))
+        contributions = performance.contributions(self.ledger, self.config.get('performance', []))
         return contributions
-
-# -----------------------------------------------------------------------------------------------------------
-class NetWorth(FavaExtensionBase):  # pragma: no cover
-    report_title = "Investor: NetWorth"
-
-    def accounts_config(self, begin=None, end=None):
-        return AccountsConfig.from_dict(self.ledger, self.config.get('net_worth', []))
-
-    def get_net_worth(self, begin=None, end=None):
-
-        return net_worth.report(self.ledger, self.config.get('net_worth', []))
 
 # -----------------------------------------------------------------------------------------------------------
 

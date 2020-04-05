@@ -5,8 +5,8 @@ from beancount.ops import validation
 from beancount.utils import test_utils
 from fava.core import FavaLedger
 
-from fava_investor.modules.net_worth import net_worth as nw
-from fava_investor.modules.net_worth.net_worth import AccountsConfig
+from fava_investor.modules.performance import performance as nw
+from fava_investor.modules.performance.performance import AccountsConfig
 
 
 def get_ledger(filename):
