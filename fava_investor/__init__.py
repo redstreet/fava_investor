@@ -3,6 +3,7 @@
 
 from fava.ext import FavaExtensionBase
 
+from .modules.net_worth.net_worth import AccountsConfig
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.aa_byaccount import libaaacc
@@ -56,11 +57,14 @@ class AssetAllocClass(FavaExtensionBase):  # pragma: no cover
 class NetWorth(FavaExtensionBase):  # pragma: no cover
     report_title = "Investor: NetWorth"
 
+    def accounts_config(self, begin=None, end=None):
+        return AccountsConfig.from_dict(self.ledger, self.config.get('net_worth', []))
+
     def get_net_worth(self, begin=None, end=None):
         """An account tree based on matching regex patterns."""
         from fava_investor.modules.net_worth import net_worth as nw
 
-        return nw.get_net_worth(self.ledger)
+        return nw.report(self.ledger, self.config.get('net_worth', []))
 
 # -----------------------------------------------------------------------------------------------------------
 

@@ -75,6 +75,17 @@ option "render_commas" "True"
  Assets:Investments:Taxable:FreeTrader 500 HOOLI {800 USD}
  Assets:Bank
 
+2020-02-22 * "Buy stock"
+ Assets:Investments:Taxable:FreeTrader 1 GAIN {10 USD}
+ Assets:Bank
+
+2020-02-23 price GAIN   12   USD
+
+2020-02-24 * "Sell with gain"
+ Assets:Investments:Taxable:FreeTrader -1 GAIN {10 USD}
+ Assets:Bank  12 USD
+ Income:Gains
+
 2020-03-08 price BNCT   150   USD
 2020-03-08 price COFE    95   USD
 2020-03-08 price UPUP    25   USD
@@ -100,7 +111,10 @@ option "render_commas" "True"
       'pattern':          'Assets:Investments:[^:]*$',
       'include_children': True,
   }],
-
+  'net_worth': {
+      'inv':              'Assets:Investments',
+      'internal':         ['Income', 'Expenses'],
+  },
   'asset_alloc_by_class' : {
       'accounts_patterns': ['Assets:.*'],
   },
