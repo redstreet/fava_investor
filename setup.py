@@ -6,8 +6,8 @@ with open(path.join(path.dirname(__file__), 'README.md')) as readme:
 
 setup(
     name='fava-investor',
-    version='1.0',
-    description='Fava Investor Plugins for beancout',
+    version='0.1',
+    description='Investor: fava extension and beancount libraries for investing',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/redstreet/fava-investor',
     author='Red S',
