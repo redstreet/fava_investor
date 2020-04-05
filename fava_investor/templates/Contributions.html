@@ -1,0 +1,22 @@
+{% import '_tree_table.html' as tree_table with context %}
+<i>Investor: Reports, analyses, and tools for investments.</i>
+
+<h2>Contributions</h2>
+{% set log, result = extension.contributions() %}
+
+<div>
+    {% for currency, value in result.items() %}
+    <p>{{ value }} {{ currency }}</p>
+    {% endfor %}
+</div>
+
+<table>
+    {% for transaction, amount, balance in log %}
+    <tr>
+        <td>{{ transaction }}</td>
+        <td>{{ amount }}</td>
+        <td>{{ balance }}</td>
+    </tr>
+    {% endfor %}
+</table>
+

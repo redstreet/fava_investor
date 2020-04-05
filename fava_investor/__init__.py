@@ -3,12 +3,15 @@
 
 from fava.ext import FavaExtensionBase
 
+from .modules import net_worth
 from .modules.net_worth.net_worth import AccountsConfig
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.aa_byaccount import libaaacc
 
 from beancount.core import getters
+
+
 class FavaInvestorAPI:
     def __init__(self, ledger):
         self.ledger = ledger
@@ -54,6 +57,17 @@ class AssetAllocClass(FavaExtensionBase):  # pragma: no cover
         return retval
 
 # -----------------------------------------------------------------------------------------------------------
+class Contributions(FavaExtensionBase):  # pragma: no cover
+    report_title = "Investor: contributions"
+
+    def contributions(self, begin=None, end=None):
+        """An account tree based on matching regex patterns."""
+        from fava_investor.modules.net_worth import net_worth as nw
+
+        contributions = nw.contributions(self.ledger, self.config.get('net_worth', []))
+        return contributions
+
+# -----------------------------------------------------------------------------------------------------------
 class NetWorth(FavaExtensionBase):  # pragma: no cover
     report_title = "Investor: NetWorth"
 
@@ -61,10 +75,8 @@ class NetWorth(FavaExtensionBase):  # pragma: no cover
         return AccountsConfig.from_dict(self.ledger, self.config.get('net_worth', []))
 
     def get_net_worth(self, begin=None, end=None):
-        """An account tree based on matching regex patterns."""
-        from fava_investor.modules.net_worth import net_worth as nw
 
-        return nw.report(self.ledger, self.config.get('net_worth', []))
+        return net_worth.report(self.ledger, self.config.get('net_worth', []))
 
 # -----------------------------------------------------------------------------------------------------------
 

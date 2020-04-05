@@ -1,7 +1,10 @@
+import copy
 import re
 from decimal import Decimal
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 
+from beancount.core.amount import Amount
+from beancount.core.data import Transaction, Posting
 from beancount.core.inventory import Inventory
 from fava.core import FavaLedger
 
@@ -98,7 +101,6 @@ def calculate_unrealised_gains(ledger: FavaLedger) -> Inventory:
 
 def report(ledger: FavaLedger, acc_config: ConfigDict) -> Dict[str, Dict[str, Decimal]]:
     acc = AccountsConfig.from_dict(ledger, acc_config)
-    contributions = query_get_one(ledger, f"select sum(cost(position)) where account {acc.sql_match_value()}")
 
     dividends_all = InventoryTools.invert(
         query_get_one(ledger, f"select sum(cost(position)) where account {acc.sql_match_internal()}")
@@ -116,7 +118,6 @@ def report(ledger: FavaLedger, acc_config: ConfigDict) -> Dict[str, Dict[str, De
                     and joinstr(other_accounts) {acc.sql_match_value()}")
 
     inv_dict = {
-        'contributions': contributions,
         'dividends_total': dividends_all,
         'dividends_reinvested': dividends_reinvested,
         'dividends_withdrawn': InventoryTools.subtract(dividends_all, dividends_reinvested),
@@ -124,3 +125,45 @@ def report(ledger: FavaLedger, acc_config: ConfigDict) -> Dict[str, Dict[str, De
         'gains_realized': InventoryTools.invert(gains_realized)
     }
     return {k: InventoryTools.to_dict(v) for (k, v) in inv_dict.items()}
+
+
+def is_value(t: Transaction, accounts: AccountsConfig):
+    for p in t.postings:
+        p: Posting
+        if p.account in accounts.value:
+            return True
+    return False
+
+
+def is_external(t: Transaction, accounts: AccountsConfig):
+    for p in t.postings:
+        p: Posting
+        if p.account in accounts.external:
+            return True
+    return False
+
+
+ChangeLog = List[Tuple[Transaction, Inventory, Inventory]]
+
+
+def contributions(ledger: FavaLedger, acc_config: ConfigDict) -> Tuple[ChangeLog, Dict]:
+    accounts = AccountsConfig.from_dict(ledger, acc_config)
+
+    total = Inventory()
+    log = []
+
+    for entry in ledger.entries:
+        if not isinstance(entry, Transaction):
+            continue
+
+        if is_value(entry, accounts) and is_external(entry, accounts):
+            contribution = Inventory()
+            for p in entry.postings:
+                p: Posting
+                if p.account in accounts.value:
+                    amount = Amount(p.cost.number if p.units.number >= 0 else -p.cost.number, p.cost.currency)
+                    contribution.add_amount(amount)
+
+            log.append((entry, contribution, copy.copy(total.add_inventory(contribution))))
+
+    return log, InventoryTools.to_dict(Inventory() if len(log) == 0 else log[len(log) - 1][2])
