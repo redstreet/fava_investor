@@ -24,7 +24,7 @@ class AccountsConfig:
 
     @classmethod
     def from_dict(cls, ledger: FavaLedger, config: ConfigDict) -> 'AccountsConfig':
-        re_inv = prepare_regexp(config['inv'])
+        re_inv = prepare_regexp(config['value'])
         re_int = prepare_regexp(config['internal'])
         inv = []
         internal = []
@@ -180,7 +180,7 @@ def contributions(ledger: FavaLedger, acc_config: ConfigDict) -> ChangeLogAndSum
                     if p.cost is None:          # its cash transfer
                         contribution.add_amount(p.units)
                     elif p.units.number > 0:       # its stock purchase
-                        contribution.add_amount(Amount(p.cost.number, p.cost.currency))
+                        contribution.add_amount(Amount(p.cost.number*p.units.number, p.cost.currency))
 
             if contribution.get_positions():
                 log.append((entry, None, contribution, copy.copy(total.add_inventory(contribution))))

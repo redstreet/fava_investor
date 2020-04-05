@@ -26,7 +26,6 @@ option "render_commas" "True"
  asset_allocation_bond_municipal: 10
  asset_allocation_realestate: 20
 
-
 2020-02-01 * "Buy stock"
  Assets:Investments:Taxable:XTrade 7000 BNCT {200 USD}
  Assets:Bank
@@ -111,8 +110,8 @@ option "render_commas" "True"
       'pattern':          'Assets:Investments:[^:]*$',
       'include_children': True,
   }],
-  'net_worth': {
-      'inv':              'Assets:Investments',
+  'performance': {
+      'value':              'Assets:Investments',
       'internal':         ['Income', 'Expenses'],
   },
   'asset_alloc_by_class' : {
