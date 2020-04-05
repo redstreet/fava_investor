@@ -8,6 +8,7 @@ from beancount.core.data import Transaction, Posting
 from beancount.core.inventory import Inventory
 from fava.core import FavaLedger
 
+
 ConfigDict = Dict[str, Union[str, List[str]]]
 
 
@@ -81,50 +82,50 @@ class InventoryTools:
         for p in inventory.get_positions():
             result[p.units.currency] = p.units.number
         return result
-
-
-def query_get_one(ledger, query) -> Inventory:
-    result = ledger.query_shell.execute_query(query)
-    rows = result[2]
-    if len(rows) == 0:
-        return Inventory()
-    if len(rows) > 1:
-        raise ValueError('oops?')
-    return rows[0][0]
-
-
-def calculate_unrealised_gains(ledger: FavaLedger) -> Inventory:
-    costs = query_get_one(ledger, "select sum(cost(position)) where account ~ 'investments'")
-    values = query_get_one(ledger, "select sum(value(position)) where account ~ 'investments'")
-    return InventoryTools.subtract(values, costs)
-
-
-def report(ledger: FavaLedger, acc_config: ConfigDict) -> Dict[str, Dict[str, Decimal]]:
-    acc = AccountsConfig.from_dict(ledger, acc_config)
-
-    dividends_all = InventoryTools.invert(
-        query_get_one(ledger, f"select sum(cost(position)) where account {acc.sql_match_internal()}")
-    )
-    dividends_reinvested = query_get_one(
-        ledger, f"select sum(cost(position)) \
-                    where account {acc.sql_match_value()} \
-                    and joinstr(other_accounts) {acc.sql_match_internal()}")
-
-    # TODO query should use list of internal and value accounts.
-    #  Is condition ((VALUE + INTERNAL) and SELLING) enough to filter these?
-    gains_realized = query_get_one(
-        ledger, f"select sum(cost(position)) \
-                    where account ~ 'gains' \
-                    and joinstr(other_accounts) {acc.sql_match_value()}")
-
-    inv_dict = {
-        'dividends_total': dividends_all,
-        'dividends_reinvested': dividends_reinvested,
-        'dividends_withdrawn': InventoryTools.subtract(dividends_all, dividends_reinvested),
-        'gains_unrealized': calculate_unrealised_gains(ledger),
-        'gains_realized': InventoryTools.invert(gains_realized)
-    }
-    return {k: InventoryTools.to_dict(v) for (k, v) in inv_dict.items()}
+#
+#
+# def query_get_one(ledger, query) -> Inventory:
+#     result = ledger.query_shell.execute_query(query)
+#     rows = result[2]
+#     if len(rows) == 0:
+#         return Inventory()
+#     if len(rows) > 1:
+#         raise ValueError('oops?')
+#     return rows[0][0]
+#
+#
+# def calculate_unrealised_gains(ledger: FavaLedger) -> Inventory:
+#     costs = query_get_one(ledger, "select sum(cost(position)) where account ~ 'investments'")
+#     values = query_get_one(ledger, "select sum(value(position)) where account ~ 'investments'")
+#     return InventoryTools.subtract(values, costs)
+#
+#
+# def report(ledger: FavaLedger, acc_config: ConfigDict) -> Dict[str, Dict[str, Decimal]]:
+#     acc = AccountsConfig.from_dict(ledger, acc_config)
+#
+#     dividends_all = InventoryTools.invert(
+#         query_get_one(ledger, f"select sum(cost(position)) where account {acc.sql_match_internal()}")
+#     )
+#     dividends_reinvested = query_get_one(
+#         ledger, f"select sum(cost(position)) \
+#                     where account {acc.sql_match_value()} \
+#                     and joinstr(other_accounts) {acc.sql_match_internal()}")
+#
+#     # TODO query should use list of internal and value accounts.
+#     #  Is condition ((VALUE + INTERNAL) and SELLING) enough to filter these?
+#     gains_realized = query_get_one(
+#         ledger, f"select sum(cost(position)) \
+#                     where account ~ 'gains' \
+#                     and joinstr(other_accounts) {acc.sql_match_value()}")
+#
+#     inv_dict = {
+#         'dividends_total': dividends_all,
+#         'dividends_reinvested': dividends_reinvested,
+#         'dividends_withdrawn': InventoryTools.subtract(dividends_all, dividends_reinvested),
+#         'gains_unrealized': calculate_unrealised_gains(ledger),
+#         'gains_realized': InventoryTools.invert(gains_realized)
+#     }
+#     return {k: InventoryTools.to_dict(v) for (k, v) in inv_dict.items()}
 
 
 def is_value(t: Transaction, accounts: AccountsConfig):
@@ -143,10 +144,25 @@ def is_external(t: Transaction, accounts: AccountsConfig):
     return False
 
 
-ChangeLog = List[Tuple[Transaction, Inventory, Inventory]]
+ChangeLog = List[
+    Tuple[
+        Transaction,
+        None,           # just for compatibility with _journal_table.html
+        Inventory,      # change from just this Transaction
+        Inventory       # balance from all previous entries
+    ]
+]
+
+ChangeLogAndSum = Tuple[
+    ChangeLog,          # changelog with all transactions changes and balance of contributions
+    Inventory           # inventory summarising all contributions
+]
 
 
-def contributions(ledger: FavaLedger, acc_config: ConfigDict) -> Tuple[ChangeLog, Dict]:
+def contributions(ledger: FavaLedger, acc_config: ConfigDict) -> ChangeLogAndSum:
+    """
+    :return: tuple with changelog fitting macros _journal_table.html and sum of all contributions in dict
+    """
     accounts = AccountsConfig.from_dict(ledger, acc_config)
 
     total = Inventory()
@@ -160,10 +176,13 @@ def contributions(ledger: FavaLedger, acc_config: ConfigDict) -> Tuple[ChangeLog
             contribution = Inventory()
             for p in entry.postings:
                 p: Posting
-                if p.account in accounts.value:
-                    amount = Amount(p.cost.number if p.units.number >= 0 else -p.cost.number, p.cost.currency)
-                    contribution.add_amount(amount)
+                if p.account in accounts.value:  # its value acc posting
+                    if p.cost is None:          # its cash transfer
+                        contribution.add_amount(p.units)
+                    elif p.units.number > 0:       # its stock purchase
+                        contribution.add_amount(Amount(p.cost.number, p.cost.currency))
 
-            log.append((entry, contribution, copy.copy(total.add_inventory(contribution))))
+            if contribution.get_positions():
+                log.append((entry, None, contribution, copy.copy(total.add_inventory(contribution))))
 
-    return log, InventoryTools.to_dict(Inventory() if len(log) == 0 else log[len(log) - 1][2])
+    return log, Inventory() if len(log) == 0 else log[len(log) - 1][3]
