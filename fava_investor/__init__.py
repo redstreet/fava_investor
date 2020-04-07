@@ -1,11 +1,10 @@
-"""Fava Investor: Investing related reports and tools for Beancount/Fava
-"""
+"""Fava Investor: Investing related reports and tools for Beancount/Fava"""
 
 from fava.ext import FavaExtensionBase
 
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
-from .modules.aa_byaccount import libaaacc
+from .modules.assetalloc_account import libaaacc
 from .common.favainvestorapi import *
 
 class Investor(FavaExtensionBase):  # pragma: no cover
