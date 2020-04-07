@@ -4,18 +4,19 @@
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
-  {% for key, label in [('aa', _('Asset Allocation')), ('tlh', _('Tax Loss Harvestor')) ] %}
+  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('tlh', _('Tax Loss Harvestor')) ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
 </div>
 
 
-{% if (module == 'aa') %}
+{% if (module == 'aa_class') %}
   <h2>Portfolio: Asset Allocation by Class</h2>
   {% set results = extension.build_assetalloc_by_class(None, None) %}
   {{ querytable.querytable(None, *results[2]) }}
+{% endif %}
 
-
+{% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
   {% for portfolio in extension.build_aa_by_account(None, None) %}
       <h3>{{portfolio[0]}}</h3>
