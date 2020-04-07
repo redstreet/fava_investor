@@ -22,4 +22,13 @@ Fava.
 ### Contributing code
 Fork the repo on github and submit pull requests.
 
+See Philosophy section below before you contribute
+
+### Contribution Guidelines
+
+Each module must include a Fava plugin, a Beancount library, and a Beancount based CLI
+(command line interface). APIs in `fava_investor/common/{favainvestorapi.py,
+beancountinvestorapi.py}` allow for easily developing these three interfaces to the
+library. The goal is to keep fava or beancount specific code neatly separated. Take a
+look at the `tlh` module to understand how to approach this.
 
