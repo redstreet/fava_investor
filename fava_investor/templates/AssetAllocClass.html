@@ -1,9 +1,0 @@
-{% import "_query_table.html" as querytable with context %}
-
-<i>Investor: Reports, analyses, and tools for investments.</i>
-
-<h2>Portfolio: Asset Allocation by Class</h2>
-{% set results = extension.build_assetalloc_by_class(None, None) %}
-{{ querytable.querytable(None, *results[2]) }}
-<br />
-

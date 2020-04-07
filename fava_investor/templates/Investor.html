@@ -1,0 +1,71 @@
+{% import "_query_table.html" as querytable with context %}
+
+<i>Investor: Reports, analyses, and tools for investments.</i>
+
+{% set module = request.args.get('module') %}
+<div class="headerline">
+  {% for key, label in [('aa', _('Asset Allocation')), ('tlh', _('Tax Loss Harvestor')) ] %}
+  <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
+  {% endfor %}
+</div>
+
+
+{% if (module == 'aa') %}
+  <h2>Portfolio: Asset Allocation by Class</h2>
+  {% set results = extension.build_assetalloc_by_class(None, None) %}
+  {{ querytable.querytable(None, *results[2]) }}
+
+
+  <h2>Portfolio: Asset Allocation by Accounts</h2>
+  {% for portfolio in extension.build_aa_by_account(None, None) %}
+      <h3>{{portfolio[0]}}</h3>
+      {{ querytable.querytable(None, *portfolio[1]) }}
+      <br />
+  {% endfor %}
+{% endif %}
+
+{% if (module == 'tlh') %}
+  <h2>Tax Loss Harvester</h2>
+  {% set harvests = extension.build_tlh_tables(None, None) %}
+
+  <div class="row">
+    <div class="column">
+      <h3 style="text-align:left">Summary</h3>
+      <table class="sortable">
+        <thead>
+          <tr>
+            <th data-sort="string">{{ _('Summary') }}</th>
+            <th data-sort="string">{{ _('Val') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key, value in harvests[1].items() %}
+          <tr>
+            <td>{{ key }}</td>
+            <td align="right">{{ value }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <br />
+    </div>
+    <div class="column">
+      <h3 style="text-align:left">Losses by Commodity</h3>
+      {{ querytable.querytable(None, *harvests[3]) }}
+      <br />
+    </div>
+  </div>
+
+
+  <h3>Candidates for tax loss harvesting</h3>
+  {{ querytable.querytable(None, *harvests[0]) }}
+  <br />
+
+
+  <h3>Purchases within the past 30 days creating wash sales</h3>
+  {% if harvests[2][0]|length == 0 %}
+  <p>None found!</p>
+  {% else %}
+  {{ querytable.querytable(None, *harvests[2]) }}
+  {% endif %}
+{% endif %}
