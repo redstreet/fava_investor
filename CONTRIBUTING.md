@@ -29,6 +29,11 @@ See Philosophy section below before you contribute
 Each module must include a Fava plugin, a Beancount library, and a Beancount based CLI
 (command line interface). APIs in `fava_investor/common/{favainvestorapi.py,
 beancountinvestorapi.py}` allow for easily developing these three interfaces to the
-library. The goal is to keep fava or beancount specific code neatly separated. Take a
-look at the `tlh` module to understand how to approach this.
+library. The goal is to keep fava or beancount specific code neatly separated.
 
+Take a look at the `tlh` module to understand how to approach this. It is divided into three files:
+- `libtlh.py`: main library, agnostic to Fava/beancount. Calls the functions it needs via common/*investorapi
+- `tlh.py`: command line client that calls the library
+- fava_investor/`__init.py__`: fava interface that calls the library
+
+Of course, tests and html templates exist in their own files.
