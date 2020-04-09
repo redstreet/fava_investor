@@ -78,7 +78,10 @@ option "render_commas" "True"
      'loss_threshold': 50,
      'wash_pattern': 'Assets:Investments',
   },
-
+  'performance': {
+     'value': 'Assets:Investments',
+     'internal': []
+  },
   'asset_alloc_by_account': [{
       'title':            'Allocation by Account',
       'pattern_type':     'account_name',

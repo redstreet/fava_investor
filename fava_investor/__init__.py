@@ -1,12 +1,16 @@
 """Fava Investor: Investing related reports and tools for Beancount/Fava"""
 
 from fava.ext import FavaExtensionBase
+from fava.util.date import Interval
 
+from .modules.performance.accounts_config import AccountsConfig
+from .modules.performance.balances import interval_balances
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
 from .modules.cashdrag import libcashdrag
 from .common.favainvestorapi import *
+
 
 class Investor(FavaExtensionBase):  # pragma: no cover
     report_title = "Investor"
@@ -44,3 +48,10 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     def build_tlh_tables(self, begin=None, end=None):
         return libtlh.get_tables(self.query_func, self.config.get('tlh', {}))
 
+    # Balances
+    # -----------------------------------------------------------------------------------------------------------
+    def get_balances(self, interval: Interval):
+        interval_count = 3
+        accounts = AccountsConfig.from_dict(self.ledger, self.config.get('performance', []))
+        return interval_balances(self.ledger, accounts.value, interval,
+                                 self.ledger.options['name_assets'], True, interval_count)

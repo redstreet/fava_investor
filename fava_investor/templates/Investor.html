@@ -4,11 +4,10 @@
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
-  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')) ] %}
+  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')), ('balances', _('Balances')) ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
 </div>
-
 
 {% if (module == 'aa_class') %}
   <h2>Portfolio: Asset Allocation by Class</h2>
@@ -77,3 +76,17 @@
   {{ querytable.querytable(None, *harvests[2]) }}
   {% endif %}
 {% endif %}
+
+{% if (module == 'balances') %}
+    <h2>Portfolio: Balances</h2>
+
+    {% import '_tree_table.html' as tree_table with context %}
+    {% set account_name = ledger.options['name_assets'] %}
+    <div class="droptarget" data-account-name="{{ account_name }}">
+        {% set interval_balances, dates = extension.get_balances(g.interval) %}
+        {% if interval_balances %}
+            {{ tree_table.account_tree(account_name, interval_balances, dates, accumulate) }}
+        {% endif %}
+    </div>
+{% endif %}
+
