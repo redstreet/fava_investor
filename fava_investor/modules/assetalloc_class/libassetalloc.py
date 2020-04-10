@@ -54,7 +54,7 @@ def compute_balance_subtotal(asset_buckets, asset):
 
 
 def hierarchicalize(asset_buckets):
-    ''' Convert asset allocation into a hierarchy of classes and percentages'''
+    """Convert asset allocation into a hierarchy of classes and percentages"""
     # print(balance.reduce(convert.get_units))
 
     total_assets = sum(asset_buckets[k] for k in asset_buckets)
@@ -122,15 +122,16 @@ def build_interesting_realacc(accapi, accounts):
             acc.balance = inventory.Inventory()
     return realacc
 
-def scale_inventory(balance, tax_adj):
-    '''Scale inventory by tax adjustment'''
-    scaled_balance = inventory.Inventory()
-    for pos in balance.get_positions():
-        scaled_pos = amount.Amount(pos.units.number * (Decimal(tax_adj/100)), pos.units.currency)
-        scaled_balance.add_amount(scaled_pos)
-    return scaled_balance
 
 def tax_adjust(realacc, accapi):
+    def scale_inventory(balance, tax_adj):
+        """Scale inventory by tax adjustment"""
+        scaled_balance = inventory.Inventory()
+        for pos in balance.get_positions():
+            scaled_pos = amount.Amount(pos.units.number * (Decimal(tax_adj/100)), pos.units.currency)
+            scaled_balance.add_amount(scaled_pos)
+        return scaled_balance
+
     account_open_close = accapi.get_account_open_close()
     for acc in realization.iter_children(realacc):
         if acc.account in account_open_close:
@@ -141,7 +142,7 @@ def tax_adjust(realacc, accapi):
 def assetalloc(accapi, config={}):
     realacc = build_interesting_realacc(accapi, config.get('accounts_patterns', ['.*']))
 
-    if not config.get('skip_tax_adjustment', False):
+    if config.get('skip_tax_adjustment', False) is True:
         tax_adjust(realacc, accapi)
 
     balance = realization.compute_balance(realacc)
