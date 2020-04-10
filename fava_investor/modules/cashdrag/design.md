@@ -4,6 +4,7 @@
 ### Config:
   - whitelist account pattern
   - blacklist account pattern
+  - minimum threshold (tricky with multiple currencies)
   - list of money market tickers to be considered cash
     - or pick this up from metadata?
 
