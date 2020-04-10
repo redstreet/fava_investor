@@ -54,4 +54,4 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         interval_count = 3
         accounts = AccountsConfig.from_dict(self.ledger, self.config.get('performance', []))
         return interval_balances(self.ledger, accounts.value, interval,
-                                 self.ledger.options['name_assets'], True, interval_count)
+                                 True, interval_count)

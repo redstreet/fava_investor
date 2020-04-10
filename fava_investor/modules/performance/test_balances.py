@@ -20,10 +20,10 @@ def get_ledger(filename):
     return ledger
 
 
-class TestAccountsConfig(test_utils.TestCase):
+class TestBalances(test_utils.TestCase):
     @test_utils.docfile
     @freeze_time("2020-03-10")
-    def test_single_accounts(self, filename: str):
+    def test_cash(self, filename: str):
         """
         2010-01-01 open Assets:Bank
         2010-01-01 open Assets:Account
@@ -41,7 +41,8 @@ class TestAccountsConfig(test_utils.TestCase):
             "value": 'Assets:Account',
             "internal": []
         })
-        balances, dates = interval_balances(ledger, accounts.value, Interval.MONTH, 'Assets')
+
+        balances, dates = interval_balances(ledger, accounts.value, Interval.MONTH)
         assert dates[0] == (datetime.date(2020, 3, 1), datetime.date(2020, 3, 2))
         assert dates[1] == (datetime.date(2020, 2, 1), datetime.date(2020, 3, 1))
         assert dates[2] == (datetime.date(2020, 1, 1), datetime.date(2020, 2, 1))
@@ -49,8 +50,6 @@ class TestAccountsConfig(test_utils.TestCase):
         assert balances[0]['Assets']['Account'].balance.to_string() == "(40 GBP)"
         assert balances[1]['Assets']['Account'].balance.to_string() == "(20 GBP)"
         assert balances[2]['Assets']['Account'].balance.to_string() == "(20 GBP)"
-
-        assert isinstance(accounts, AccountsConfig)
 
     @test_utils.docfile
     @freeze_time("2020-03-10")
@@ -68,9 +67,7 @@ class TestAccountsConfig(test_utils.TestCase):
             "value": 'Assets:Account',
             "internal": []
         })
-        balances, dates = interval_balances(ledger, accounts.value, Interval.MONTH, 'Assets')
+
+        balances, dates = interval_balances(ledger, accounts.value, Interval.MONTH)
         assert dates[0] == (datetime.date(2020, 3, 1), datetime.date(2020, 3, 2))
-
         assert balances[0]['Assets']['Account'].balance.to_string() == "(1 STK {10 GBP, 2020-03-01})"
-
-        assert isinstance(accounts, AccountsConfig)

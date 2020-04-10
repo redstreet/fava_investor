@@ -36,7 +36,7 @@ def filter_nested_accounts_dict(accounts_dict: Dict[str, Dict],
 
 
 def interval_balances(ledger: FavaLedger, accounts: List[str], interval: Interval,
-                      account_name: str, accumulate=True, interval_count=3):
+                      accumulate=True, interval_count=3):
     """Balances by interval.
 
     Function copied from FavaLedger to add interval_count and account filtering
@@ -45,7 +45,6 @@ def interval_balances(ledger: FavaLedger, accounts: List[str], interval: Interva
 
     Arguments:
         interval: An interval.
-        account_name: An account name.
         accumulate: A boolean, ``True`` if the balances for an interval
             should include all entries up to the end of the interval.
 
