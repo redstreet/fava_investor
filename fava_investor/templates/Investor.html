@@ -4,7 +4,7 @@
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
-  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('tlh', _('Tax Loss Harvestor')) ] %}
+  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')) ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
 </div>
@@ -23,6 +23,13 @@
       {{ querytable.querytable(None, *portfolio[1]) }}
       <br />
   {% endfor %}
+{% endif %}
+
+
+{% if (module == 'cashdrag') %}
+  <h2>Cash Drag Analysis</h2>
+  {% set results = extension.build_cashdrag(None, None) %}
+  {{ querytable.querytable(None, *results) }}
 {% endif %}
 
 {% if (module == 'tlh') %}

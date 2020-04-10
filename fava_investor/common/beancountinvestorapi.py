@@ -4,6 +4,7 @@ from beancount import loader
 from beancount.core import getters
 from beancount.core import prices
 from beancount.core import realization
+from beancount.query import query
 
 class AccAPI:
     def __init__(self, beancount_file, options):
