@@ -12,17 +12,17 @@ from clicommon import *
 import libcashdrag
 
 def cashdrag(beancount_file,
-    whitelist: 'Regex pattern of accounts to include in hunting cash drag.' = '',
-    blacklist: 'Regex pattern of accounts to exclude in hunting cash drag.' = '',
+    accounts_pattern: 'Regex pattern of accounts to include in hunting cash drag.' = '',
+    accounts_exclude_pattern: 'Regex pattern of accounts to exclude in hunting cash drag.' = '',
     base_currency='USD',
     debug=False):
 
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
-    if not whitelist:
-        del argsmap['whitelist']
-    if not blacklist:
-        del argsmap['blacklist']
+    if not accounts_pattern:
+        del argsmap['accounts_pattern']
+    if not accounts_exclude_pattern:
+        del argsmap['accounts_exclude_pattern']
     rtypes, rrows = libcashdrag.find_loose_cash(accapi, argsmap)
     pretty_print_table(rtypes, rrows)
 
