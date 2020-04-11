@@ -18,7 +18,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'beancount>=2.2.3',
-        'fava>=1.13'
+        'fava>=1.13',
+        'argcomplete>=1.11.1'
     ],
     zip_safe=False,
     classifiers=[
