@@ -1,6 +1,6 @@
-# fava-investor
+# fava_investor
 
-Fava-Investor aims to be a comprehensive set of reports, analyses, and tools for
+Fava_investor aims to be a comprehensive set of reports, analyses, and tools for
 investments, for Beancount/Fava (personal finance software). It is developed as a
 collection of modules, with each module offering a Fava plugin, a Beancount library, and
 a Beancount based CLI (command line interface).
@@ -20,17 +20,22 @@ harvester, with more in development.  See [design.md](design.md) for more.
 
 In the folder of your beancount journal file
 ```bash
-git clone https://github.com/redstreet/fava-investor.git
+git clone https://github.com/redstreet/fava_investor.git
+
+# Assuming you did this in the same directory of your beancount source, invoke the fava
+# extension using the line below, given the actual module lives in a subdirectory that
+# is also named fava_investor:
+# 2010-01-01 custom "fava-extension" "fava_investor.fava_investor" "{...}"
 ```
 
 ### Install via pip to use extension
 ```bash
-git clone https://github.com/redstreet/fava-investor.git
-pip install ./fava-investor
+git clone https://github.com/redstreet/fava_investor.git
+pip install ./fava_investor
 ```
 
 ### Install via pip to develop extension
 ```bash
-git clone https://github.com/redstreet/fava-investor.git
-pip install -e ./fava-investor
+git clone https://github.com/redstreet/fava_investor.git
+pip install -e ./fava_investor
 ```

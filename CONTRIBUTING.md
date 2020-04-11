@@ -1,16 +1,16 @@
 ### Pre-requisities
 
-If you want to develop or contribute to fava-investor, make sure you have Python 3 (with
+If you want to develop or contribute to fava_investor, make sure you have Python 3 (with
 pip). Install beancount and fava:
 
 `pip install fava`
 
-### Running fava-investor
+### Running fava_investor
 ```
 mkdir dev
 cd dev
-git clone https://github.com/redstreet/fava-investor.git # or point to your fork
-cd fava-investor
+git clone https://github.com/redstreet/fava_investor.git # or point to your fork
+cd fava_investor
 fava example.bc
 ```
 

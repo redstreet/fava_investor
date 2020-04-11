@@ -5,11 +5,11 @@ with open(path.join(path.dirname(__file__), 'README.md')) as readme:
     LONG_DESCRIPTION = readme.read()
 
 setup(
-    name='fava-investor',
+    name='fava_investor',
     version='0.1',
     description='Investor: fava extension and beancount libraries for investing',
     long_description=LONG_DESCRIPTION,
-    url='https://github.com/redstreet/fava-investor',
+    url='https://github.com/redstreet/fava_investor',
     author='Red S',
     author_email='redstreet@users.noreply.github.com',
     license='GPL-3.0',
