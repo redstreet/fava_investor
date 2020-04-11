@@ -22,7 +22,7 @@ def print_balances_tree(realacc, accapi):
                                             reserved=2)
     realization.dump_balances(realacc, dformat, file=sys.stdout)
 
-def print_asset_table(asset_buckets, row_types, table):
+def print_asset_table(row_types, table):
     newtable = []
     for row in table:
         newtable.append([' '*row[0] + row[1].split('_')[-1], 
@@ -48,9 +48,9 @@ def asset_allocation(beancount_file,
     accapi = api.AccAPI(beancount_file, argsmap)
     if not accounts_patterns:
         del argsmap['accounts_patterns']
-    asset_buckets, hierarchicalized, formatted, realacc = libassetalloc.assetalloc(accapi, argsmap)
+    asset_buckets, hierarchicalized, formatted, realacc, tree = libassetalloc.assetalloc(accapi, argsmap)
 
-    print_asset_table(asset_buckets, *hierarchicalized)
+    print_asset_table(*hierarchicalized)
     if dump_balances_tree:
         print_balances_tree(realacc, accapi)
 

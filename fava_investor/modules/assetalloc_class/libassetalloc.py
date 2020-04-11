@@ -3,6 +3,7 @@
 
 import argparse,argcomplete,argh
 import collections
+import os
 import re
 import sys
 
@@ -11,6 +12,27 @@ from beancount.core import amount
 from beancount.core import inventory
 from beancount.core import realization
 from beancount.core.number import Decimal
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+from libinvestor import *
+
+def treeify(asset_buckets):
+    root = Node('total')
+    root.balance = 0
+    for bucket, balance in asset_buckets.items():
+        path = bucket.split('_')
+        node = root
+        for p in path:
+            new_node = node.find_child(p)
+            if not new_node:
+                new_node = Node(p)
+                node.add_child(new_node)
+            node = new_node
+        node.balance = balance
+
+    total = sum(balance for bucket, balance in asset_buckets.items())
+    Node.compute_child_balances(root, total)
+    return root
 
 def bucketize(vbalance, accapi):
     price_map = accapi.build_price_map()
@@ -151,4 +173,4 @@ def assetalloc(accapi, config={}):
 
     hierarchicalized = hierarchicalize(asset_buckets)
     formatted = formatted_hierarchy(*hierarchicalized)
-    return asset_buckets, hierarchicalized, formatted, realacc
+    return asset_buckets, hierarchicalized, formatted, realacc, treeify(asset_buckets)
