@@ -49,3 +49,15 @@ fava example.bc
 Then, point your browser to: http://localhost:5000/test
 
 As shown in the screenshots above, a link to Investor should appear in Fava.
+
+### Problems
+
+If you see this in the Fava error page:
+`"Importing module "fava_investor" failed."`
+
+That usually means the module was not able to be loaded. Try running python3
+interactively and typing:
+
+`import fava_investor.fava_investor`
+
+That should succeed, or tell you what the failure was.
