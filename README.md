@@ -20,7 +20,7 @@ harvester, with more in development.  See [design.md](design.md) for more.
 
 In the folder of your beancount journal file
 ```bash
-pip install fava
+pip install fava argcomplete
 git clone https://github.com/redstreet/fava_investor.git
 
 # Assuming you did this in the same directory of your beancount source, invoke the fava
@@ -43,13 +43,9 @@ pip install -e ./fava_investor
 
 ### Running fava_investor
 ```
-mkdir dev
-cd dev
-git clone https://github.com/redstreet/fava_investor.git # or point to your fork
 cd fava_investor
 fava example.bc
 ```
-
 Then, point your browser to: http://localhost:5000/test
 
 As shown in the screenshots above, a link to Investor should appear in Fava.
