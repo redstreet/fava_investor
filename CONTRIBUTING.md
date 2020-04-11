@@ -6,18 +6,7 @@ pip). Install beancount and fava:
 `pip install fava`
 
 ### Running fava_investor
-```
-mkdir dev
-cd dev
-git clone https://github.com/redstreet/fava_investor.git # or point to your fork
-cd fava_investor
-fava example.bc
-```
-
-Then, point your browser to: http://localhost:5000/test
-
-As shown in the screenshots on the main page, several Investor links should appear in
-Fava.
+See ![README.md](./README.md)
 
 ### Contributing code
 Fork the repo on github and submit pull requests.
