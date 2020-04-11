@@ -20,7 +20,7 @@ harvester, with more in development.  See [design.md](design.md) for more.
 
 In the folder of your beancount journal file
 ```bash
-pip install fava argcomplete
+pip3 install fava argh argcomplete
 git clone https://github.com/redstreet/fava_investor.git
 
 # Assuming you did this in the same directory of your beancount source, invoke the fava
