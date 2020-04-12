@@ -40,7 +40,7 @@ def treeify(asset_buckets):
             new_node = node.find_child(p)
             if not new_node:
                 new_node = Node(p)
-                node.balance = 0
+                new_node.balance = 0
                 node.add_child(new_node)
             node = new_node
         node.balance = balance
