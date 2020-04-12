@@ -134,6 +134,6 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 {% if (module == 'aa_class') %}
   <h2>Portfolio: Asset Allocation by Class</h2>
   {% set results = extension.build_assetalloc_by_class(None, None) %}
-  {{ asset_tree(results[4]) }}
+  {{ asset_tree(results[0]) }}
 
 {% endif %}

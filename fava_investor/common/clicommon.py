@@ -9,3 +9,7 @@ def pretty_print_table(rtypes, rrows):
     print(tabulate.tabulate(rrows, 
         headers=headers[1:],
         tablefmt='simple'))
+
+
+def pretty_print_table(rrows):
+    print(tabulate.tabulate(rrows, tablefmt='simple'))

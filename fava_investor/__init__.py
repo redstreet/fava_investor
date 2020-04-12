@@ -15,8 +15,7 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     # -----------------------------------------------------------------------------------------------------------
     def build_assetalloc_by_class(self, begin=None, end=None):
         accapi = FavaInvestorAPI(self.ledger)
-        retval = libassetalloc.assetalloc(accapi, self.config.get('asset_alloc_by_class', {}))
-        return retval
+        return libassetalloc.assetalloc(accapi, self.config.get('asset_alloc_by_class', {}))
 
     # AssetAllocAccount
     # -----------------------------------------------------------------------------------------------------------

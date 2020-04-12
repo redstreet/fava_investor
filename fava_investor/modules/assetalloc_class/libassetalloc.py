@@ -16,6 +16,20 @@ from beancount.core.number import Decimal
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 from libinvestor import *
 
+def compute_child_balances(node, total):
+    node.balance_children = node.balance + sum(compute_child_balances(c, total) for c in node.children)
+    node.percentage = (node.balance / total) * 100
+    node.percentage_children = (node.balance_children / total) * 100
+    return node.balance_children
+
+def compute_parent_balances(node):
+    if node.parent:
+        node.percentage_parent = (node.balance_children / node.parent.balance_children) * 100
+    else:
+        node.percentage_parent = 100
+    for c in node.children:
+        compute_parent_balances(c)
+
 def treeify(asset_buckets):
     root = Node('total')
     root.balance = 0
@@ -31,8 +45,10 @@ def treeify(asset_buckets):
         node.balance = balance
 
     total = sum(balance for bucket, balance in asset_buckets.items())
-    Node.compute_child_balances(root, total)
+    compute_child_balances(root, total)
+    compute_parent_balances(root)
     return root
+
 
 def bucketize(vbalance, accapi):
     price_map = accapi.build_price_map()
@@ -73,50 +89,6 @@ def compute_balance_subtotal(asset_buckets, asset):
     for c in children:
         subtotal += compute_balance_subtotal(asset_buckets, c)
     return subtotal
-
-
-def hierarchicalize(asset_buckets):
-    """Convert asset allocation into a hierarchy of classes and percentages"""
-    # print(balance.reduce(convert.get_units))
-
-    total_assets = sum(asset_buckets[k] for k in asset_buckets)
-    buckets = list(asset_buckets.keys())
-
-    # add all parents in the asset allocation hierarchy
-    parents = set()
-    for b in buckets:
-        for i in range(1, b.count('_')+1):
-            parents.add( b.rsplit('_', i)[0] )
-    buckets = list(set(list(parents) + buckets))
-
-    retrow_types = [('hierarchy',  int),
-                    ('asset_type', str),
-                    ('amount',     Decimal),
-                    ('percentage', Decimal),
-                    ]
-    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
-    table = []
-
-    table.append(RetRow(0, 'total', Decimal(total_assets), Decimal(100)))
-    buckets.sort()
-    for bucket in buckets:
-        table.append(RetRow(len(bucket.split('_')),
-            bucket,
-            compute_balance_subtotal(asset_buckets, bucket),
-            compute_percent_subtotal(asset_buckets, bucket, total_assets),
-            ))
-            
-    return retrow_types, table
-
-def formatted_hierarchy(rtypes, table):
-    def tree_indent(level, label):
-        splits = label.split('_')
-        return '-'*level + splits[-1]
-
-    retrow_types = rtypes[1:]
-    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
-    newtable = [RetRow(tree_indent(r[0], r[1]), *r[2:]) for r in table]
-    return retrow_types, newtable
 
 def build_interesting_realacc(accapi, accounts):
     def is_included_account(realacc):
@@ -171,6 +143,4 @@ def assetalloc(accapi, config={}):
     vbalance = balance.reduce(convert.get_units)
     asset_buckets = bucketize(vbalance, accapi)
 
-    hierarchicalized = hierarchicalize(asset_buckets)
-    formatted = formatted_hierarchy(*hierarchicalized)
-    return asset_buckets, hierarchicalized, formatted, realacc, treeify(asset_buckets)
+    return treeify(asset_buckets), realacc

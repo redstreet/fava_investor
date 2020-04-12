@@ -17,15 +17,14 @@ class Node(object):
                 return child
         return None
 
+    def pre_order(self, level=0):
+        yield self, level
+        for c in self.children:
+            yield from c.pre_order(level+1)
+
     def pretty_print(self, indent=0):
         # print("{}{} {} {}".format('-'*indent, self.name, self.balance, self.balance_children))
-        print("{}{} {:4.2f} {:4.2f}".format('-'*indent, self.name, self.percentage, self.percentage_children))
+        print("{}{} {:4.2f} {:4.2f} {:4.2f}".format('-'*indent, self.name, self.percentage, self.percentage_children, self.percentage_parent))
         for c in self.children:
             c.pretty_print(indent+1)
 
-    @classmethod
-    def compute_child_balances(cls, node, total):
-        node.balance_children = node.balance + sum(cls.compute_child_balances(c, total) for c in node.children)
-        node.percentage = (node.balance / total) * 100
-        node.percentage_children = (node.balance_children / total) * 100
-        return node.balance_children

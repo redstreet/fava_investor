@@ -12,6 +12,7 @@ from beancount.core import realization
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 import beancountinvestorapi as api
+import clicommon
 
 import libassetalloc
 
@@ -22,17 +23,14 @@ def print_balances_tree(realacc, accapi):
                                             reserved=2)
     realization.dump_balances(realacc, dformat, file=sys.stdout)
 
-def print_asset_table(row_types, table):
-    newtable = []
-    for row in table:
-        newtable.append([' '*row[0] + row[1].split('_')[-1], 
-            '{:,.0f}'.format(row[2]),
-            '{:.1f}%'.format(row[3]),
-            ])
+def formatted_tree(root):
+    rows = []
+    for n, level in root.pre_order(0):
+        rows.append((' '*level+n.name, '{:,.0f}'.format(n.balance_children),
+            '{:.1f}%'.format(n.percentage_children)))
 
-    headers = [i[0] for i in row_types]
-    print(tabulate.tabulate(newtable, 
-        headers=headers[1:],
+    print(tabulate.tabulate(rows, 
+        headers = ['asset_type', 'amount', 'percentage'],
         colalign=('left', 'decimal', 'right'),
         tablefmt='simple'))
 
@@ -48,9 +46,11 @@ def asset_allocation(beancount_file,
     accapi = api.AccAPI(beancount_file, argsmap)
     if not accounts_patterns:
         del argsmap['accounts_patterns']
-    asset_buckets, hierarchicalized, formatted, realacc, tree = libassetalloc.assetalloc(accapi, argsmap)
+    asset_buckets_tree, realacc = libassetalloc.assetalloc(accapi, argsmap)
 
-    print_asset_table(*hierarchicalized)
+    ftree = formatted_tree(asset_buckets_tree)
+    clicommon.pretty_print_table(ftree)
+
     if dump_balances_tree:
         print_balances_tree(realacc, accapi)
 
