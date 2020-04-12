@@ -4,11 +4,13 @@ from beancount.core.number import ZERO, Decimal, D
 import collections
 import locale
 
-def find_cash_commodities(accapi):
+def find_cash_commodities(accapi, options):
     """Build list of commodities that are considered cash"""
+
+    meta_label = options.get('metadata_label_cash', 'asset_allocation_Bond_Cash')
     cash_commodities = []
     for commodity, declaration in accapi.get_commodity_map().items():
-        if declaration.meta.get('asset_allocation_bond_cash', 0) == 100:
+        if declaration.meta.get(meta_label, 0) == 100:
             cash_commodities.append(commodity)
 
     cash_commodities.append(accapi.get_operating_currency())
@@ -29,7 +31,7 @@ def find_loose_cash(accapi, options):
     ORDER BY sum(position) DESC
     """.format(accounts_pattern=options.get('accounts_pattern', '^Assets'),
             accounts_exclude_pattern=options.get('accounts_exclude_pattern', '^XXX'), #TODO
-            currency=find_cash_commodities(accapi))
+            currency=find_cash_commodities(accapi, options))
     rtypes, rrows = accapi.query_func(sql)
     if not rtypes:
         return [], {}, [[]]
