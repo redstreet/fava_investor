@@ -72,7 +72,6 @@
   {% endif %}
 {% endif %}
 
-{% import 'macros/_account_macros.html' as account_macros with context %}
 {% set table_hover_text = _('Hold Shift while clicking to expand all children.
 Hold Ctrl or Cmd while clicking to expand one level.') %}
 
@@ -81,6 +80,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 - display 0 decimal places for assets (needed for all of fava_investor)
 - fix: asset bucket spacing is too wide
 - get currency from libassetalloc instead of looping: {% for currency in ledger.options.operating_currency %}
+- remove links from asset class name
 #}
 
 {% macro asset_tree(account_node) %}
@@ -98,7 +98,9 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
   <li{{ ' class=toggled' if account.name|collapse_account else '' }}>
     <p{{ ' class=has-balance' }}>
     <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}" data-account-name="{{ account.name }}">
-      {{ account_macros.account_name(account.name, last_segment=True) }}
+    <a href='' class='account'>
+      {{ account.name }}
+    </a>
     </span>
     {% for currency in ledger.options.operating_currency %}
     <span class="num">
