@@ -31,7 +31,7 @@ def compute_parent_balances(node):
         compute_parent_balances(c)
 
 def treeify(asset_buckets):
-    root = Node('total')
+    root = Node('Total')
     root.balance = 0
     for bucket, balance in asset_buckets.items():
         path = bucket.split('_')
@@ -40,6 +40,7 @@ def treeify(asset_buckets):
             new_node = node.find_child(p)
             if not new_node:
                 new_node = Node(p)
+                node.balance = 0
                 node.add_child(new_node)
             node = new_node
         node.balance = balance
