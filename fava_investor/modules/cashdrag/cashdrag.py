@@ -14,7 +14,6 @@ import libcashdrag
 def cashdrag(beancount_file,
     accounts_pattern: 'Regex pattern of accounts to include in hunting cash drag.' = '',
     accounts_exclude_pattern: 'Regex pattern of accounts to exclude in hunting cash drag.' = '',
-    base_currency='USD',
     debug=False):
 
     argsmap = locals()

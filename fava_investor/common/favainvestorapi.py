@@ -25,10 +25,6 @@ class FavaInvestorAPI:
         contents, rtypes, rrows = self.ledger.query_shell.execute_query(sql)
         return rtypes, rrows
 
-    def get_operating_currency(self):
-        """TODO: Remove in favor of get_operating_currencies()"""
-        return self.ledger.options["operating_currency"][0] #TBD: error check
-
     def get_operating_currencies(self):
         return self.ledger.options["operating_currency"] #TODO: error check
 

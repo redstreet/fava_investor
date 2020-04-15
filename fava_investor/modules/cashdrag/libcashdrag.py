@@ -13,7 +13,7 @@ def find_cash_commodities(accapi, options):
         if declaration.meta.get(meta_label, 0) == 100:
             cash_commodities.append(commodity)
 
-    cash_commodities.append(accapi.get_operating_currency())
+    cash_commodities += accapi.get_operating_currencies()
     cash_commodities = set(cash_commodities)
     commodities_pattern = '(' + '|'.join(cash_commodities) + ')'
     return commodities_pattern

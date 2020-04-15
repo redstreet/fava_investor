@@ -37,7 +37,6 @@ def formatted_tree(root):
 @argh.arg('--accounts_patterns', nargs='+')
 def asset_allocation(beancount_file,
     accounts_patterns: 'Regex patterns of accounts to include in asset allocation.' = '',
-    base_currency='USD',
     dump_balances_tree=False,
     skip_tax_adjustment=False,
     debug=False):

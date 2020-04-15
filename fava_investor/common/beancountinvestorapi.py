@@ -34,10 +34,6 @@ class AccAPI:
         rtypes, rrows = query.run_query(self.entries, self.options_map, sql)
         return rtypes, rrows
 
-    def get_operating_currency(self):
-        """TODO: Remove in favor of get_operating_currencies()"""
-        return self.options_map['operating_currency'][0]
-
     def get_operating_currencies(self):
         return self.options_map['operating_currency']
 

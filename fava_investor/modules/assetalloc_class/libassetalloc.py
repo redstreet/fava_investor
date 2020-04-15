@@ -54,7 +54,7 @@ def treeify(asset_buckets):
 def bucketize(vbalance, accapi):
     price_map = accapi.build_price_map()
     commodity_map = accapi.get_commodity_map()
-    base_currency = accapi.get_operating_currency()
+    base_currency = accapi.get_operating_currencies()[0]
 
     # Main part: put each commodity's value into asset buckets
     asset_buckets = collections.defaultdict(int)

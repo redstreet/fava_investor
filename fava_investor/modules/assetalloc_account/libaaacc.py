@@ -56,7 +56,7 @@ def asset_allocation(nodes, accapi, include_children):
     """Compute percentage of assets in each of the given nodes."""
 
     date = accapi.end
-    operating_currency = accapi.get_operating_currency()
+    operating_currency = accapi.get_operating_currencies()[0]
     acct_type = ("account", str(str))
     bal_type = ("balance", str(Decimal))
     alloc_type = ("allocation %", str(Decimal))

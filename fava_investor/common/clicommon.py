@@ -11,5 +11,5 @@ def pretty_print_table(rtypes, rrows):
         tablefmt='simple'))
 
 
-def pretty_print_table(rrows):
+def pretty_print_table_bare(rrows):
     print(tabulate.tabulate(rrows, tablefmt='simple'))
