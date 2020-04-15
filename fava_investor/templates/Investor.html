@@ -12,11 +12,16 @@
 
 {% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
-  {% for portfolio in extension.build_aa_by_account(None, None) %}
-      <h3>{{portfolio[0]}}</h3>
-      {{ querytable.querytable(None, *portfolio[1]) }}
-      <br />
-  {% endfor %}
+  {% set results = extension.build_aa_by_account(None, None) %}
+  {% if results|length == 0 %}
+     No regexes found in configuration. See example.bc for how to configure this module.
+  {% else %}
+    {% for portfolio in results %}
+        <h3>{{portfolio[0]}}</h3>
+        {{ querytable.querytable(None, *portfolio[1]) }}
+        <br />
+    {% endfor %}
+  {% endif %}
 {% endif %}
 
 
