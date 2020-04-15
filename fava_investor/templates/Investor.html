@@ -112,7 +112,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     </p>
   </li>
   {% for account in ([account_node] if account_node.name else account_node.children) recursive %}
-  <li{{ ' class=toggled' if account.name|collapse_account else '' }}>
+  <li{{ '' }}>
     <p{{ ' class=has-balance' }}>
     <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}" data-account-name="{{ account.name }}">
     <a href='' class='account'>

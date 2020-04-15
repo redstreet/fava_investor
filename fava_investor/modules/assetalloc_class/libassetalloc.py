@@ -137,7 +137,7 @@ def tax_adjust(realacc, accapi):
 def assetalloc(accapi, config={}):
     realacc = build_interesting_realacc(accapi, config.get('accounts_patterns', ['.*']))
 
-    if config.get('skip_tax_adjustment', False) is True:
+    if config.get('skip_tax_adjustment', False) is False:
         tax_adjust(realacc, accapi)
 
     balance = realization.compute_balance(realacc)
