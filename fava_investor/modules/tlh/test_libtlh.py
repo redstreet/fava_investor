@@ -9,6 +9,10 @@ from beancount import loader
 from beancount.query import query
 import libtlh
 
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+import beancountinvestorapi as api
+
 # python3 -m unittest discover . to run
 
 @functools.lru_cache(maxsize=1)
@@ -19,9 +23,11 @@ def dates():
     retval = {'today': today,
               'm1': minusdays(today, 1),
               'm5': minusdays(today, 5),
+              'm9': minusdays(today, 9),
               'm10': minusdays(today, 10),
               'm15': minusdays(today, 15),
               'm20': minusdays(today, 20),
+              'm100': minusdays(today, 100),
               }
     return retval
 
@@ -40,11 +46,6 @@ class TestScriptCheck(test_utils.TestCase):
     def setUp(self):
         self.options = {'accounts_pattern': "Assets:Investments:Taxable", 'wash_pattern': "Assets:Investments"}
 
-    def query_func(self, sql):
-        entries, _, options_map = loader.load_file(self.f)
-        rtypes, rrows = query.run_query(entries, options_map, sql)
-        return rtypes, rrows
-
     @test_utils.docfile
     @insert_dates
     def test_no_relevant_accounts(self, f):
@@ -58,9 +59,9 @@ class TestScriptCheck(test_utils.TestCase):
 
         {m1} price BNCT 100 USD
         """
-        self.f = f
+        accapi = api.AccAPI(f, {})
 
-        retrow_types, to_sell, recent_purchases = libtlh.find_harvestable_lots(self.query_func, self.options)
+        retrow_types, to_sell, recent_purchases = libtlh.find_harvestable_lots(accapi, self.options)
 
         self.assertEqual(0, len(to_sell))
         self.assertEqual(0, len(recent_purchases))
@@ -79,10 +80,34 @@ class TestScriptCheck(test_utils.TestCase):
 
         {m1} price BNCT 100 USD
         """
-        self.f = f
+        accapi = api.AccAPI(f, {})
 
-        retrow_types, to_sell, recent_purchases = libtlh.find_harvestable_lots(self.query_func, self.options)
+        retrow_types, to_sell, recent_purchases = libtlh.find_harvestable_lots(accapi, self.options)
 
         self.assertEqual(1, len(to_sell))
         self.assertEqual(1, len(recent_purchases))
+
+    @test_utils.docfile
+    @insert_dates
+    def test_dontbuy(self, f):
+        """
+        option "operating_currency" "USD"
+        2010-01-01 open Assets:Investments:Taxable:Brokerage
+        2010-01-01 open Assets:Bank
+
+        {m100} * "Buy stock"
+         Assets:Investments:Taxable:Brokerage 1 BNCT {{200 USD}}
+         Assets:Bank
+
+        {m10} * "Sell stock"
+         Assets:Investments:Taxable:Brokerage -1 BNCT {{200 USD}} @ 100 USD
+         Assets:Bank
+
+        {m1} price BNCT 100 USD
+        """
+        accapi = api.AccAPI(f, {})
+
+        rtypes, rrows = libtlh.recently_sold_at_loss(accapi, self.options)
+
+        self.assertEqual(1, len(rrows))
 

@@ -7,10 +7,9 @@ from beancount.query import query
 import argparse,argcomplete,argh
 import pickle
 from types import SimpleNamespace
-import os
-import sys
 import tabulate
 
+import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 import beancountinvestorapi as api
 import clicommon
