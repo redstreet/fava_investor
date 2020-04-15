@@ -75,10 +75,12 @@
   {% else %}
     {{ querytable.querytable(None, *harvests[2]) }}
   {% endif %}
+  <br />
 
   <h3>What not to buy</h3>
-  Note: the below is simply a list of recent sales with losses. They could have been
-  TLHs, or not. Only you know.
+  Note: the below is a list of recent sales with losses provided for your convenience
+  in making purchasing decisions around wash sales. (This is not meant to be financial
+  or tax advice).
   {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
   {% if lossy_sales|length == 0 %}
     <p>No sales with losses found in the last 30 days.</p>
