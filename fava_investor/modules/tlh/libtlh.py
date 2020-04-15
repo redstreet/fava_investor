@@ -4,8 +4,11 @@ from beancount.core.number import ZERO, Decimal, D
 import collections
 import locale
 
-def get_tables(query_func, options):
-    retrow_types, to_sell, recent_purchases = find_harvestable_lots(query_func, options)
+def val(inv):
+    return inv.get_only_position().units.number
+
+def get_tables(accapi, options):
+    retrow_types, to_sell, recent_purchases = find_harvestable_lots(accapi, options)
     harvestable_table = retrow_types, to_sell
     by_commodity = harvestable_by_commodity(*harvestable_table)
     summary = summarize_tlh(harvestable_table, by_commodity)
@@ -26,7 +29,7 @@ def split_currency(value):
     units = value.get_only_position().units
     return units.number, units.currency
 
-def find_harvestable_lots(query_func, options):
+def find_harvestable_lots(accapi, options):
     """Find tax loss harvestable lots.
     - This is intended for the US, but may be adaptable to other countries.
     - This assumes SpecID (Specific Identification of Shares) is the method used for these accounts
@@ -44,7 +47,7 @@ def find_harvestable_lots(query_func, options):
       ORDER BY account_sortkey(account), currency, cost_date
     """.format(account_field=options.get('account_field', 'LEAF(account)'),
             accounts_pattern=options.get('accounts_pattern', ''))
-    rtypes, rrows = query_func(sql)
+    rtypes, rrows = accapi.query_func(sql)
     if not rtypes:
         return [], {}, [[]]
 
@@ -69,9 +72,6 @@ def find_harvestable_lots(query_func, options):
 
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
 
-    def val(inv):
-        return inv.get_only_position().units.number
-
     # build our output table: calculate losses, find wash sales
     to_sell = []
     recent_purchases = {}
@@ -85,7 +85,7 @@ def find_harvestable_lots(query_func, options):
             ticker = row.units.get_only_position().units.currency
             recent = recent_purchases.get(ticker, None)
             if not recent:
-                recent = query_recently_bought(ticker, query_func, options)
+                recent = query_recently_bought(ticker, accapi, options)
                 recent_purchases[ticker] = recent
             wash = '*' if len(recent[1]) else ''
 
@@ -122,7 +122,7 @@ def build_recents(recent_purchases):
             types = recent_purchases[t][0]
     return types, recents
 
-def query_recently_bought(ticker, query_func, options):
+def query_recently_bought(ticker, accapi, options):
     """Looking back 30 days for purchases that would cause wash sales"""
 
     wash_pattern = options.get('wash_pattern', '')
@@ -142,8 +142,45 @@ def query_recently_bought(ticker, query_func, options):
       GROUP BY date,{account_field}
       ORDER BY date DESC
       '''.format(**locals())
-    rtypes, rrows = query_func(sql)
+    rtypes, rrows = accapi.query_func(sql)
     return rtypes, rrows
+
+def recently_sold_at_loss(accapi, options):
+    """Looking back 30 days for sales that caused losses. These were likely to have been TLH (but not
+    necessarily so. This tells us what NOT to buy in order to avoid wash sales."""
+
+    operating_currencies = accapi.get_operating_currencies_regex()
+    wash_pattern = options.get('wash_pattern', '')
+    account_field = options.get('account_field', 'LEAF(account)')
+    wash_pattern_sql = 'AND account ~ "{}"'.format(wash_pattern) if wash_pattern else ''
+    sql = '''
+    SELECT
+        date,
+        currency,
+        SUM(COST(position)) as cost,
+        SUM(CONVERT(position, cost_currency, date)) as sale_price
+      WHERE
+        date >= DATE_ADD(TODAY(), -30)
+        AND number < 0
+        AND not currency ~ "{operating_currencies}"
+      GROUP BY date,currency
+      '''.format(**locals())
+    rtypes, rrows = accapi.query_func(sql)
+    if not rtypes:
+        return [], []
+
+    # filter out losses
+    retrow_types = rtypes +  [('loss', Decimal)]
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+    return_rows = []
+    for row in rrows:
+        loss = val(row.sale_price) - val(row.cost)
+        if loss > 0:
+            # TODO: flip numbers
+            # TODO: display this optionally (on by default)
+            return_rows.append(RetRow(*row, loss))
+
+    return retrow_types, return_rows
 
 def summarize_tlh(harvestable_table, by_commodity):
     # Summary

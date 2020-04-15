@@ -26,7 +26,15 @@ class FavaInvestorAPI:
         return rtypes, rrows
 
     def get_operating_currency(self):
+        """TODO: Remove in favor of get_operating_currencies()"""
         return self.ledger.options["operating_currency"][0] #TBD: error check
+
+    def get_operating_currencies(self):
+        return self.ledger.options["operating_currency"] #TODO: error check
+
+    def get_operating_currencies_regex(self):
+        currencies = self.get_operating_currencies()
+        return '(' + '|'.join(currencies) + ')'
 
     def get_account_open_close(self):
         return getters.get_account_open_close(self.ledger.entries)

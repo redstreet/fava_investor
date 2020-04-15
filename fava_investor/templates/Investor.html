@@ -71,10 +71,22 @@
 
   <h3>Purchases within the past 30 days creating wash sales</h3>
   {% if harvests[2][0]|length == 0 %}
-  <p>None found!</p>
+    <p>None found!</p>
   {% else %}
-  {{ querytable.querytable(None, *harvests[2]) }}
+    {{ querytable.querytable(None, *harvests[2]) }}
   {% endif %}
+
+  <h3>What not to buy</h3>
+  Note: the below is simply a list of recent sales with losses. They could have been
+  TLHs, or not. Only you know.
+  {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
+  {% if lossy_sales|length == 0 %}
+    <p>No sales with losses found in the last 30 days.</p>
+  {% else %}
+    {{ querytable.querytable(None, *lossy_sales) }}
+  {% endif %}
+
+
 {% endif %}
 
 {% set table_hover_text = _('Hold Shift while clicking to expand all children.

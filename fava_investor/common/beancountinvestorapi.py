@@ -35,7 +35,15 @@ class AccAPI:
         return rtypes, rrows
 
     def get_operating_currency(self):
-        return self.options['base_currency']
+        """TODO: Remove in favor of get_operating_currencies()"""
+        return self.options_map['operating_currency'][0]
+
+    def get_operating_currencies(self):
+        return self.options_map['operating_currency']
+
+    def get_operating_currencies_regex(self):
+        currencies = self.get_operating_currencies()
+        return '(' + '|'.join(currencies) + ')'
 
     def get_account_open_close(self):
         return getters.get_account_open_close(self.entries)
