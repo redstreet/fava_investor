@@ -1,76 +1,65 @@
-import datetime
-from typing import Dict, List, Union
+import re
 
-from beancount.core import realization
-from beancount.core.data import iter_entry_dates
-from fava.core import FavaLedger
-from util import pairwise
-from util.date import Interval
-
-ConfigDict = Dict[str, Union[str, List[str]]]
+from core.tree import TreeNode
+from fava.core import FavaLedger, Tree
+from beancount.core.account import parent, parents
+from fava_investor.common.favainvestorapi import FavaInvestorAPI
 
 
-def filter_nested_accounts_dict(accounts_dict: Dict[str, Dict],
-                                accounts_to_keep: List[str], prev:str = "") -> dict:
-    """
-    filters accounts_dict of following format:
-    {
-        Assets: {
-            Bank: {
-                BankA: {...},
-                ... },
-            Investment: {
-                BrokerA: {...},
-                ... }
-            ... }
-        ... }
-    """
-    for key in list(accounts_dict.keys()):
-        str_begin = f"{prev}{key}"
-        if str_begin not in [acc[:len(str_begin)] for acc in accounts_to_keep]:
-            del accounts_dict[key]
-        else:
-            accounts_dict[key] = filter_nested_accounts_dict(accounts_dict[key], accounts_to_keep, prev + key + ":")
-
-    return accounts_dict
+def get_closed_tree_with_value_accounts_only(accapi: FavaInvestorAPI, config) -> Tree:
+    ledger: FavaLedger = accapi.ledger
+    tree = ledger.root_tree_closed
+    accounts_to_keep = get_value_accounts_and_parents(accapi.ledger.accounts, config.get('value', ['.*']))
+    filter_tree(tree, accounts_to_keep)
+    return tree
 
 
-def interval_balances(ledger: FavaLedger, accounts: List[str], interval: Interval,
-                      accumulate=True, interval_count=3):
-    """Balances by interval.
+def remove_account_from_tree(tree: Tree, account: str):
+    if account not in tree or account == '':
+        return
+    node = tree[account]
+    for child in list(node.children):
+        remove_account_from_tree(tree, child.name)
 
-    Function copied from FavaLedger to add interval_count and account filtering
+    remove_from_parent(account, node, tree)
+    reduce_parents_balances(account, node, tree)
 
-    TODO filter out closed accounts instead of displaying empty rows
+    del tree[account]
 
-    Arguments:
-        interval: An interval.
-        accumulate: A boolean, ``True`` if the balances for an interval
-            should include all entries up to the end of the interval.
 
-    Returns:
-        A list of RealAccount instances for all the intervals.
-    """
+def get_value_accounts_and_parents(accounts: dict, patterns):
+    result = set()
+    for account in accounts:
+        if is_value_account(account, patterns):
+            result.add(account)
+            for p in parents(account):
+                result.add(p)
+    return result
 
-    interval_tuples = list(
-        reversed(list(pairwise(ledger.interval_ends(interval))))
-    )[:interval_count]
 
-    interval_balances = [
-        realization.realize(
-            list(
-                iter_entry_dates(
-                    ledger.entries,
-                    datetime.date.min if accumulate else begin_date,
-                    end_date,
-                )
-            ),
-            accounts,
-        )
-        for begin_date, end_date in interval_tuples
-    ]
+def filter_tree(tree, accounts_to_keep):
+    for account in list(tree.keys()):
+        if account not in accounts_to_keep:
+            remove_account_from_tree(tree, account)
 
-    for i in range(0, len(interval_balances)):
-        interval_balances[i] = filter_nested_accounts_dict(interval_balances[i], accounts)
 
-    return interval_balances, interval_tuples
+def reduce_parents_balances(account, node, tree):
+    for parent_account in parents(account):
+        parent_node: TreeNode = tree[parent_account]
+        parent_node.balance_children.add_inventory(-node.balance)
+
+
+def remove_from_parent(account, node, tree):
+    parent_account = parent(account)
+    if parent_account is not None:
+        parent_node: TreeNode = tree[parent_account]
+        parent_node.children.remove(node)
+
+
+def is_value_account(account, patterns):
+    for pattern in patterns:
+        if re.match(pattern, account):
+            return True
+    return False
+
+

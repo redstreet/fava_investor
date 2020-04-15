@@ -1,10 +1,10 @@
 """Fava Investor: Investing related reports and tools for Beancount/Fava"""
+import datetime
 
 from fava.ext import FavaExtensionBase
 from fava.util.date import Interval
 
-from .modules.performance.accounts_config import AccountsConfig
-from .modules.performance.balances import interval_balances
+from .modules.performance.balances import get_closed_tree_with_value_accounts_only
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
@@ -50,8 +50,7 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
     # Balances
     # -----------------------------------------------------------------------------------------------------------
-    def get_balances(self, interval: Interval):
-        interval_count = 3
-        accounts = AccountsConfig.from_dict(self.ledger, self.config.get('performance', []))
-        return interval_balances(self.ledger, accounts.value, interval,
-                                 True, interval_count)
+    def build_balances_tree(self):
+        accapi = FavaInvestorAPI(self.ledger)
+        return get_closed_tree_with_value_accounts_only(accapi, self.config.get('performance', {}))
+

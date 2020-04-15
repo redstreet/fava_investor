@@ -81,12 +81,6 @@
     <h2>Portfolio: Balances</h2>
 
     {% import '_tree_table.html' as tree_table with context %}
-    {% set account_name = ledger.options['name_assets'] %}
-    <div class="droptarget" data-account-name="{{ account_name }}">
-        {% set interval_balances, dates = extension.get_balances(g.interval) %}
-        {% if interval_balances %}
-            {{ tree_table.account_tree(account_name, interval_balances, dates, accumulate) }}
-        {% endif %}
-    </div>
+    {% set tree = extension.build_balances_tree() %}
+    {{ tree_table.tree(tree.get(ledger.options['name_assets'])) }}
 {% endif %}
-

@@ -1,4 +1,3 @@
-import datetime
 from pprint import pformat
 
 from beancount import loader
@@ -6,9 +5,8 @@ from beancount.ops import validation
 from beancount.utils import test_utils
 from core import FavaLedger
 from freezegun import freeze_time
-from fava.util.date import Interval
 
-from fava_investor import AccountsConfig, interval_balances
+from fava_investor import FavaInvestorAPI, get_closed_tree_with_value_accounts_only
 
 
 def get_ledger(filename):
@@ -16,58 +14,51 @@ def get_ledger(filename):
     if errors:
         raise ValueError("Errors in ledger file: \n" + pformat(errors))
 
-    ledger = FavaLedger(filename)
-    return ledger
+    return FavaInvestorAPI(FavaLedger(filename))
+
+
+CONFIG = {
+    "value": ["^Assets:Account"],
+    "internal": []
+}
 
 
 class TestBalances(test_utils.TestCase):
     @test_utils.docfile
     @freeze_time("2020-03-10")
-    def test_cash(self, filename: str):
+    def test_sums(self, filename: str):
         """
         2010-01-01 open Assets:Bank
         2010-01-01 open Assets:Account
 
         2020-01-01 * "transfer"
-            Assets:Account  20 GBP
+            Assets:Account  10 GBP
             Assets:Bank
 
         2020-03-01 * "transfer"
-            Assets:Account  20 GBP
+            Assets:Account  10 GBP
             Assets:Bank
         """
-        ledger = get_ledger(filename)
-        accounts = AccountsConfig.from_dict(ledger, {
-            "value": 'Assets:Account',
-            "internal": []
-        })
-
-        balances, dates = interval_balances(ledger, accounts.value, Interval.MONTH)
-        assert dates[0] == (datetime.date(2020, 3, 1), datetime.date(2020, 3, 2))
-        assert dates[1] == (datetime.date(2020, 2, 1), datetime.date(2020, 3, 1))
-        assert dates[2] == (datetime.date(2020, 1, 1), datetime.date(2020, 2, 1))
-
-        assert balances[0]['Assets']['Account'].balance.to_string() == "(40 GBP)"
-        assert balances[1]['Assets']['Account'].balance.to_string() == "(20 GBP)"
-        assert balances[2]['Assets']['Account'].balance.to_string() == "(20 GBP)"
+        tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
+        assert {('GBP', None): 20} == tree["Assets:Account"].balance
+        assert {('GBP', None): 20} == tree["Assets"].balance_children
+        assert {} == tree["Assets"].balance
 
     @test_utils.docfile
     @freeze_time("2020-03-10")
-    def test_stock(self, filename: str):
+    def test_it_has_value_accounts_and_ancestors(self, filename: str):
         """
         2010-01-01 open Assets:Bank
         2010-01-01 open Assets:Account
 
         2020-03-01 * "buy"
-            Assets:Account  1 STK {10 GBP}
+            Assets:Account  1 GBP
             Assets:Bank
         """
-        ledger = get_ledger(filename)
-        accounts = AccountsConfig.from_dict(ledger, {
-            "value": 'Assets:Account',
-            "internal": []
-        })
 
-        balances, dates = interval_balances(ledger, accounts.value, Interval.MONTH)
-        assert dates[0] == (datetime.date(2020, 3, 1), datetime.date(2020, 3, 2))
-        assert balances[0]['Assets']['Account'].balance.to_string() == "(1 STK {10 GBP, 2020-03-01})"
+        tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
+        assert "Assets" in tree
+        assert "Assets:Account" in tree
+        assert len(tree['Assets'].children) == 1
+
+        assert "Assets:Bank" not in tree
