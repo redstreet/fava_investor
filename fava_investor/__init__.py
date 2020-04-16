@@ -17,8 +17,7 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     # -----------------------------------------------------------------------------------------------------------
     def build_assetalloc_by_class(self, begin=None, end=None):
         accapi = FavaInvestorAPI(self.ledger)
-        retval = libassetalloc.assetalloc(accapi, self.config.get('asset_alloc_by_class', {}))
-        return retval
+        return libassetalloc.assetalloc(accapi, self.config.get('asset_alloc_by_class', {}))
 
     # AssetAllocAccount
     # -----------------------------------------------------------------------------------------------------------
@@ -39,12 +38,13 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
     # TaxLossHarvester
     # -----------------------------------------------------------------------------------------------------------
-    def query_func(self, sql):
-        contents, rtypes, rrows = self.ledger.query_shell.execute_query(sql)
-        return rtypes, rrows
-
     def build_tlh_tables(self, begin=None, end=None):
-        return libtlh.get_tables(self.query_func, self.config.get('tlh', {}))
+        accapi = FavaInvestorAPI(self.ledger)
+        return libtlh.get_tables(accapi, self.config.get('tlh', {}))
+
+    def recently_sold_at_loss(self, begin=None, end=None):
+        accapi = FavaInvestorAPI(self.ledger)
+        return libtlh.recently_sold_at_loss(accapi, self.config.get('tlh', {}))
 
     # Balances
     # -----------------------------------------------------------------------------------------------------------

@@ -9,19 +9,18 @@
   {% endfor %}
 </div>
 
-{% if (module == 'aa_class') %}
-  <h2>Portfolio: Asset Allocation by Class</h2>
-  {% set results = extension.build_assetalloc_by_class(None, None) %}
-  {{ querytable.querytable(None, *results[2]) }}
-{% endif %}
-
 {% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
-  {% for portfolio in extension.build_aa_by_account(None, None) %}
-      <h3>{{portfolio[0]}}</h3>
-      {{ querytable.querytable(None, *portfolio[1]) }}
-      <br />
-  {% endfor %}
+  {% set results = extension.build_aa_by_account(None, None) %}
+  {% if results|length == 0 %}
+     No regexes found in configuration. See example.bc for how to configure this module.
+  {% else %}
+    {% for portfolio in results %}
+        <h3>{{portfolio[0]}}</h3>
+        {{ querytable.querytable(None, *portfolio[1]) }}
+        <br />
+    {% endfor %}
+  {% endif %}
 {% endif %}
 
 
@@ -71,10 +70,88 @@
 
   <h3>Purchases within the past 30 days creating wash sales</h3>
   {% if harvests[2][0]|length == 0 %}
-  <p>None found!</p>
+    <p>None found!</p>
   {% else %}
-  {{ querytable.querytable(None, *harvests[2]) }}
+    {{ querytable.querytable(None, *harvests[2]) }}
   {% endif %}
+
+  <h3>What not to buy</h3>
+  Note: the below is simply a list of recent sales with losses. They could have been
+  TLHs, or not. Only you know.
+  {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
+  {% if lossy_sales|length == 0 %}
+    <p>No sales with losses found in the last 30 days.</p>
+  {% else %}
+    {{ querytable.querytable(None, *lossy_sales) }}
+  {% endif %}
+
+
+{% endif %}
+
+{% set table_hover_text = _('Hold Shift while clicking to expand all children.
+Hold Ctrl or Cmd while clicking to expand one level.') %}
+
+{# TODO: 
+- add a format_percentage() to fava's template_filters, and use that here
+- display 0 decimal places for assets (needed for all of fava_investor)
+- fix: asset bucket spacing is too wide
+- get currency from libassetalloc instead of looping: {% for currency in ledger.options.operating_currency %}
+- remove links from asset class name
+#}
+
+{% macro asset_tree(account_node) %}
+<ol class="flex-table tree-table{{ ' two-currencies' if ledger.options.operating_currency|length > 1 else '' }}" title="{{ table_hover_text }}">
+  <li class="head">
+    <p>
+      <span class="account-cell"><button type="button" class="link expand-all hidden" title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></span>
+      {% for currency in ledger.options.operating_currency %}
+      <span class="num">{{ currency }}</span>
+      {% endfor %}
+      <span class="num other">{{ _('Percentage') }}</span>
+    </p>
+  </li>
+  {% for account in ([account_node] if account_node.name else account_node.children) recursive %}
+  <li{{ '' }}>
+    <p{{ ' class=has-balance' }}>
+    <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}" data-account-name="{{ account.name }}">
+    <a href='' class='account'>
+      {{ account.name }}
+    </a>
+    </span>
+    {% for currency in ledger.options.operating_currency %}
+    <span class="num">
+      <span class="balance">
+        <span class="number">{{ account.balance|format_currency(currency) }}</span>
+      </span>
+      <span class="balance-children">
+        <span class="number">{{ account.balance_children|format_currency(currency) }}</span>
+      </span>
+    </span>
+    {% endfor %}
+    <span class="num other">
+      <span class="balance">
+        <span class="number">{{ '{:6.2f} %'.format(account.percentage) }}</span>
+      </span>
+      <span class="balance-children">
+        <span class="number">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
+      </span>
+    </span>
+    </p>
+    {% if account.children %}
+    <ol>
+      {{ loop(account.children|sort(attribute='name')) }}
+    </ol>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% endmacro %}
+
+{% if (module == 'aa_class') %}
+  <h2>Portfolio: Asset Allocation by Class</h2>
+  {% set results = extension.build_assetalloc_by_class(None, None) %}
+  {{ asset_tree(results[0]) }}
+
 {% endif %}
 
 {% if (module == 'balances') %}
