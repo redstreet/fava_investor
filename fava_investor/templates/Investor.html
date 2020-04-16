@@ -28,7 +28,8 @@
 {% if (module == 'cashdrag') %}
   <h2>Cash Drag Analysis</h2>
   {% set results = extension.build_cashdrag(None, None) %}
-  {{ querytable.querytable(None, *results) }}
+  Total = {{ results[2]|format_currency(ledger.options.operating_currency[0]) }}
+  {{ querytable.querytable(None, results[0], results[1]) }}
 {% endif %}
 
 {% if (module == 'tlh') %}

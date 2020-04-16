@@ -22,7 +22,8 @@ def cashdrag(beancount_file,
         del argsmap['accounts_pattern']
     if not accounts_exclude_pattern:
         del argsmap['accounts_exclude_pattern']
-    rtypes, rrows = libcashdrag.find_loose_cash(accapi, argsmap)
+    rtypes, rrows, total = libcashdrag.find_loose_cash(accapi, argsmap)
+    print("Total: {}".format(total))
     pretty_print_table(rtypes, rrows)
 
 
