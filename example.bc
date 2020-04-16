@@ -79,7 +79,7 @@ option "render_commas" "True"
      'wash_pattern': 'Assets:Investments',
   },
   'performance': {
-     'value': 'Assets:Investments',
+     'value': ['Assets:Investments'],
      'internal': []
   },
   'asset_alloc_by_account': [{
