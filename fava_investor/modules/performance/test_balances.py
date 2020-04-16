@@ -6,7 +6,8 @@ from beancount.utils import test_utils
 from fava.core import FavaLedger
 from freezegun import freeze_time
 
-from fava_investor import FavaInvestorAPI, get_closed_tree_with_value_accounts_only
+from fava_investor import FavaInvestorAPI
+from .balances import get_closed_tree_with_value_accounts_only
 
 
 def get_ledger(filename):
@@ -18,8 +19,8 @@ def get_ledger(filename):
 
 
 CONFIG = {
-    "value": ["^Assets:Account"],
-    "internal": []
+    "accounts_patterns": ["^Assets:Account"],
+    "accounts_internal_patterns": []
 }
 
 

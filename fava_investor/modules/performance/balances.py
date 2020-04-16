@@ -3,13 +3,12 @@ import re
 from beancount.core.account import parent, parents
 from fava.core import FavaLedger, Tree
 from fava.core.tree import TreeNode
-from fava_investor.common.favainvestorapi import FavaInvestorAPI
 
 
-def get_closed_tree_with_value_accounts_only(accapi: FavaInvestorAPI, config) -> Tree:
+def get_closed_tree_with_value_accounts_only(accapi, config) -> Tree:
     ledger: FavaLedger = accapi.ledger
     tree = ledger.root_tree_closed
-    accounts_to_keep = get_value_accounts_and_parents(accapi.ledger.accounts, config.get('value', ['.*']))
+    accounts_to_keep = get_value_accounts_and_parents(accapi.ledger.accounts, config.get('accounts_patterns', ['.*']))
     filter_tree(tree, accounts_to_keep)
     return tree
 

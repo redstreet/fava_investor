@@ -2,7 +2,7 @@
 
 from fava.ext import FavaExtensionBase
 
-from .modules.performance.balances import get_closed_tree_with_value_accounts_only
+from .modules.performance import balances
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
@@ -50,5 +50,5 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     # -----------------------------------------------------------------------------------------------------------
     def build_balances_tree(self):
         accapi = FavaInvestorAPI(self.ledger)
-        return get_closed_tree_with_value_accounts_only(accapi, self.config.get('performance', {}))
+        return balances.get_closed_tree_with_value_accounts_only(accapi, self.config.get('performance', {}))
 
