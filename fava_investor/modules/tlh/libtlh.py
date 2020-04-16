@@ -156,6 +156,7 @@ def recently_sold_at_loss(accapi, options):
     sql = '''
     SELECT
         date,
+        DATE_ADD(date, 30) as until,
         currency,
         SUM(COST(position)) as cost,
         SUM(CONVERT(position, cost_currency, date)) as sale_price
@@ -163,7 +164,7 @@ def recently_sold_at_loss(accapi, options):
         date >= DATE_ADD(TODAY(), -30)
         AND number < 0
         AND not currency ~ "{operating_currencies}"
-      GROUP BY date,currency
+      GROUP BY date,until,currency
       '''.format(**locals())
     rtypes, rrows = accapi.query_func(sql)
     if not rtypes:

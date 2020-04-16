@@ -74,10 +74,12 @@
   {% else %}
     {{ querytable.querytable(None, *harvests[2]) }}
   {% endif %}
+  <br />
 
   <h3>What not to buy</h3>
-  Note: the below is simply a list of recent sales with losses. They could have been
-  TLHs, or not. Only you know.
+  Note: the below is a list of recent sales with losses provided for your convenience
+  in making purchasing decisions around wash sales. (This is not meant to be financial
+  or tax advice).
   {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
   {% if lossy_sales|length == 0 %}
     <p>No sales with losses found in the last 30 days.</p>
@@ -129,11 +131,12 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     </span>
     {% endfor %}
     <span class="num other">
+      {% set percentage_parent =  '{:3.0f}% of {}'.format(account.percentage_parent, account.parent.name) if account.parent else '' %}
       <span class="balance">
-        <span class="number">{{ '{:6.2f} %'.format(account.percentage) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) }}</span>
       </span>
       <span class="balance-children">
-        <span class="number">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
       </span>
     </span>
     </p>
