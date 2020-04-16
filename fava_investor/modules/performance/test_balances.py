@@ -3,7 +3,7 @@ from pprint import pformat
 from beancount import loader
 from beancount.ops import validation
 from beancount.utils import test_utils
-from core import FavaLedger
+from fava.core import FavaLedger
 from freezegun import freeze_time
 
 from fava_investor import FavaInvestorAPI, get_closed_tree_with_value_accounts_only

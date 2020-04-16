@@ -1,8 +1,6 @@
 """Fava Investor: Investing related reports and tools for Beancount/Fava"""
-import datetime
 
 from fava.ext import FavaExtensionBase
-from fava.util.date import Interval
 
 from .modules.performance.balances import get_closed_tree_with_value_accounts_only
 from .modules.tlh import libtlh

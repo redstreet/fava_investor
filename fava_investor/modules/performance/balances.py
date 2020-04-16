@@ -1,8 +1,8 @@
 import re
 
-from core.tree import TreeNode
-from fava.core import FavaLedger, Tree
 from beancount.core.account import parent, parents
+from fava.core import FavaLedger, Tree
+from fava.core.tree import TreeNode
 from fava_investor.common.favainvestorapi import FavaInvestorAPI
 
 
