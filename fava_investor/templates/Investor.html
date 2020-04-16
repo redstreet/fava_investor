@@ -132,11 +132,12 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     </span>
     {% endfor %}
     <span class="num other">
+      {% set percentage_parent =  '{:3.0f}% of {}'.format(account.percentage_parent, account.parent.name) if account.parent else '' %}
       <span class="balance">
-        <span class="number">{{ '{:6.2f} %'.format(account.percentage) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) }}</span>
       </span>
       <span class="balance-children">
-        <span class="number">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
       </span>
     </span>
     </p>
