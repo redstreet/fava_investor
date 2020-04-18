@@ -3,10 +3,13 @@
 from beancount.core.number import ZERO, Decimal, D
 from beancount.core.inventory import Inventory
 import collections
+import decimal
+import functools
 import locale
 
-def val(inv):
-    return inv.get_only_position().units.number
+import os,sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+from libinvestor import *
 
 def get_tables(accapi, options):
     retrow_types, to_sell, recent_purchases = find_harvestable_lots(accapi, options)
@@ -160,8 +163,8 @@ def recently_sold_at_loss(accapi, options):
         date as sale_date,
         DATE_ADD(date, 30) as until,
         currency,
-        SUM(COST(position)) as basis,
-        SUM(CONVERT(position, cost_currency, date)) as proceeds
+        NEG(SUM(COST(position))) as basis,
+        NEG(SUM(CONVERT(position, cost_currency, date))) as proceeds
       WHERE
         date >= DATE_ADD(TODAY(), -30)
         AND number < 0
@@ -183,7 +186,8 @@ def recently_sold_at_loss(accapi, options):
             # TODO: display this optionally (on by default)
             return_rows.append(RetRow(*row, loss))
 
-    return retrow_types, return_rows
+    footer = build_table_footer(retrow_types, return_rows, accapi)
+    return retrow_types, return_rows, None, footer
 
 def summarize_tlh(harvestable_table, by_commodity):
     # Summary

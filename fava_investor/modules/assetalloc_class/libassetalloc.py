@@ -3,9 +3,7 @@
 
 import argparse,argcomplete,argh
 import collections
-import os
 import re
-import sys
 
 from beancount.core import convert
 from beancount.core import amount
@@ -13,6 +11,7 @@ from beancount.core import inventory
 from beancount.core import realization
 from beancount.core.number import Decimal
 
+import os,sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 from libinvestor import *
 
