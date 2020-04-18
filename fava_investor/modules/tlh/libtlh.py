@@ -173,14 +173,13 @@ def recently_sold_at_loss(accapi, options):
         return [], []
 
     # filter out losses
-    retrow_types = rtypes +  [('loss', Decimal)]
+    retrow_types = rtypes +  [('loss', Inventory)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     return_rows = []
     for row in rrows:
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))
-        if loss > 0:
-            # TODO: flip numbers
+        if loss != Inventory() and val(loss) > 0:
             # TODO: display this optionally (on by default)
             return_rows.append(RetRow(*row, loss))
 
