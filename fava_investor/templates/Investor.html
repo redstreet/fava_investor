@@ -27,7 +27,8 @@
 {% if (module == 'cashdrag') %}
   <h2>Cash Drag Analysis</h2>
   {% set results = extension.build_cashdrag(None, None) %}
-  {{ querytable.querytable(None, *results) }}
+  Total = {{ results[2]|format_currency(ledger.options.operating_currency[0]) }}
+  {{ querytable.querytable(None, results[0], results[1]) }}
 {% endif %}
 
 {% if (module == 'tlh') %}
@@ -68,7 +69,7 @@
   <br />
 
 
-  <h3>Purchases within the past 30 days creating wash sales</h3>
+  <h3>Potential Wash Sales: purchases within the past 30 days</h3>
   {% if harvests[2][0]|length == 0 %}
     <p>None found!</p>
   {% else %}

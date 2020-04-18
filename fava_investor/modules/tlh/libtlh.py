@@ -1,6 +1,7 @@
 #!/bin/env python3
 
 from beancount.core.number import ZERO, Decimal, D
+from beancount.core.inventory import Inventory
 import collections
 import locale
 
@@ -131,15 +132,16 @@ def query_recently_bought(ticker, accapi, options):
     sql = '''
     SELECT
         {account_field} as account,
-        units(sum(position)) as units,
         date as acquisition_date,
+        DATE_ADD(date, 30) as until,
+        units(sum(position)) as units,
         cost(sum(position)) as basis
       WHERE
         number > 0 AND
         date >= DATE_ADD(TODAY(), -30) AND
         currency = "{ticker}"
         {wash_pattern_sql}
-      GROUP BY date,{account_field}
+      GROUP BY {account_field},date,until
       ORDER BY date DESC
       '''.format(**locals())
     rtypes, rrows = accapi.query_func(sql)
@@ -155,29 +157,29 @@ def recently_sold_at_loss(accapi, options):
     wash_pattern_sql = 'AND account ~ "{}"'.format(wash_pattern) if wash_pattern else ''
     sql = '''
     SELECT
-        date,
+        date as sale_date,
         DATE_ADD(date, 30) as until,
         currency,
-        SUM(COST(position)) as cost,
-        SUM(CONVERT(position, cost_currency, date)) as sale_price
+        SUM(COST(position)) as basis,
+        SUM(CONVERT(position, cost_currency, date)) as proceeds
       WHERE
         date >= DATE_ADD(TODAY(), -30)
         AND number < 0
         AND not currency ~ "{operating_currencies}"
-      GROUP BY date,until,currency
+      GROUP BY sale_date,until,currency
       '''.format(**locals())
     rtypes, rrows = accapi.query_func(sql)
     if not rtypes:
         return [], []
 
     # filter out losses
-    retrow_types = rtypes +  [('loss', Decimal)]
+    retrow_types = rtypes +  [('loss', Inventory)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     return_rows = []
     for row in rrows:
-        loss = val(row.sale_price) - val(row.cost)
-        if loss > 0:
-            # TODO: flip numbers
+        loss = Inventory(row.proceeds)
+        loss.add_inventory(-(row.basis))
+        if loss != Inventory() and val(loss) > 0:
             # TODO: display this optionally (on by default)
             return_rows.append(RetRow(*row, loss))
 
