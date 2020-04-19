@@ -1,4 +1,6 @@
+import copy
 from collections import namedtuple
+from typing import List
 
 from beancount.core.inventory import Inventory
 
@@ -6,7 +8,7 @@ from fava_investor.modules.performance.balances import filter_matching
 from fava_investor.modules.performance.report.returns import internalize, is_value_account_entry, is_external_flow_entry
 
 Accounts = namedtuple("Accounts", "value internal external")
-Contribution = namedtuple("Withdrawal", "transaction postings inventory")
+Contribution = namedtuple("Withdrawal", "transaction change balance")
 
 
 class ContributionsCalculator:
@@ -14,37 +16,39 @@ class ContributionsCalculator:
         self.accapi = accapi
         self.accounts = accounts
 
-    def get_contributions_total(self):
-        result = Inventory()
-        for tx, postings, inventory in self.get_contributions_entries():
-            result.add_inventory(inventory)
-        return result
+    def get_contributions_total(self) -> Inventory:
+        entries = self.get_contributions_entries()
+        if not entries:
+            return Inventory()
+        return entries[len(entries)-1].balance
 
-    def get_contributions_entries(self):
+    def get_contributions_entries(self) -> List[Contribution]:
         tx_tuples = self._get_external_x_value_postings()
         return self._filter_postings(tx_tuples, lambda posting: posting.units.number > 0)
 
-    def get_withdrawals_total(self):
-        result = Inventory()
-        for tx, postings, inventory in self.get_withdrawals_entries():
-            result.add_inventory(inventory)
-        return result
+    def get_withdrawals_total(self) -> Inventory:
+        entries = self.get_withdrawals_entries()
+        if not entries:
+            return Inventory()
+        return entries[len(entries)-1].balance
 
-    def get_withdrawals_entries(self):
+    def get_withdrawals_entries(self) -> List[Contribution]:
         tx_tuples = self._get_external_x_value_postings()
         return self._filter_postings(tx_tuples, lambda posting: posting.units.number < 0)
 
     @staticmethod
-    def _filter_postings(tx_tuples, match_lambda):
+    def _filter_postings(tx_tuples, match_lambda) -> List[Contribution]:
         result = []
+        balance = Inventory()
         for entry, value, ext in tx_tuples:
-            matched_postings = []
+            inventory = Inventory()
             for posting in value:
                 if match_lambda(posting):
-                    matched_postings.append(posting)
+                    inventory.add_position(posting)
+                    balance.add_inventory(inventory)
 
-            if matched_postings:
-                result.append(Contribution(entry, matched_postings, Inventory(matched_postings)))
+            if inventory != {}:
+                result.append(Contribution(entry, inventory, copy.copy(balance)))
         return result
 
     def _get_external_x_value_postings(self):
@@ -64,7 +68,7 @@ class ContributionsCalculator:
             yield entry, value, ext
 
 
-def _get_accounts(accapi, config) -> Accounts:
+def get_accounts_from_config(accapi, config) -> Accounts:
     value = filter_matching(accapi.ledger.accounts, config.get('accounts_patterns', ['.*']))
     internal = filter_matching(accapi.ledger.accounts, config.get('accounts_internal_patterns', ['.*']))
     external = set(accapi.ledger.accounts).difference(value | internal)

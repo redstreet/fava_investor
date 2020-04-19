@@ -807,6 +807,23 @@ class TestReturnsInternalize(cmptest.TestCase):
         self.assertEqual({'USD': 1.2}, returns_)
         self.assertEqual((datetime.date(2014, 1, 10), datetime.date(2014, 4, 1)), dates)
 
+    @loader.load_doc()
+    def test_internalization_without_relevant_transaction_shouldnt_throw(self, entries, errors, options_map):
+        """
+        2014-01-01 open Assets:Bank:Checking     USD
+        2014-01-01 open Assets:Invest:BOOG       BOOG
+        2014-01-01 open Assets:Invest:Cash       USD
+        2014-01-01 open Income:Invest:Dividends  USD
+
+        """
+        self.assertFalse(errors)
+        returns_, dates = returns.compute_timeline_and_returns(
+            entries, options_map, 'Equity:Internalized',
+            {'Assets:Invest:BOOG'},
+            {'Income:Invest:Dividends'},
+            {'Income:Invest:Dividends'})
+        self.assertEqual({}, returns_)
+
 
 class TestReturnsExampleScript(unittest.TestCase):
 

@@ -217,6 +217,7 @@ __license__ = "GNU GPLv2"
 import argparse
 import collections
 import copy
+import datetime
 import logging
 import re
 import sys
@@ -309,6 +310,8 @@ def segment_periods(entries, accounts_value, accounts_internal):
     portfolio_entries = [entry
                          for entry in entries
                          if is_value_account_entry(entry, accounts_value)]
+    if len(portfolio_entries) == 0:
+        return []
     iter_entries = iter(portfolio_entries)
     entry = next(iter_entries)
 
@@ -575,7 +578,7 @@ def internalize(entries, transfer_account,
     open_close_map = getters.get_account_open_close(new_entries)
     if transfer_account not in open_close_map:
         open_transfer_entry = data.Open(data.new_metadata("beancount.projects.returns", 0),
-                                        new_entries[0].date,
+                                        new_entries[0].date if len(new_entries) > 0 else datetime.date(1970, 1, 1),
                                         transfer_account, None, None)
         new_entries.insert(0, open_transfer_entry)
 
@@ -725,6 +728,8 @@ def compute_returns(timeline, price_map, date_begin=None, date_end=None):
         returns: A dict of currency -> float total returns.
         dates: A pair of (date_first, date_last) datetime.date instances.
     """
+    if len(timeline) == 0:
+        return {}, (datetime.date(1970, 1, 1), datetime.datetime.now())
     periods = [(s.begin.date, s.end.date, s.begin.balance, s.end.balance)
                for s in timeline]
 
