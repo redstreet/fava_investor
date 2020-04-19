@@ -13,7 +13,7 @@ def get_closed_tree_with_value_accounts_only(accapi, config) -> Tree:
     return tree
 
 
-def get_value_accounts(accounts, patterns):
+def filter_matching(accounts, patterns):
     result = set()
     for account in accounts:
         if _is_value_account(account, patterns):
@@ -35,7 +35,7 @@ def _remove_account_from_tree(tree: Tree, account: str):
 
 
 def _get_value_accounts_and_parents(accounts: dict, patterns):
-    result = get_value_accounts(accounts, patterns)
+    result = filter_matching(accounts, patterns)
 
     for value_acc in list(result):
         for p in parents(value_acc):

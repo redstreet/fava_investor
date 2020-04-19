@@ -274,6 +274,16 @@ def sum_balances_for_accounts(balance, entry, accounts):
     return balance
 
 
+def is_external_flow_entry(entry, accounts_related):
+    return isinstance(entry, data.Transaction) \
+           and any(posting.account not in accounts_related for posting in entry.postings)
+
+
+def is_value_account_entry(entry, accounts_value):
+    return isinstance(entry, data.Transaction) \
+           and getters.get_entry_accounts(entry) & accounts_value
+
+
 def segment_periods(entries, accounts_value, accounts_internal):
     """Segment entries in terms of piecewise periods of internal flow.
 
@@ -295,15 +305,10 @@ def segment_periods(entries, accounts_value, accounts_internal):
         must come before the requested end, if specified.
     """
     accounts_related = accounts_value | accounts_internal
-    is_external_flow_entry = lambda entry: (isinstance(entry, data.Transaction) and
-                                            any(posting.account not in accounts_related
-                                                for posting in entry.postings))
 
-    # Create an iterator over the entries we care about.
     portfolio_entries = [entry
                          for entry in entries
-                         if (isinstance(entry, data.Transaction) and
-                             getters.get_entry_accounts(entry) & accounts_value)]
+                         if is_value_account_entry(entry, accounts_value)]
     iter_entries = iter(portfolio_entries)
     entry = next(iter_entries)
 
@@ -322,7 +327,7 @@ def segment_periods(entries, accounts_value, accounts_internal):
         segment_entries = []
         while True:
             period_end = entry.date
-            if is_external_flow_entry(entry):
+            if is_external_flow_entry(entry, accounts_related):
                 break
             if entry:
                 segment_entries.append(entry)
@@ -349,7 +354,7 @@ def segment_periods(entries, accounts_value, accounts_internal):
         # the portfolio contents do not change).
         if entry is not None:
             date = entry.date
-            while is_external_flow_entry(entry) and entry.date == date:
+            while is_external_flow_entry(entry, accounts_related) and entry.date == date:
                 external_entries.append(entry)
                 sum_balances_for_accounts(balance, entry, accounts_value)
                 try:
