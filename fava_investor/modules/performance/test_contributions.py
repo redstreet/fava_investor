@@ -1,4 +1,3 @@
-import datetime
 from collections import namedtuple
 
 from beancount.core.amount import A
@@ -6,81 +5,18 @@ from beancount.core.data import Transaction
 from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
-from .balances import filter_matching
-from .report.returns import internalize, is_value_account_entry, is_external_flow_entry
+from .contributions import ContributionsCalculator, _get_accounts
 from .test_balances import get_ledger
-from ... import FavaInvestorAPI
 
 CONFIG = {
     "accounts_patterns": ["^Assets:Account"],
     "accounts_internal_patterns": []
 }
-Accounts = namedtuple("Accounts", "value internal external")
-Withdrawal = namedtuple("Withdrawal", "transaction postings inventory")
 
 
-def _get_accounts(accapi, config) -> Accounts:
-    value = filter_matching(accapi.ledger.accounts, config.get('accounts_patterns', ['.*']))
-    internal = filter_matching(accapi.ledger.accounts, config.get('accounts_internal_patterns', ['.*']))
-    external = set(accapi.ledger.accounts).difference(value | internal)
-    return Accounts(value, internal, external)
-
-
-def _get_external_x_value_postings(accapi: FavaInvestorAPI, accounts: Accounts):
-    entries, _ = internalize(accapi.ledger.entries, "Equity:Internalized", accounts.value, [])
-
-    entries = [entry for entry in entries
-               if is_value_account_entry(entry, accounts.value)
-               and is_external_flow_entry(entry, accounts.value | accounts.internal)]
-
-    for entry in entries:
-        ext = []
-        value = []
-        for posting in entry.postings:
-            if posting.account in accounts.value:
-                value.append(posting)
-            else:
-                ext.append(posting)
-        yield entry, value, ext
-
-
-def get_contributions_total(accapi, config):
-    result = Inventory()
-    for tx, postings, inventory in get_contributions_entries(accapi, config):
-        result.add_inventory(inventory)
-    return result
-
-
-def get_withdrawals_total(accapi, config):
-    result = Inventory()
-    for tx, postings, inventory in get_withdrawals_entries(accapi, config):
-        result.add_inventory(inventory)
-    return result
-
-
-def get_withdrawals_entries(accapi, config):
-    accounts = _get_accounts(accapi, config)
-    tx_tuples = _get_external_x_value_postings(accapi, accounts)
-    return _filter_postings(tx_tuples, lambda posting: posting.units.number < 0)
-
-
-def _filter_postings(tx_tuples, match_lambda):
-    result = []
-    for entry, value, ext in tx_tuples:
-        matched_postings = []
-        for posting in value:
-            if match_lambda(posting):
-                matched_postings.append(posting)
-
-        if matched_postings:
-            result.append(Withdrawal(entry, matched_postings, Inventory(matched_postings)))
-    return result
-
-
-def get_contributions_entries(accapi, config):
-    accounts = _get_accounts(accapi, config)
-    tx_tuples = _get_external_x_value_postings(accapi, accounts)
-    return _filter_postings(tx_tuples, lambda posting: posting.units.number > 0)
+def get_sut(filename, config) -> ContributionsCalculator:
+    accapi = get_ledger(filename)
+    return ContributionsCalculator(accapi, _get_accounts(accapi, config))
 
 
 class TestContributions(test_utils.TestCase):
@@ -99,8 +35,8 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:Sub  10 GBP
             Assets:Bank
         """
-        ledger = get_ledger(filename)
-        contributions = get_contributions_total(ledger, CONFIG)
+        sut = get_sut(filename, CONFIG)
+        contributions = sut.get_contributions_total()
 
         self.assertEquals(Inventory.from_string("20 GBP"), contributions)
 
@@ -120,8 +56,8 @@ class TestContributions(test_utils.TestCase):
             Assets:Bank  20 GBP
             Assets:Bank2
         """
-        ledger = get_ledger(filename)
-        contributions = get_contributions_total(ledger, CONFIG)
+        sut = get_sut(filename, CONFIG)
+        contributions = sut.get_contributions_total()
 
         self.assertEquals(Inventory.from_string(""), contributions)
 
@@ -144,9 +80,9 @@ class TestContributions(test_utils.TestCase):
             Assets:Account  3 GBP
             Assets:Bank
         """
-        ledger = get_ledger(filename)
-        contributions = get_contributions_total(ledger, CONFIG)
-        withdrawals = get_withdrawals_total(ledger, CONFIG)
+        sut = get_sut(filename, CONFIG)
+        contributions = sut.get_contributions_total()
+        withdrawals = sut.get_withdrawals_total()
 
         self.assertEquals(Inventory.from_string("4 GBP"), contributions)
         self.assertEquals(Inventory.from_string("-3 GBP"), withdrawals)
@@ -167,8 +103,9 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:B  -2 GBP
             Assets:Bank
         """
+        sut = get_sut(filename, CONFIG)
         ledger = get_ledger(filename)
-        result = get_withdrawals_entries(ledger, CONFIG)
+        result = sut.get_withdrawals_entries()
 
         self.assertEquals(1, len(result))
 
@@ -196,8 +133,8 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:B  -4 GBP
             Assets:Bank
         """
-        ledger = get_ledger(filename)
-        result = get_withdrawals_entries(ledger, CONFIG)
+        sut = get_sut(filename, CONFIG)
+        result = sut.get_withdrawals_entries()
 
         self.assertEqual(Inventory.from_string("-5 GBP"), result[0].inventory)
 
@@ -217,8 +154,8 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:B  2 GBP
             Assets:Bank
         """
-        ledger = get_ledger(filename)
-        result = get_contributions_entries(ledger, CONFIG)
+        sut = get_sut(filename, CONFIG)
+        result = sut.get_contributions_entries()
 
         self.assertEquals(1, len(result))
 
@@ -246,7 +183,7 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:B  4 GBP
             Assets:Bank
         """
-        ledger = get_ledger(filename)
-        result = get_contributions_entries(ledger, CONFIG)
+        sut = get_sut(filename, CONFIG)
+        result = sut.get_contributions_entries()
 
         self.assertEqual(Inventory.from_string("5 GBP"), result[0].inventory)
