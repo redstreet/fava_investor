@@ -23,7 +23,7 @@ from beancount.core import getters
 from beancount.core import data
 from beancount import loader
 
-from fava_investor.modules.performance.report import returns
+from fava_investor.modules.performance.returns import returns
 
 
 def main():

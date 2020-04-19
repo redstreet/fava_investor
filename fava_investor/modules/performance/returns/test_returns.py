@@ -3,19 +3,16 @@ __license__ = "GNU GPLv2"
 
 import datetime
 import logging
-import os
 import textwrap
 import sys
 import subprocess
 import unittest
 from os import path
-from pathlib import Path
 
 from beancount.core.inventory import Inventory
-from freezegun import freeze_time
 
 from .returns import Snapshot
-from fava_investor.modules.performance.report import returns
+from fava_investor.modules.performance.returns import returns
 from beancount import loader
 from beancount.core import inventory
 from beancount.parser import cmptest

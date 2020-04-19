@@ -4,8 +4,8 @@ from typing import List
 
 from beancount.core.inventory import Inventory
 
-from fava_investor.modules.performance.balances import filter_matching
-from fava_investor.modules.performance.report.returns import internalize, is_value_account_entry, is_external_flow_entry
+from .balances import filter_matching
+from .returns import returns
 
 Accounts = namedtuple("Accounts", "value internal external")
 Contribution = namedtuple("Withdrawal", "transaction change balance")
@@ -52,11 +52,11 @@ class ContributionsCalculator:
         return result
 
     def _get_external_x_value_postings(self):
-        entries, _ = internalize(self.accapi.ledger.entries, "Equity:Internalized", self.accounts.value, [])
+        entries, _ = returns.internalize(self.accapi.ledger.entries, "Equity:Internalized", self.accounts.value, [])
 
         for entry in entries:
-            if not is_value_account_entry(entry, self.accounts.value) \
-                   or not is_external_flow_entry(entry, self.accounts.value | self.accounts.internal):
+            if not returns.is_value_account_entry(entry, self.accounts.value) \
+                   or not returns.is_external_flow_entry(entry, self.accounts.value | self.accounts.internal):
                 continue
             ext = []
             value = []

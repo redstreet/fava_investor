@@ -220,14 +220,10 @@ import copy
 import datetime
 import logging
 import re
-import sys
-
-from dateutil.parser import parse as parse_datetime
 
 from beancount.core.number import ZERO
 from beancount import loader
 from beancount.parser import printer
-from beancount.parser import options
 from beancount.core import data
 from beancount.core import inventory
 from beancount.core import getters
@@ -391,7 +387,7 @@ def compute_period_returns(date_begin, date_end,
       A pair of:
         returns: A dict of currency -> floating-point return for the period. The
           union of all currencies for those is returned (this is done to be able
-          to evaluate and report on returns in multiple currencies).
+          to evaluate and returns on returns in multiple currencies).
         (mktvalue_begin, mktvalue_end): Both instances of Inventory, the balance
           of the porfolio evaluated at the market value at the beginning and end
           of the period.
