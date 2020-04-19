@@ -41,9 +41,9 @@ class TestBalances(test_utils.TestCase):
             Assets:Bank
         """
         tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
-        assert {('GBP', None): 20} == tree["Assets:Account"].balance
-        assert {('GBP', None): 20} == tree["Assets"].balance_children
-        assert {} == tree["Assets"].balance
+        self.assertEqual({('GBP', None): 20}, tree["Assets:Account"].balance)
+        self.assertEqual({('GBP', None): 20}, tree["Assets"].balance_children)
+        self.assertEqual({}, tree["Assets"].balance)
 
     @test_utils.docfile
     @freeze_time("2020-03-10")
@@ -58,8 +58,8 @@ class TestBalances(test_utils.TestCase):
         """
 
         tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
-        assert "Assets" in tree
-        assert "Assets:Account" in tree
-        assert len(tree['Assets'].children) == 1
+        self.assertTrue("Assets" in tree)
+        self.assertTrue("Assets:Account" in tree)
+        self.assertEqual(1, len(tree['Assets'].children))
 
-        assert "Assets:Bank" not in tree
+        self.assertTrue("Assets:Bank" not in tree)
