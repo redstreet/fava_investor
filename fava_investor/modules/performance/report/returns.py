@@ -335,9 +335,7 @@ def segment_periods(entries, accounts_value, accounts_internal):
                 break
         balance_end = copy.copy(balance)
 
-        ## FIXME: Bring this back in, this fails for now. Something about the
-        ## initialization fails it.
-        ## assert period_begin <= period_end, (period_begin, period_end)
+        assert period_begin <= period_end, (period_begin, period_end)
 
         external_entries = []
         segment = Segment(Snapshot(period_begin, balance_begin),
@@ -974,6 +972,8 @@ def main():
 
     print('Averaged annual returns from {} to {}:'.format(date_first, date_last))
     for currency, return_ in sorted(annual_returns.items()):
+        if isinstance(return_ , complex):
+            return_ = return_.real
         print('  {}: {:.3%}'.format(currency, return_ - 1))
 
 
