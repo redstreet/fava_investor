@@ -5,10 +5,7 @@ from beancount.utils import test_utils
 from .contributions import ContributionsCalculator, get_accounts_from_config
 from .test_balances import get_ledger
 
-CONFIG = {
-    "accounts_patterns": ["^Assets:Account"],
-    "accounts_internal_patterns": []
-}
+CONFIG = {"accounts_patterns": ["^Assets:Account"], "accounts_internal_patterns": []}
 
 
 def get_sut(filename, config) -> ContributionsCalculator:
@@ -223,7 +220,9 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:A  2 GBP
             Assets:Account:B
         """
-        self.skipTest("Not implemented. It will be needed to calculate returns for selected account as well.")
+        self.skipTest(
+            "Not implemented. It will be needed to calculate returns for selected account as well."
+        )
 
         sut = get_sut(filename, CONFIG)
         result = sut.get_contributions_total()

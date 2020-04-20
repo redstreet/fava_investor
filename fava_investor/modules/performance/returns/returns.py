@@ -240,7 +240,7 @@ from beancount.utils import date_utils
 # Attributes:
 #   date: A datetime.date instance, the day of the snapshot.
 #   balance: An Inventory instance, the balance at the given date.
-Snapshot = collections.namedtuple('Snapshot', 'date balance')
+Snapshot = collections.namedtuple("Snapshot", "date balance")
 
 # A segment of a returns chain, with no external flows involved.
 #
@@ -251,7 +251,7 @@ Snapshot = collections.namedtuple('Snapshot', 'date balance')
 #     transactions.
 #   external_entries: A list of the external entries that immediately follow
 #     this segment.
-Segment = collections.namedtuple('Segment', 'begin end entries external_entries')
+Segment = collections.namedtuple("Segment", "begin end entries external_entries")
 
 
 def sum_balances_for_accounts(balance, entry, accounts):
@@ -272,13 +272,16 @@ def sum_balances_for_accounts(balance, entry, accounts):
 
 
 def is_external_flow_entry(entry, accounts_related):
-    return isinstance(entry, data.Transaction) \
-           and any(posting.account not in accounts_related for posting in entry.postings)
+    return isinstance(entry, data.Transaction) and any(
+        posting.account not in accounts_related for posting in entry.postings
+    )
 
 
 def is_value_account_entry(entry, accounts_value):
-    return isinstance(entry, data.Transaction) \
-           and getters.get_entry_accounts(entry) & accounts_value
+    return (
+        isinstance(entry, data.Transaction)
+        and getters.get_entry_accounts(entry) & accounts_value
+    )
 
 
 def segment_periods(entries, accounts_value, accounts_internal):
@@ -303,9 +306,9 @@ def segment_periods(entries, accounts_value, accounts_internal):
     """
     accounts_related = accounts_value | accounts_internal
 
-    portfolio_entries = [entry
-                         for entry in entries
-                         if is_value_account_entry(entry, accounts_value)]
+    portfolio_entries = [
+        entry for entry in entries if is_value_account_entry(entry, accounts_value)
+    ]
     if len(portfolio_entries) == 0:
         return []
     iter_entries = iter(portfolio_entries)
@@ -342,9 +345,12 @@ def segment_periods(entries, accounts_value, accounts_internal):
         assert period_begin <= period_end, (period_begin, period_end)
 
         external_entries = []
-        segment = Segment(Snapshot(period_begin, balance_begin),
-                          Snapshot(period_end, balance_end),
-                          segment_entries, external_entries)
+        segment = Segment(
+            Snapshot(period_begin, balance_begin),
+            Snapshot(period_end, balance_end),
+            segment_entries,
+            external_entries,
+        )
         timeline.append(segment)
 
         # Absorb the balance of the external flow entries as long as they're on
@@ -353,7 +359,9 @@ def segment_periods(entries, accounts_value, accounts_internal):
         # the portfolio contents do not change).
         if entry is not None:
             date = entry.date
-            while is_external_flow_entry(entry, accounts_related) and entry.date == date:
+            while (
+                is_external_flow_entry(entry, accounts_related) and entry.date == date
+            ):
                 external_entries.append(entry)
                 sum_balances_for_accounts(balance, entry, accounts_value)
                 try:
@@ -373,8 +381,7 @@ def segment_periods(entries, accounts_value, accounts_internal):
     return timeline
 
 
-def compute_period_returns(date_begin, date_end,
-                           balance_begin, balance_end, price_map):
+def compute_period_returns(date_begin, date_end, balance_begin, balance_end, price_map):
     """Compute the returns of the given begin/end balances.
 
     Args:
@@ -402,8 +409,10 @@ def compute_period_returns(date_begin, date_end,
     currencies = set()
     single_begin = {}
     single_end = {}
-    for mktvalue, single in [(mktvalue_begin, single_begin),
-                             (mktvalue_end, single_end)]:
+    for mktvalue, single in [
+        (mktvalue_begin, single_begin),
+        (mktvalue_end, single_end),
+    ]:
         for pos in mktvalue.get_positions():
             if pos.cost:
                 logging.error('Could not reduce position "%s" to its value', pos)
@@ -447,22 +456,28 @@ def annualize_returns(returns, date_first, date_last):
     if num_days == 0:
         for currency, return_ in returns.items():
             if return_ != 1:
-                raise ValueError("Invalid period for return: {} days for {}".format(
-                    num_days, return_))
-        exponent = 1.
+                raise ValueError(
+                    "Invalid period for return: {} days for {}".format(
+                        num_days, return_
+                    )
+                )
+        exponent = 1.0
     else:
-        exponent = 365. / num_days
-    return {currency: return_ ** exponent
-            for currency, return_ in returns.items()}
+        exponent = 365.0 / num_days
+    return {currency: return_ ** exponent for currency, return_ in returns.items()}
 
 
 # The format of the links that are added to internalized transactions.
-LINK_FORMAT = 'internalized-{:05d}'
+LINK_FORMAT = "internalized-{:05d}"
 
 
-def internalize(entries, transfer_account,
-                accounts_value, accounts_internal,
-                accounts_internalize=None):
+def internalize(
+    entries,
+    transfer_account,
+    accounts_value,
+    accounts_internal,
+    accounts_internalize=None,
+):
     """Internalize flows that would be lost because booked against external
     flow accounts. This splits up entries that have accounts both in internal
     flows and external flows. A new set of entries are returned, along with a
@@ -499,12 +514,14 @@ def internalize(entries, transfer_account,
     # the entry into two entries, one without external flows against an transfer
     # account that we consider an assets account, and just the external flows
     # against this same transfer account.
-    assert(isinstance(transfer_account, str)), (
-        "Invalid transfer account: {}".format(transfer_account))
+    assert isinstance(transfer_account, str), "Invalid transfer account: {}".format(
+        transfer_account
+    )
 
     if accounts_internalize and not (accounts_internalize <= accounts_internal):
         raise ValueError(
-            "Internalization accounts is not a subset of internal flows accounts.")
+            "Internalization accounts is not a subset of internal flows accounts."
+        )
 
     new_entries = []
     replaced_entries = []
@@ -534,8 +551,11 @@ def internalize(entries, transfer_account,
 
         # Check if the entry is to be internalized and split it up in two
         # entries and replace the entry if that's the case.
-        if (postings_internal and postings_external and
-            (postings_assets or postings_internalize)):
+        if (
+            postings_internal
+            and postings_external
+            and (postings_assets or postings_internalize)
+        ):
 
             replaced_entries.append(entry)
 
@@ -548,22 +568,33 @@ def internalize(entries, transfer_account,
             for posting in postings_external:
                 balance_transfer.add_amount(convert.get_weight(posting))
 
-            prototype_entry = entry._replace(flag=flags.FLAG_RETURNS,
-                                             links=(entry.links or set()) | set([link]))
+            prototype_entry = entry._replace(
+                flag=flags.FLAG_RETURNS, links=(entry.links or set()) | set([link])
+            )
 
             # Create internal flows posting.
             postings_transfer_int = [
                 data.Posting(transfer_account, pos.units, pos.cost, None, None, None)
-                for pos in balance_transfer.get_positions()]
-            new_entries.append(prototype_entry._replace(
-                postings=(postings_assets + postings_internal + postings_transfer_int)))
+                for pos in balance_transfer.get_positions()
+            ]
+            new_entries.append(
+                prototype_entry._replace(
+                    postings=(
+                        postings_assets + postings_internal + postings_transfer_int
+                    )
+                )
+            )
 
             # Create external flows posting.
             postings_transfer_ext = [
                 data.Posting(transfer_account, -pos.units, pos.cost, None, None, None)
-                for pos in balance_transfer.get_positions()]
-            new_entries.append(prototype_entry._replace(
-                postings=(postings_transfer_ext + postings_external)))
+                for pos in balance_transfer.get_positions()
+            ]
+            new_entries.append(
+                prototype_entry._replace(
+                    postings=(postings_transfer_ext + postings_external)
+                )
+            )
         else:
             new_entries.append(entry)
 
@@ -573,17 +604,26 @@ def internalize(entries, transfer_account,
     # correct set of entries you can load cleanly).
     open_close_map = getters.get_account_open_close(new_entries)
     if transfer_account not in open_close_map:
-        open_transfer_entry = data.Open(data.new_metadata("beancount.projects.returns", 0),
-                                        new_entries[0].date if len(new_entries) > 0 else datetime.date(1970, 1, 1),
-                                        transfer_account, None, None)
+        open_transfer_entry = data.Open(
+            data.new_metadata("beancount.projects.returns", 0),
+            new_entries[0].date if len(new_entries) > 0 else datetime.date(1970, 1, 1),
+            transfer_account,
+            None,
+            None,
+        )
         new_entries.insert(0, open_transfer_entry)
 
     return new_entries, replaced_entries
 
 
-def create_timeline(entries, options_map,
-                    transfer_account,
-                    accounts_value, accounts_internal, accounts_internalize=None):
+def create_timeline(
+    entries,
+    options_map,
+    transfer_account,
+    accounts_value,
+    accounts_internal,
+    accounts_internalize=None,
+):
 
     """Compute the returns of a portfolio of accounts.
 
@@ -620,16 +660,22 @@ def create_timeline(entries, options_map,
     # Remove unrealized entries, if any are found. (Note that unrealized gains
     # only inserted at the end of the list of entries have no effect because
     # this module never creates a period after these. This may change in the future).
-    entries = [entry
-               for entry in entries
-               if not (isinstance(entry, data.Transaction) and
-                       entry.flag == flags.FLAG_UNREALIZED)]
+    entries = [
+        entry
+        for entry in entries
+        if not (
+            isinstance(entry, data.Transaction) and entry.flag == flags.FLAG_UNREALIZED
+        )
+    ]
 
     # Internalize entries with internal/external flows.
     entries, internalized_entries = internalize(
-        entries, transfer_account,
-        accounts_value, accounts_internal,
-        accounts_internalize)
+        entries,
+        transfer_account,
+        accounts_value,
+        accounts_internal,
+        accounts_internalize,
+    )
     accounts_value.add(transfer_account)
 
     # Segment the entries, splitting at entries with external flow and computing
@@ -654,10 +700,15 @@ def value_inventory(price_map, date, inv):
         if pos.cost is None:
             converted_pos = units
         else:
-            converted_pos = prices.convert_amount(price_map, pos.cost.currency, units, date)
+            converted_pos = prices.convert_amount(
+                price_map, pos.cost.currency, units, date
+            )
             if converted_pos is None:
-                logging.warning('Could not convert Position "{}" to {}'.format(
-                    units, pos.cost.currency))
+                logging.warning(
+                    'Could not convert Position "{}" to {}'.format(
+                        units, pos.cost.currency
+                    )
+                )
                 converted_pos = units
         result.add_amount(converted_pos)
     return result
@@ -672,12 +723,20 @@ def dump_timeline_brief(timeline, price_map, file):
       file: A file object to write to.
     """
     pr = lambda *args: print(*args, file=file)
-    str_balances = [(
-        value_inventory(price_map, segment.begin.date, segment.begin.balance).to_string(),
-        value_inventory(price_map, segment.end.date, segment.end.balance).to_string()
-    ) for segment in timeline]
-    max_width = max(max(len(str_begin), len(str_end))
-                    for str_begin, str_end in str_balances)
+    str_balances = [
+        (
+            value_inventory(
+                price_map, segment.begin.date, segment.begin.balance
+            ).to_string(),
+            value_inventory(
+                price_map, segment.end.date, segment.end.balance
+            ).to_string(),
+        )
+        for segment in timeline
+    ]
+    max_width = max(
+        max(len(str_begin), len(str_end)) for str_begin, str_end in str_balances
+    )
     fmt = "   {{}} -> {{}}  {{:>{w}}}  {{:>{w}}}".format(w=max_width)
     for segment, (str_begin, str_end) in zip(timeline, str_balances):
         pr(fmt.format(segment.begin.date, segment.end.date, str_begin, str_end))
@@ -695,7 +754,7 @@ def dump_timeline(timeline, price_map, file):
     """
     # FIXME: Convert this to make use of the price map.
     pr = lambda *args: print(*args, file=file)
-    indfile = misc_utils.LineFileProxy(file.write, '   ', write_newlines=True)
+    indfile = misc_utils.LineFileProxy(file.write, "   ", write_newlines=True)
     for segment in timeline:
         pr(",-----------------------------------------------------------")
         pr(" Begin:   {}".format(segment.begin.date))
@@ -726,46 +785,49 @@ def compute_returns(timeline, price_map, date_begin=None, date_end=None):
     """
     if len(timeline) == 0:
         return {}, (datetime.date(1970, 1, 1), datetime.datetime.now())
-    periods = [(s.begin.date, s.end.date, s.begin.balance, s.end.balance)
-               for s in timeline]
+    periods = [
+        (s.begin.date, s.end.date, s.begin.balance, s.end.balance) for s in timeline
+    ]
 
     # From the period balances, compute the returns.
     logging.info("Calculating period returns.")
     logging.info("")
     all_returns = []
     for (period_begin, period_end, balance_begin, balance_end) in periods:
-        period_returns, mktvalues = compute_period_returns(period_begin, period_end,
-                                                           balance_begin, balance_end,
-                                                           price_map)
+        period_returns, mktvalues = compute_period_returns(
+            period_begin, period_end, balance_begin, balance_end, price_map
+        )
         mktvalue_begin, mktvalue_end = mktvalues
         all_returns.append(period_returns)
 
         try:
-            annual_returns = (annualize_returns(period_returns, period_begin, period_end)
-                              if period_end != period_begin
-                              else {})
+            annual_returns = (
+                annualize_returns(period_returns, period_begin, period_end)
+                if period_end != period_begin
+                else {}
+            )
         except OverflowError:
-            annual_returns = 'OVERFLOW'
+            annual_returns = "OVERFLOW"
 
         logging.info("From %s to %s", period_begin, period_end)
-        logging.info("  Begin %s => %s",
-                     balance_begin.reduce(convert.get_units), mktvalue_begin)
-        logging.info("  End   %s => %s",
-                     balance_end.reduce(convert.get_units), mktvalue_end)
+        logging.info(
+            "  Begin %s => %s", balance_begin.reduce(convert.get_units), mktvalue_begin
+        )
+        logging.info(
+            "  End   %s => %s", balance_end.reduce(convert.get_units), mktvalue_end
+        )
         logging.info("  Returns     %s", period_returns)
         logging.info("  Annualized  %s", annual_returns)
         logging.info("")
 
     # Compute the piecewise returns. Note that we have to be careful to handle
     # all available currencies.
-    currencies = set(currency
-                     for returns in all_returns
-                     for currency in returns.keys())
+    currencies = set(currency for returns in all_returns for currency in returns.keys())
     total_returns = {}
     for currency in currencies:
-        total_return = 1.
+        total_return = 1.0
         for returns in all_returns:
-            total_return *= returns.get(currency, 1.)
+            total_return *= returns.get(currency, 1.0)
         total_returns[currency] = total_return
 
     date_first = periods[0][0]
@@ -773,10 +835,16 @@ def compute_returns(timeline, price_map, date_begin=None, date_end=None):
     return total_returns, (date_first, date_last)
 
 
-def compute_timeline_and_returns(entries, options_map,
-                                 transfer_account,
-                                 accounts_value, accounts_internal, accounts_internalize=None,
-                                 date_begin=None, date_end=None):
+def compute_timeline_and_returns(
+    entries,
+    options_map,
+    transfer_account,
+    accounts_value,
+    accounts_internal,
+    accounts_internalize=None,
+    date_begin=None,
+    date_end=None,
+):
     """Compute a timeline and the returns of a portfolio of accounts.
 
     Args:
@@ -800,9 +868,14 @@ def compute_timeline_and_returns(entries, options_map,
         returns: A dict of currency -> float total returns.
         dates: A pair of (date_first, date_last) datetime.date instances.
     """
-    timeline = create_timeline(entries, options_map,
-                               transfer_account,
-                               accounts_value, accounts_internal, accounts_internalize)
+    timeline = create_timeline(
+        entries,
+        options_map,
+        transfer_account,
+        accounts_value,
+        accounts_internal,
+        accounts_internalize,
+    )
 
     price_map = prices.build_price_map(entries)
 
@@ -817,12 +890,14 @@ def compute_timeline_and_returns(entries, options_map,
 #   internal: A set of internal account strings.
 #   external: A set of external account strings.
 #   internalize: A set of internalized account strings.
-ReturnAccounts = collections.namedtuple('ReturnAccounts',
-                                        'value internal external internalize')
+ReturnAccounts = collections.namedtuple(
+    "ReturnAccounts", "value internal external internalize"
+)
 
 
-def regexps_to_accounts(entries,
-                        regexp_value, regexp_internal, regexp_internalize=None):
+def regexps_to_accounts(
+    entries, regexp_value, regexp_internal, regexp_internalize=None
+):
     """Extract account name from a list of entries and value & internal account regexps.
 
     This function takes two regular expressions: one for value accounts and one
@@ -854,7 +929,9 @@ def regexps_to_accounts(entries,
     # Precompute regexps for performance.
     match_value = re.compile(regexp_value).match
     match_internal = re.compile(regexp_internal).match
-    match_internalize = re.compile(regexp_internalize).match if regexp_internalize else None
+    match_internalize = (
+        re.compile(regexp_internalize).match if regexp_internalize else None
+    )
 
     # Run through all the transactions.
     for entry in entries:
@@ -862,9 +939,13 @@ def regexps_to_accounts(entries,
             continue
 
         # If we have a value account or an explicitly internalized account.
-        if any((match_value(posting.account) or
-                (match_internalize and match_internalize(posting.account)))
-               for posting in entry.postings):
+        if any(
+            (
+                match_value(posting.account)
+                or (match_internalize and match_internalize(posting.account))
+            )
+            for posting in entry.postings
+        ):
 
             # Categorize accounts of a matching transaction.
             for posting in entry.postings:
@@ -878,10 +959,12 @@ def regexps_to_accounts(entries,
                 if match_internalize and match_internalize(posting.account):
                     accounts_internalize.add(posting.account)
 
-    return ReturnAccounts(accounts_value,
-                          accounts_internal,
-                          accounts_external,
-                          accounts_internalize or None)
+    return ReturnAccounts(
+        accounts_value,
+        accounts_internal,
+        accounts_external,
+        accounts_internalize or None,
+    )
 
 
 def dump_return_accounts(racc, file):
@@ -892,96 +975,141 @@ def dump_return_accounts(racc, file):
       file: A file object to write to.
     """
     pr = lambda *args: print(*args, file=file)
-    pr('Asset accounts:')
+    pr("Asset accounts:")
     for account in sorted(racc.value):
-        pr('  {}'.format(account))
-    pr('')
+        pr("  {}".format(account))
+    pr("")
 
-    pr('Internal flows:')
+    pr("Internal flows:")
     for account in sorted(racc.internal):
-        pr('  {}'.format(account))
-    pr('')
+        pr("  {}".format(account))
+    pr("")
 
-    pr('External flows:')
+    pr("External flows:")
     for account in sorted(racc.external):
-        pr('  {}'.format(account))
-    pr('')
+        pr("  {}".format(account))
+    pr("")
 
     if racc.internalize:
-        pr('Explicitly internalized accounts:')
+        pr("Explicitly internalized accounts:")
         for account in sorted(racc.internalize):
-            pr('  {}'.format(account))
-        pr('')
+            pr("  {}".format(account))
+        pr("")
 
 
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('filename', help='Ledger filename')
+    parser.add_argument("filename", help="Ledger filename")
 
-    parser.add_argument('regexp_value', action='store',
-                        help=("A regular expression string that matches names of asset "
-                              "accounts to value for the portfolio."))
+    parser.add_argument(
+        "regexp_value",
+        action="store",
+        help=(
+            "A regular expression string that matches names of asset "
+            "accounts to value for the portfolio."
+        ),
+    )
 
-    parser.add_argument('regexp_internal', action='store',
-                        help=("A regular expression string that matches names of accounts "
-                              "considered internal flows to the portfolio (typically "
-                              "income and expenses accounts)."))
+    parser.add_argument(
+        "regexp_internal",
+        action="store",
+        help=(
+            "A regular expression string that matches names of accounts "
+            "considered internal flows to the portfolio (typically "
+            "income and expenses accounts)."
+        ),
+    )
 
-    parser.add_argument('--regexp_internalize', '--internalize_regexp', action='store',
-                        help=("A regular expression string that matches names of internal "
-                              "flow accounts to trigger an internalization."))
+    parser.add_argument(
+        "--regexp_internalize",
+        "--internalize_regexp",
+        action="store",
+        help=(
+            "A regular expression string that matches names of internal "
+            "flow accounts to trigger an internalization."
+        ),
+    )
 
-    parser.add_argument('--transfer-account', action='store',
-                        default='Equity:Internalized',
-                        help="Default name for subaccount to use for transfer account.")
+    parser.add_argument(
+        "--transfer-account",
+        action="store",
+        default="Equity:Internalized",
+        help="Default name for subaccount to use for transfer account.",
+    )
 
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help="Output detailed processing information. Useful for debugging")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Output detailed processing information. Useful for debugging",
+    )
 
-    parser.add_argument('--date-begin', '--begin-date',
-                        action='store', type=date_utils.parse_date_liberally,
-                        default=None,
-                        help=("Beginning date of the period to compute returns over "
-                              "(default is the first related directive)"))
+    parser.add_argument(
+        "--date-begin",
+        "--begin-date",
+        action="store",
+        type=date_utils.parse_date_liberally,
+        default=None,
+        help=(
+            "Beginning date of the period to compute returns over "
+            "(default is the first related directive)"
+        ),
+    )
 
-    parser.add_argument('--date-end', '--end-date',
-                        action='store', type=date_utils.parse_date_liberally,
-                        default=None,
-                        help=("End date of the period to compute returns over "
-                              "(default is the last related directive)"))
+    parser.add_argument(
+        "--date-end",
+        "--end-date",
+        action="store",
+        type=date_utils.parse_date_liberally,
+        default=None,
+        help=(
+            "End date of the period to compute returns over "
+            "(default is the last related directive)"
+        ),
+    )
 
     args = parser.parse_args()
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
-                        format='%(levelname)-8s: %(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(levelname)-8s: %(message)s",
+    )
 
     # Load the input file and build the price database.
-    entries, errors, options_map = loader.load_file(args.filename, log_errors=logging.error)
+    entries, errors, options_map = loader.load_file(
+        args.filename, log_errors=logging.error
+    )
 
     # Extract the account names using the regular expressions.
     racc = regexps_to_accounts(
-        entries, args.regexp_value, args.regexp_internal, args.regexp_internalize)
+        entries, args.regexp_value, args.regexp_internal, args.regexp_internalize
+    )
 
     # Compute the returns using the explicit configuration.
     returns, (date_first, date_last) = compute_timeline_and_returns(
-        entries, options_map,
+        entries,
+        options_map,
         args.transfer_account,
-        racc.value, racc.internal, racc.internalize,
-        args.date_begin, args.date_end)
+        racc.value,
+        racc.internal,
+        racc.internalize,
+        args.date_begin,
+        args.date_end,
+    )
 
     # Annualize the returns.
     annual_returns = annualize_returns(returns, date_first, date_last)
 
-    print('Total returns from {} to {}:'.format(date_first, date_last))
+    print("Total returns from {} to {}:".format(date_first, date_last))
     for currency, return_ in sorted(returns.items()):
-        print('  {}: {:.3%}'.format(currency, return_ - 1))
+        print("  {}: {:.3%}".format(currency, return_ - 1))
 
-    print('Averaged annual returns from {} to {}:'.format(date_first, date_last))
+    print("Averaged annual returns from {} to {}:".format(date_first, date_last))
     for currency, return_ in sorted(annual_returns.items()):
-        if isinstance(return_ , complex):
+        if isinstance(return_, complex):
             return_ = return_.real
-        print('  {}: {:.3%}'.format(currency, return_ - 1))
+        print("  {}: {:.3%}".format(currency, return_ - 1))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
