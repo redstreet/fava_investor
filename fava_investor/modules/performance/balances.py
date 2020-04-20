@@ -8,7 +8,9 @@ from fava.core.tree import TreeNode
 def get_closed_tree_with_value_accounts_only(accapi, config) -> Tree:
     ledger: FavaLedger = accapi.ledger
     tree = ledger.root_tree_closed
-    accounts_to_keep = _get_value_accounts_and_parents(accapi.ledger.accounts, config.get('accounts_patterns', ['.*']))
+    accounts_to_keep = _get_value_accounts_and_parents(
+        accapi.ledger.accounts, config.get("accounts_patterns", [".*"])
+    )
     _filter_tree(tree, accounts_to_keep)
     return tree
 
@@ -22,7 +24,7 @@ def filter_matching(accounts, patterns):
 
 
 def _remove_account_from_tree(tree: Tree, account: str):
-    if account not in tree or account == '':
+    if account not in tree or account == "":
         return
     node = tree[account]
     for child in list(node.children):
@@ -67,5 +69,3 @@ def _is_value_account(account, patterns):
         if re.match(pattern, account):
             return True
     return False
-
-
