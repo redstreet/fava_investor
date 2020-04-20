@@ -11,17 +11,16 @@ from .balances import get_closed_tree_with_value_accounts_only
 
 
 def get_ledger(filename):
-    _, errors, _ = loader.load_file(filename, extra_validations=validation.HARDCORE_VALIDATIONS)
+    _, errors, _ = loader.load_file(
+        filename, extra_validations=validation.HARDCORE_VALIDATIONS
+    )
     if errors:
         raise ValueError("Errors in ledger file: \n" + pformat(errors))
 
     return FavaInvestorAPI(FavaLedger(filename))
 
 
-CONFIG = {
-    "accounts_patterns": ["^Assets:Account"],
-    "accounts_internal_patterns": []
-}
+CONFIG = {"accounts_patterns": ["^Assets:Account"], "accounts_internal_patterns": []}
 
 
 class TestBalances(test_utils.TestCase):
@@ -41,8 +40,8 @@ class TestBalances(test_utils.TestCase):
             Assets:Bank
         """
         tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
-        self.assertEqual({('GBP', None): 20}, tree["Assets:Account"].balance)
-        self.assertEqual({('GBP', None): 20}, tree["Assets"].balance_children)
+        self.assertEqual({("GBP", None): 20}, tree["Assets:Account"].balance)
+        self.assertEqual({("GBP", None): 20}, tree["Assets"].balance_children)
         self.assertEqual({}, tree["Assets"].balance)
 
     @test_utils.docfile
@@ -60,6 +59,6 @@ class TestBalances(test_utils.TestCase):
         tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
         self.assertTrue("Assets" in tree)
         self.assertTrue("Assets:Account" in tree)
-        self.assertEqual(1, len(tree['Assets'].children))
+        self.assertEqual(1, len(tree["Assets"].children))
 
         self.assertTrue("Assets:Bank" not in tree)
