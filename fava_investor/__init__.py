@@ -2,11 +2,13 @@
 
 from fava.ext import FavaExtensionBase
 
+from .modules.performance import balances
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
 from .modules.cashdrag import libcashdrag
 from .common.favainvestorapi import *
+
 
 class Investor(FavaExtensionBase):  # pragma: no cover
     report_title = "Investor"
@@ -43,4 +45,10 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     def recently_sold_at_loss(self, begin=None, end=None):
         accapi = FavaInvestorAPI(self.ledger)
         return libtlh.recently_sold_at_loss(accapi, self.config.get('tlh', {}))
+
+    # Balances
+    # -----------------------------------------------------------------------------------------------------------
+    def build_balances_tree(self):
+        accapi = FavaInvestorAPI(self.ledger)
+        return balances.get_closed_tree_with_value_accounts_only(accapi, self.config.get('performance', {}))
 

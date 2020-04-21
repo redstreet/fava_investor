@@ -4,11 +4,10 @@
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
-  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')) ] %}
+  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')), ('balances', _('Balances')) ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
 </div>
-
 
 {% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
@@ -28,7 +27,8 @@
 {% if (module == 'cashdrag') %}
   <h2>Cash Drag Analysis</h2>
   {% set results = extension.build_cashdrag(None, None) %}
-  {{ querytable.querytable(None, *results) }}
+  Total = {{ results[2]|format_currency(ledger.options.operating_currency[0]) }}
+  {{ querytable.querytable(None, results[0], results[1]) }}
 {% endif %}
 
 {% if (module == 'tlh') %}
@@ -69,16 +69,18 @@
   <br />
 
 
-  <h3>Purchases within the past 30 days creating wash sales</h3>
+  <h3>Potential Wash Sales: purchases within the past 30 days</h3>
   {% if harvests[2][0]|length == 0 %}
     <p>None found!</p>
   {% else %}
     {{ querytable.querytable(None, *harvests[2]) }}
   {% endif %}
+  <br />
 
   <h3>What not to buy</h3>
-  Note: the below is simply a list of recent sales with losses. They could have been
-  TLHs, or not. Only you know.
+  Note: the below is a list of recent sales with losses provided for your convenience
+  in making purchasing decisions around wash sales. (This is not meant to be financial
+  or tax advice).
   {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
   {% if lossy_sales|length == 0 %}
     <p>No sales with losses found in the last 30 days.</p>
@@ -130,11 +132,12 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     </span>
     {% endfor %}
     <span class="num other">
+      {% set percentage_parent =  '{:3.0f}% of {}'.format(account.percentage_parent, account.parent.name) if account.parent else '' %}
       <span class="balance">
-        <span class="number">{{ '{:6.2f} %'.format(account.percentage) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) }}</span>
       </span>
       <span class="balance-children">
-        <span class="number">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
       </span>
     </span>
     </p>
@@ -153,4 +156,12 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
   {% set results = extension.build_assetalloc_by_class(None, None) %}
   {{ asset_tree(results[0]) }}
 
+{% endif %}
+
+{% if (module == 'balances') %}
+    <h2>Portfolio: Balances</h2>
+
+    {% import '_tree_table.html' as tree_table with context %}
+    {% set tree = extension.build_balances_tree() %}
+    {{ tree_table.tree(tree.get(ledger.options['name_assets'])) }}
 {% endif %}
