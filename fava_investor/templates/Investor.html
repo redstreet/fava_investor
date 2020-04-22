@@ -70,11 +70,11 @@
 
 
   <h3>Potential Wash Sales: purchases within the past 30 days</h3>
+  {% set table_empty_msg = None %}
   {% if harvests[2][0]|length == 0 %}
-    <p>None found!</p>
-  {% else %}
-    {{ querytable.querytable(None, *harvests[2]) }}
+    {% set table_empty_msg = 'No purchases of the candidates above found within the last 30 days!' %}
   {% endif %}
+  {{ querytable.querytable(table_empty_msg, *harvests[2]) }}
   <br />
 
   <h3>What not to buy</h3>
@@ -82,11 +82,11 @@
   in making purchasing decisions around wash sales. (This is not meant to be financial
   or tax advice).
   {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
-  {% if lossy_sales|length == 0 %}
-    <p>No sales with losses found in the last 30 days.</p>
-  {% else %}
-    {{ querytable.querytable(None, *lossy_sales) }}
+  {% set table_empty_msg = None %}
+  {% if lossy_sales[1]|length == 0 %}
+    {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
   {% endif %}
+  {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
 
 
 {% endif %}
