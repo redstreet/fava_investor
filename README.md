@@ -12,7 +12,8 @@ It currently has two modules: asset allocation (by class, by account), and a tax
 harvester, with more in development.  See [design.md](design.md) for more.
 *Contributions welcome!*
 
-![Screenshot](./screenshot.png)
+![Screenshot: TLH](./screenshot.png)
+![Screenshot: Asset Allocation](./screenshot-assetalloc.png)
 
 # Installation
 
