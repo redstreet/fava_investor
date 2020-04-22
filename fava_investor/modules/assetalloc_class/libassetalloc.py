@@ -14,7 +14,28 @@ from beancount.core import realization
 from beancount.core.number import Decimal
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
-from libinvestor import *
+from libinvestor import Node
+
+class AssetClassNode(Node):
+    def serialise(self, currency):
+        """Serialise the node. Make it compatible enough with fava ledger's tree in order to pass this
+        structure to fava charts """
+
+        children = [child.serialise(currency) for child in self.children]
+        return {
+            "account": self.name,
+            "balance_children": {currency: self.balance_children},
+            "balance": {currency: self.balance},
+            "children": children,
+        }
+
+    def pretty_print(self, indent=0):
+        print("{}{} {:4.2f} {:4.2f} {:4.2f} {:4.2f} {:4.2f}".format('-'*indent, self.name, 
+            self.balance, self.balance_children,
+            self.percentage, self.percentage_children, self.percentage_parent))
+        for c in self.children:
+            c.pretty_print(indent+1)
+
 
 def compute_child_balances(node, total):
     node.balance_children = node.balance + sum(compute_child_balances(c, total) for c in node.children)
@@ -30,16 +51,19 @@ def compute_parent_balances(node):
     for c in node.children:
         compute_parent_balances(c)
 
-def treeify(asset_buckets):
-    root = Node('Total')
+def treeify(asset_buckets, accapi):
+    root = AssetClassNode('Total')
     root.balance = 0
+    # The entire asset class tree has to be in a single currency (so they're all comparable). We store this
+    # one currency in the root node.
+    root.currency = accapi.get_operating_currencies()[0]
     for bucket, balance in asset_buckets.items():
         path = bucket.split('_')
         node = root
         for p in path:
             new_node = node.find_child(p)
             if not new_node:
-                new_node = Node(p)
+                new_node = AssetClassNode(p)
                 new_node.balance = 0
                 node.add_child(new_node)
             node = new_node
@@ -144,4 +168,4 @@ def assetalloc(accapi, config={}):
     vbalance = balance.reduce(convert.get_units)
     asset_buckets = bucketize(vbalance, accapi)
 
-    return treeify(asset_buckets), realacc
+    return treeify(asset_buckets, accapi), realacc

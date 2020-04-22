@@ -1,4 +1,5 @@
 {% import "_query_table.html" as querytable with context %}
+{% import "_charts.html" as charts with context %}
 
 <i>Investor: Reports, analyses, and tools for investments.</i>
 
@@ -152,9 +153,24 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 </ol>
 {% endmacro %}
 
+{% macro asset_allocation_hierarchy(serialised_tree, label=None) %}
+{% do charts.chart_data.append({
+'type': 'hierarchy',
+'label': 'Asset Allocation' if not label else label,
+'data': {
+  'modifier': 1,
+  'root': serialised_tree,
+},
+}) %}
+{% endmacro %}
+
 {% if (module == 'aa_class') %}
   <h2>Portfolio: Asset Allocation by Class</h2>
+
   {% set results = extension.build_assetalloc_by_class(None, None) %}
   {{ asset_tree(results[0]) }}
+
+  {{ asset_allocation_hierarchy(results[0].serialise(results[0]['currency']), label='Asset Allocation') }}
+  <script type="application/json" id="chart-data">{{ charts.chart_data|tojson|safe }}</script>
 
 {% endif %}

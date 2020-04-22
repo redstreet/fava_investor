@@ -21,11 +21,3 @@ class Node(object):
         yield self, level
         for c in self.children:
             yield from c.pre_order(level+1)
-
-    def pretty_print(self, indent=0):
-        print("{}{} {:4.2f} {:4.2f} {:4.2f} {:4.2f} {:4.2f}".format('-'*indent, self.name, 
-            self.balance, self.balance_children,
-            self.percentage, self.percentage_children, self.percentage_parent))
-        for c in self.children:
-            c.pretty_print(indent+1)
-
