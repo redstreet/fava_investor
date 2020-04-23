@@ -323,7 +323,7 @@ def segment_periods(entries, accounts_value, accounts_internal):
     # If a beginning cut-off has been specified, skip the entries before then
     # (and make sure to accumulate the initial balance correctly).
     balance = inventory.Inventory()
-    period_begin = entries[0].date
+    period_begin = entry.date
 
     # Main loop over the entries.
     timeline = []
@@ -381,9 +381,7 @@ def segment_periods(entries, accounts_value, accounts_internal):
 
         period_begin = period_end
 
-    ## FIXME: Bring this back in, this fails for now.
-    # assert all(period_begin <= period_end
-    #            for period_begin, period_end, _, _ in periods), periods
+    assert all(begin.date <= end.date for begin, end, _, _ in timeline), timeline
     return timeline
 
 
