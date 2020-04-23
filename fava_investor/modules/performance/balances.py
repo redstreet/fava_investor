@@ -6,7 +6,7 @@ from fava_investor.modules.performance.common import get_matching_accounts
 def get_balances_tree(accapi, config):
     tree = accapi.ledger.root_tree_closed
     accounts_to_keep = get_value_accounts_and_parents(tree, accapi.ledger.accounts,
-                                                      config.get("accounts_patterns", ["^Assets:.*"]))
+                                                      config.get("accounts_pattern", "^Assets:.*"))
     filter_tree(tree, accounts_to_keep)
     return tree
 

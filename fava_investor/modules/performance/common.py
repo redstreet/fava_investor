@@ -16,10 +16,10 @@ def filter_matching(accounts, patterns):
 def get_accounts_from_config(accapi, config) -> Accounts:
     accounts = accapi.accounts
 
-    value = get_matching_accounts(accounts, config.get("accounts_patterns", ["^Assets:.*"]))
-    internal = get_matching_accounts(accounts, config.get("accounts_internal_patterns", ["^Income:.*", "^Expense:.*"]))
+    value = get_matching_accounts(accounts, config.get("accounts_pattern", "^Assets:.*"))
+    internal = get_matching_accounts(accounts, config.get("accounts_internal_pattern", "^(Income|Expense):.*"))
     external = set(accounts).difference(value | internal)
-    internalized = get_matching_accounts(accounts, config.get("accounts_internalized_patterns", []))
+    internalized = get_matching_accounts(accounts, config.get("accounts_internalized_pattern", "^Income:Dividends"))
 
     return Accounts(value, internal, external, internalized)
 
@@ -31,5 +31,5 @@ def _is_value_account(account, patterns):
     return False
 
 
-def get_matching_accounts(accounts, patterns):
-    return set([acc for acc in accounts if any([re.match(pattern, acc) for pattern in patterns])])
+def get_matching_accounts(accounts, pattern):
+    return set([acc for acc in accounts if re.match(pattern, acc)])

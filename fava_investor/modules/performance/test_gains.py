@@ -5,7 +5,7 @@ from .common import get_accounts_from_config
 from .gains import GainsCalculator
 from .test_balances import get_ledger
 
-CONFIG = {"accounts_patterns": ["^Assets:Account"], "accounts_internal_patterns": ["^Income:Gains$"]}
+CONFIG = {"accounts_pattern": "^Assets:Account", "accounts_internal_pattern": "^Income:Gains$"}
 
 
 def get_sut(filename, config) -> GainsCalculator:

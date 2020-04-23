@@ -42,9 +42,9 @@ class TestDividends(test_utils.TestCase):
             Income:Dividends
         """
         config = {
-            "accounts_patterns": ["^Assets:Account"],
-            "accounts_internal_patterns": ["^Income:Dividends"],
-            "accounts_internalized_patterns": ["^Income:Dividends"]
+            "accounts_pattern": "^Assets:Account",
+            "accounts_internal_pattern": "^Income:",
+            "accounts_internalized_pattern": "^Income:Dividends"
         }
         sut = get_sut(filename, config)
         self.assertEquals(Inventory.from_string("5 GBP"), sut.get_dividends_total())
@@ -60,9 +60,9 @@ class TestDividends(test_utils.TestCase):
             Income:Dividends
         """
         config = {
-            "accounts_patterns": ["^Assets:Account"],
-            "accounts_internal_patterns": ["^Income:Dividends"],
-            "accounts_internalized_patterns": []
+            "accounts_pattern": "^Assets:Account",
+            "accounts_internal_pattern": "^Income:Dividends",
+            "accounts_internalized_pattern": "^DoesNotMatch$"
         }
         sut = get_sut(filename, config)
         self.assertEquals(Inventory(), sut.get_dividends_total())

@@ -6,7 +6,7 @@ from .contributions import ContributionsCalculator
 from .common import get_accounts_from_config
 from .test_balances import get_ledger
 
-CONFIG = {"accounts_patterns": ["^Assets:Account"], "accounts_internal_patterns": []}
+CONFIG = {"accounts_pattern": "^Assets:Account"}
 
 
 def get_sut(filename, config) -> ContributionsCalculator:
