@@ -4,7 +4,16 @@
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
-  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')), ('balances', _('Balances')) ] %}
+  {% for key, label in [
+    ('aa_class', _('Asset Allocation Classes')),
+    ('aa_account', _('Asset Allocation Accounts')),
+    ('cashdrag', _('Cash Drag')),
+    ('tlh', _('Tax Loss Harvestor')),
+    ('balances', _('Balances')),
+    ('contributions', _('Contributions')),
+    ('withdrawals', _('Withdrawals')),
+    ('gains', _('Gains'))
+    ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
 </div>
@@ -164,4 +173,31 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     {% import '_tree_table.html' as tree_table with context %}
     {% set tree = extension.build_balances_tree() %}
     {{ tree_table.tree(tree.get(ledger.options['name_assets'])) }}
+{% endif %}
+
+{% if (module == 'contributions') %}
+    <h2>Portfolio: Contributions</h2>
+
+    {% set register = extension.build_contributions_journal() %}
+    {% import '_journal_table.html' as journal_table with context %}
+
+    {{ journal_table.journal_table(register, True) }}
+{% endif %}
+
+{% if (module == 'withdrawals') %}
+    <h2>Portfolio: Withdrawals</h2>
+
+    {% set register = extension.build_withdrawals_journal() %}
+    {% import '_journal_table.html' as journal_table with context %}
+
+    {{ journal_table.journal_table(register, True) }}
+{% endif %}
+
+{% if (module == 'gains') %}
+    <h2>Portfolio: Gains</h2>
+
+    {% set register = extension.build_gains_journal() %}
+    {% import '_journal_table.html' as journal_table with context %}
+
+    {{ journal_table.journal_table(register, True) }}
 {% endif %}

@@ -9,6 +9,10 @@ class FavaInvestorAPI:
         self.end = end
         self.entries = self.ledger.root_tree
 
+    @property
+    def accounts(self):
+        return self.ledger.accounts
+
     def build_price_map(self):
         return self.ledger.price_map
 

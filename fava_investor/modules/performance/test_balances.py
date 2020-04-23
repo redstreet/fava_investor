@@ -7,7 +7,7 @@ from fava.core import FavaLedger
 from freezegun import freeze_time
 
 from fava_investor import FavaInvestorAPI
-from .balances import get_closed_tree_with_value_accounts_only
+from fava_investor.modules.performance.balances import get_balances_tree
 
 
 def get_ledger(filename):
@@ -39,7 +39,7 @@ class TestBalances(test_utils.TestCase):
             Assets:Account  10 GBP
             Assets:Bank
         """
-        tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
+        tree = get_balances_tree(get_ledger(filename), CONFIG)
         self.assertEqual({("GBP", None): 20}, tree["Assets:Account"].balance)
         self.assertEqual({("GBP", None): 20}, tree["Assets"].balance_children)
         self.assertEqual({}, tree["Assets"].balance)
@@ -56,7 +56,7 @@ class TestBalances(test_utils.TestCase):
             Assets:Bank
         """
 
-        tree = get_closed_tree_with_value_accounts_only(get_ledger(filename), CONFIG)
+        tree = get_balances_tree(get_ledger(filename), CONFIG)
         self.assertTrue("Assets" in tree)
         self.assertTrue("Assets:Account" in tree)
         self.assertEqual(1, len(tree["Assets"].children))

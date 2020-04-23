@@ -13,6 +13,12 @@ class AccAPI:
         self.options = options
         self.begin = self.end = None # Only used in fava
 
+    @property
+    def accounts(self):
+        accounts = set(self.root_tree().keys())
+        accounts.remove('')
+        return accounts
+
     def build_price_map(self):
         return prices.build_price_map(self.entries)
 

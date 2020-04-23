@@ -79,7 +79,8 @@ option "render_commas" "True"
      'wash_pattern': 'Assets:Investments',
   },
   'performance': {
-     'accounts_pattern': 'Assets:Investments:.*',
+     'accounts_patterns': ['Assets:Investments'],
+     'accounts_internal_patterns': []
   },
   'asset_alloc_by_account': [{
       'title':            'Allocation by Account',

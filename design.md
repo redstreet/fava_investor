@@ -26,8 +26,8 @@ consider for implementation.
 - drillable down to account-level and holding-leve
 - advanced: show tax drag (difficult to quantify)
 
-### Net worth:
-- across time (redundant?)
+### Performance:
+- balances across time (redundant?)
 - show split of contributions, income (dividends, gains, etc.), and appreciation
   - filterable (by account?)
   - across arbitrary time periods

@@ -19,9 +19,8 @@ setup(
     install_requires=[
         'beancount>=2.2.3',
         'fava>=1.13',
-        'argh>=0.23.3',
-        'argcomplete>=1.11.1',
-        'freezegun>=0.3.15'
+        'argh>=0.23.3',  
+        'argcomplete>=1.11.1'
     ],
     zip_safe=False,
     classifiers=[

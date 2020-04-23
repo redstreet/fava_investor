@@ -2,7 +2,10 @@
 
 from fava.ext import FavaExtensionBase
 
-from .modules.performance import balances
+import fava_investor.modules.performance.contributions
+import fava_investor.modules.performance.gains
+from .modules import performance
+from .modules.performance.balances import get_balances_tree
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
@@ -46,9 +49,32 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         accapi = FavaInvestorAPI(self.ledger)
         return libtlh.recently_sold_at_loss(accapi, self.config.get('tlh', {}))
 
-    # Balances
+    # Performance
     # -----------------------------------------------------------------------------------------------------------
     def build_balances_tree(self):
         accapi = FavaInvestorAPI(self.ledger)
-        return balances.get_closed_tree_with_value_accounts_only(accapi, self.config.get('performance', {}))
+        return get_balances_tree(accapi, self.config.get('performance', {}))
+
+    def build_contributions_journal(self):
+        accapi = FavaInvestorAPI(self.ledger)
+        accounts = performance.get_accounts_from_config(accapi, self.config.get('performance', {}))
+        contr = fava_investor.modules.performance.contributions.ContributionsCalculator(accapi, accounts)
+        entries = contr.get_contributions_entries()
+        return map(lambda entry: (entry.transaction, None, entry.change, entry.balance), entries)
+
+    def build_withdrawals_journal(self):
+        accapi = FavaInvestorAPI(self.ledger)
+        accounts = performance.get_accounts_from_config(accapi, self.config.get('performance', {}))
+        contr = fava_investor.modules.performance.contributions.ContributionsCalculator(accapi, accounts)
+        entries = contr.get_withdrawals_entries()
+        return map(lambda entry: (entry.transaction, None, entry.change, entry.balance), entries)
+
+    def build_gains_journal(self):
+        accapi = FavaInvestorAPI(self.ledger)
+        accounts = performance.get_accounts_from_config(accapi, self.config.get('performance', {}))
+        contr = fava_investor.modules.performance.gains.GainsCalculator(accapi, accounts)
+        entries = contr.get_realized_gains_entries()
+        return map(lambda entry: (entry.transaction, None, entry.change, entry.balance), entries)
+
+
 

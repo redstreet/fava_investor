@@ -1,23 +1,28 @@
-import re
 from beancount.core.account import parent, parents
 
-def get_closed_tree_with_value_accounts_only(accapi, config):
+from fava_investor.modules.performance.common import get_matching_accounts
+
+
+def get_balances_tree(accapi, config):
     tree = accapi.ledger.root_tree_closed
     accounts_to_keep = get_value_accounts_and_parents(tree, accapi.ledger.accounts,
-            config.get("accounts_patterns", ["^Assets:.*"]))
+                                                      config.get("accounts_patterns", ["^Assets:.*"]))
     filter_tree(tree, accounts_to_keep)
     return tree
 
+
 def get_value_accounts_and_parents(tree, accounts, patterns):
-    result = set([acc for acc in accounts if any([re.match(pattern, acc) for pattern in patterns])])
+    result = get_matching_accounts(accounts, patterns)
     ancestors = [p.name for acc in result for p in tree.ancestors(acc)]
     return result.union(ancestors)
 
+
 def filter_tree(tree, accounts_to_keep):
     nodes_to_remove = [n for n in tree if n not in accounts_to_keep]
-    nodes_to_remove.sort(key = lambda s: len(s), reverse = True)
+    nodes_to_remove.sort(key=lambda s: len(s), reverse=True)
     for account in nodes_to_remove:
         remove_account_from_tree(tree, account)
+
 
 def remove_account_from_tree(tree, account):
     if account not in tree or not account:
@@ -28,11 +33,13 @@ def remove_account_from_tree(tree, account):
     reduce_parents_balances(account, node, tree)
     del tree[account]
 
+
 def remove_from_parent(account, node, tree):
     parent_account = parent(account)
     if parent_account:
         parent_node = tree[parent_account]
         parent_node.children.remove(node)
+
 
 def reduce_parents_balances(account, node, tree):
     for parent_account in parents(account):
