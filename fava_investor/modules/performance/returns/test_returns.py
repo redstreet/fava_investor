@@ -223,7 +223,7 @@ class TestReturnsPeriods(test_utils.TestCase):
         timeline = returns.segment_periods(entries, assets, assets)
         self.assertEqual(1, len(timeline))
         empty = Inventory()
-        self.assertEqual(timeline[0].begin, Snapshot(datetime.date(2014, 1, 1), empty))
+        self.assertEqual(timeline[0].begin, Snapshot(datetime.date(2014, 2, 1), empty))
         self.assertEqual(timeline[0].end, Snapshot(datetime.date(2014, 2, 1), empty))
 
     # Verify that two external transfers on the same date convert into a single
@@ -382,7 +382,7 @@ class TestReturnsConstrained(test_utils.TestCase):
         timeline = returns.segment_periods(self.entries, self.assets, self.assets)
         self.assertEqual(
             [
-                (datetime.date(2014, 1, 1), datetime.date(2014, 1, 15)),
+                (datetime.date(2014, 1, 15), datetime.date(2014, 1, 15)),
                 (datetime.date(2014, 1, 15), datetime.date(2014, 6, 15)),
                 (datetime.date(2014, 6, 15), datetime.date(2014, 10, 1)),
             ],
@@ -782,7 +782,7 @@ class TestReturnsInternalize(cmptest.TestCase):
         # and their amounts are of a different magnitude. I'm not sure how best
         # it is to handle this.
         self.assertEqual({"USD": 0.98}, returns_)
-        self.assertEqual((datetime.date(2014, 1, 1), datetime.date(2014, 4, 1)), dates)
+        self.assertEqual((datetime.date(2014, 1, 10), datetime.date(2014, 4, 1)), dates)
 
     def test_internalization_explicit_fails(self):
         with self.assertRaises(ValueError):
@@ -821,7 +821,7 @@ class TestReturnsInternalize(cmptest.TestCase):
             {"Income:Invest:Dividends"},
         )
         self.assertEqual({"USD": 1.1}, returns_)
-        self.assertEqual((datetime.date(2014, 1, 1), datetime.date(2014, 4, 1)), dates)
+        self.assertEqual((datetime.date(2014, 1, 10), datetime.date(2014, 4, 1)), dates)
 
     @loader.load_doc()
     def test_internalization_explicit_returns_bycash(
@@ -859,7 +859,7 @@ class TestReturnsInternalize(cmptest.TestCase):
             {"Income:Invest:Dividends"},
         )
         self.assertEqual({"USD": 1.2}, returns_)
-        self.assertEqual((datetime.date(2014, 1, 1), datetime.date(2014, 4, 1)), dates)
+        self.assertEqual((datetime.date(2014, 1, 10), datetime.date(2014, 4, 1)), dates)
 
     @loader.load_doc()
     def test_internalization_without_relevant_transaction_shouldnt_throw(
