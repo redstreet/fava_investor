@@ -29,7 +29,6 @@
 {% if (module == 'cashdrag') %}
   <h2>Cash Drag Analysis</h2>
   {% set results = extension.build_cashdrag(None, None) %}
-  Total = {{ results[2]|format_currency(ledger.options.operating_currency[0]) }}
   {{ querytable.querytable(None, results[0], results[1]) }}
 {% endif %}
 
@@ -88,7 +87,7 @@
   {% if lossy_sales[1]|length == 0 %}
     {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
   {% endif %}
-  {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
+  {{ querytable.querytable(table_empty_msg, lossy_sales[0], lossy_sales[1]) }}
 
 
 {% endif %}
