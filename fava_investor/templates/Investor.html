@@ -29,7 +29,7 @@
 {% if (module == 'cashdrag') %}
   <h2>Cash Drag Analysis</h2>
   {% set results = extension.build_cashdrag() %}
-  {{ querytable.querytable(None, results[0], results[1]) }}
+  {{ querytable.querytable(None, *results) }}
 {% endif %}
 
 {% if (module == 'tlh') %}
@@ -87,7 +87,7 @@
   {% if lossy_sales[1]|length == 0 %}
     {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
   {% endif %}
-  {{ querytable.querytable(table_empty_msg, lossy_sales[0], lossy_sales[1]) }}
+  {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
 
 
 {% endif %}
