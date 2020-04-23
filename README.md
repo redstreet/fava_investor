@@ -45,7 +45,9 @@ pip install -e ./fava_investor
 ### Running fava_investor
 ```
 cd fava_investor
-fava example.bc
+fava example.beancount
+# or:
+fava huge-example.beancount
 ```
 Then, point your browser to: http://localhost:5000/test
 
