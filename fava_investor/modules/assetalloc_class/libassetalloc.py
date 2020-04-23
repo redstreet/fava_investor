@@ -52,15 +52,19 @@ def compute_parent_balances(node):
         compute_parent_balances(c)
 
 def treeify(asset_buckets, accapi):
+    def ancestors(s):
+        c = s.count('_')
+        for i in range(c, -1, -1):
+            yield s.rsplit('_', i)[0]
+
     root = AssetClassNode('Total')
     root.balance = 0
     # The entire asset class tree has to be in a single currency (so they're all comparable). We store this
     # one currency in the root node.
     root.currency = accapi.get_operating_currencies()[0]
     for bucket, balance in asset_buckets.items():
-        path = bucket.split('_')
         node = root
-        for p in path:
+        for p in ancestors(bucket):
             new_node = node.find_child(p)
             if not new_node:
                 new_node = AssetClassNode(p)
@@ -79,6 +83,8 @@ def bucketize(vbalance, accapi):
     price_map = accapi.build_price_map()
     commodity_map = accapi.get_commodity_map()
     base_currency = accapi.get_operating_currencies()[0]
+    meta_prefix = 'asset_allocation_'
+    meta_prefix_len = len(meta_prefix)
 
     # Main part: put each commodity's value into asset buckets
     asset_buckets = collections.defaultdict(int)
@@ -94,8 +100,9 @@ def bucketize(vbalance, accapi):
         metas = commodity_map[commodity].meta
         unallocated = Decimal('100')
         for meta in metas:
-            if meta.startswith('asset_allocation_'):
-                asset_buckets[meta[len('asset_allocation_'):]] += amount.number * (metas[meta] / 100)
+            if meta.startswith(meta_prefix):
+                bucket = meta[meta_prefix_len:]
+                asset_buckets[bucket] += amount.number * (metas[meta] / 100)
                 unallocated -= metas[meta]
         if unallocated:
             print("Warning: {} asset_allocation_* metadata does not add up to 100%. Padding with 'unknown'.".format(commodity))
@@ -160,9 +167,11 @@ def tax_adjust(realacc, accapi):
 
 def assetalloc(accapi, config={}):
     realacc = build_interesting_realacc(accapi, config.get('accounts_patterns', ['.*']))
+    # print(realization.compute_balance(realacc).reduce(convert.get_units))
 
     if config.get('skip_tax_adjustment', False) is False:
         tax_adjust(realacc, accapi)
+    # print(realization.compute_balance(realacc).reduce(convert.get_units))
 
     balance = realization.compute_balance(realacc)
     vbalance = balance.reduce(convert.get_units)

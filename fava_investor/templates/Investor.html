@@ -120,7 +120,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     <p{{ ' class=has-balance' }}>
     <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}" data-account-name="{{ account.name }}">
     <a href='' class='account'>
-      {{ account.name }}
+      {{ account.name.split('_')[-1] }}
     </a>
     </span>
     {% for currency in ledger.options.operating_currency %}
