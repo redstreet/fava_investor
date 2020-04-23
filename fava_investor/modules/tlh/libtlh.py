@@ -182,8 +182,7 @@ def recently_sold_at_loss(accapi, options):
     for row in rrows:
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))
-        if loss != Inventory() and val(loss) > 0:
-            # TODO: display this optionally (on by default)
+        if loss != Inventory() and val(loss) < 0:
             return_rows.append(RetRow(*row, loss))
 
     footer = build_table_footer(retrow_types, return_rows, accapi)
