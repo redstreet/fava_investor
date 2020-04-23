@@ -20,7 +20,7 @@ def get_ledger(filename):
     return FavaInvestorAPI(FavaLedger(filename))
 
 
-CONFIG = {"accounts_patterns": ["^Assets:Account"], "accounts_internal_patterns": []}
+CONFIG = {"accounts_pattern": "^Assets:Account", "accounts_internal_pattern": None}
 
 
 class TestBalances(test_utils.TestCase):
