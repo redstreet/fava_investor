@@ -8,7 +8,7 @@ def get_closed_tree_with_value_accounts_only(accapi, config):
     filter_tree(tree, accounts_to_keep)
     return tree
 
-def get_value_accounts_and_parents(tree, accounts, pattern ):
+def get_value_accounts_and_parents(tree, accounts, pattern):
     result = set([acc for acc in accounts if re.match(pattern, acc)])
     ancestors = [p.name for acc in result for p in tree.ancestors(acc)]
     return result.union(ancestors)
