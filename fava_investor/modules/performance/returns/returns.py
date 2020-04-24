@@ -529,6 +529,7 @@ def internalize(
 
     new_entries = []
     replaced_entries = []
+    old_and_new_entries_tuples = []
     index = 1
     for entry in entries:
         if not isinstance(entry, data.Transaction):
@@ -540,7 +541,6 @@ def internalize(
         postings_internal = []
         postings_external = []
         postings_internalize = []
-        postings_ignore = []
         for posting in entry.postings:
             if posting.account in accounts_value:
                 postings_list = postings_assets
@@ -560,7 +560,6 @@ def internalize(
             and postings_external
             and (postings_assets or postings_internalize)
         ):
-
             replaced_entries.append(entry)
 
             # We will attach a link to each of the split entries.
@@ -573,7 +572,7 @@ def internalize(
                 balance_transfer.add_amount(convert.get_weight(posting))
 
             prototype_entry = entry._replace(
-                flag=flags.FLAG_RETURNS, links=(entry.links or set()) | set([link])
+                flag=flags.FLAG_RETURNS, links=(entry.links or set()) | {link}
             )
 
             # Create internal flows posting.
@@ -581,26 +580,21 @@ def internalize(
                 data.Posting(transfer_account, pos.units, pos.cost, None, None, None)
                 for pos in balance_transfer.get_positions()
             ]
-            new_entries.append(
-                prototype_entry._replace(
-                    postings=(
-                        postings_assets + postings_internal + postings_transfer_int
-                    )
-                )
-            )
+            new_entry_1 = prototype_entry._replace(postings=(postings_assets + postings_internal + postings_transfer_int))
 
             # Create external flows posting.
             postings_transfer_ext = [
                 data.Posting(transfer_account, -pos.units, pos.cost, None, None, None)
                 for pos in balance_transfer.get_positions()
             ]
-            new_entries.append(
-                prototype_entry._replace(
-                    postings=(postings_transfer_ext + postings_external)
-                )
-            )
+            new_entry_2 = prototype_entry._replace(postings=(postings_transfer_ext + postings_external))
+
+            new_entries.append(new_entry_1)
+            new_entries.append(new_entry_2)
+            old_and_new_entries_tuples.append((entry, [new_entry_1, new_entry_2]))
         else:
             new_entries.append(entry)
+            old_and_new_entries_tuples.append((entry, [entry]))
 
     # The transfer account does not have an Open entry, insert one. (This is
     # just us being pedantic about Beancount requirements, this will not change
@@ -617,7 +611,7 @@ def internalize(
         )
         new_entries.insert(0, open_transfer_entry)
 
-    return new_entries, replaced_entries
+    return new_entries, replaced_entries, old_and_new_entries_tuples
 
 
 def create_timeline(

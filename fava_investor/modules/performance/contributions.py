@@ -3,7 +3,9 @@ from typing import List
 
 from beancount.core.inventory import Inventory
 
+from fava_investor.modules.performance import dividends
 from fava_investor.modules.performance.common import Row, Accounts
+from fava_investor.modules.performance.dividends import sum_inventories
 from fava_investor.modules.performance.returns import returns
 
 
@@ -13,46 +15,22 @@ class ContributionsCalculator:
         self.accounts = accounts
 
     def get_contributions_total(self) -> Inventory:
-        entries = self.get_contributions_entries()
-        if not entries:
-            return Inventory()
-        return entries[len(entries) - 1].balance
+        rows = dividends.get_balance_split(self.accounts, self.accapi)
+        return sum_inventories([row[1] for row in rows])
 
     def get_contributions_entries(self) -> List[Row]:
-        tx_tuples = self._get_external_x_value_postings()
-        return self._filter_postings(
-            tx_tuples, lambda posting: posting.units.number > 0
-        )
+        return [Row(row[0], row[1]) for row in dividends.get_balance_split(self.accounts, self.accapi)]
 
     def get_withdrawals_total(self) -> Inventory:
-        entries = self.get_withdrawals_entries()
-        if not entries:
-            return Inventory()
-        return entries[len(entries) - 1].balance
+        rows = dividends.get_balance_split(self.accounts, self.accapi)
+        return sum_inventories([row[2] for row in rows])
 
     def get_withdrawals_entries(self) -> List[Row]:
-        tx_tuples = self._get_external_x_value_postings()
-        return self._filter_postings(
-            tx_tuples, lambda posting: posting.units.number < 0
-        )
+        return [Row(row[0], row[2]) for row in dividends.get_balance_split(self.accounts, self.accapi)]
 
-    @staticmethod
-    def _filter_postings(tx_tuples, match_lambda) -> List[Row]:
-        result = []
-        balance = Inventory()
-        for entry, value, ext in tx_tuples:
-            inventory = Inventory()
-            for posting in value:
-                if match_lambda(posting):
-                    inventory.add_position(posting)
-                    balance.add_inventory(inventory)
-
-            if inventory != {}:
-                result.append(Row(entry, inventory, copy.copy(balance)))
-        return result
 
     def _get_external_x_value_postings(self):
-        entries, _ = returns.internalize(
+        entries, _, old_new = returns.internalize(
             self.accapi.ledger.entries, "Equity:Internalized", self.accounts.value, []
         )
 

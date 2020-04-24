@@ -5,6 +5,7 @@ from fava.core.inventory import CounterInventory
 from fava.core.tree import TreeNode
 
 from fava_investor.modules.performance.common import Row, Accounts
+from fava_investor.modules.performance.dividends import get_balance_split, sum_inventories
 from fava_investor.modules.performance.returns import returns
 
 
@@ -34,31 +35,11 @@ class GainsCalculator:
         per_account = self.get_unrealized_gains_per_account()
         for account, gain in per_account.items():
             total.add_inventory(gain)
-        return total
+        return Inventory({**total})
 
     def get_realized_gains_total(self):
-        rows = list(self.get_realized_gains_entries())
-        return rows[len(rows) - 1][-1]
-
-    def get_realized_gains_entries(self):
-        entries, _ = returns.internalize(
-            self.accapi.ledger.entries, "Equity:Internalized", self.accounts.value, []
-        )
-        balance = Inventory()
-        for entry in entries:
-            if not isinstance(entry, Transaction):
-                continue
-            if not self._is_commodity_sale(entry, self.accounts.value):
-                continue
-            if not returns.is_internal_flow_entry(entry, self.accounts.internal):
-                continue
-            internal = Inventory()
-            for posting in entry.postings:
-                if posting.account in self.accounts.internal:
-                    internal.add_position(posting)
-
-            balance.add_inventory(-internal)
-            yield Row(entry, internal, balance)
+        rows = get_balance_split(self.accounts, self.accapi)
+        return sum_inventories(row[4] for row in rows)
 
     @staticmethod
     def _is_commodity_sale(entry: Transaction, value_accounts):

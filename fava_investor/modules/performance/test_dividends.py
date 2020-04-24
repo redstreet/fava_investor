@@ -47,7 +47,7 @@ class TestDividends(test_utils.TestCase):
             "accounts_internalized_pattern": "^Income:Dividends"
         }
         sut = get_sut(filename, config)
-        self.assertEquals(Inventory.from_string("5 GBP"), sut.get_dividends_total())
+        self.assertEqual(Inventory.from_string("5 GBP"), sut.get_dividends_total())
 
     @test_utils.docfile
     def test_dividend_to_external_is_ignored_if_its_not_from_internalized_account(self, filename: str):
@@ -65,4 +65,4 @@ class TestDividends(test_utils.TestCase):
             "accounts_internalized_pattern": "^DoesNotMatch$"
         }
         sut = get_sut(filename, config)
-        self.assertEquals(Inventory(), sut.get_dividends_total())
+        self.assertEqual(Inventory(), sut.get_dividends_total())

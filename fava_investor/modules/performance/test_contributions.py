@@ -24,7 +24,7 @@ class TestContributions(test_utils.TestCase):
         """
         sut = get_sut(filename, CONFIG)
         contributions = sut.get_contributions_total()
-        self.assertEquals(Inventory(), contributions)
+        self.assertEqual(Inventory(), contributions)
 
     @test_utils.docfile
     def test_no_withdrawals(self, filename: str):
@@ -35,7 +35,7 @@ class TestContributions(test_utils.TestCase):
         """
         sut = get_sut(filename, CONFIG)
         withdrawals = sut.get_withdrawals_total()
-        self.assertEquals(Inventory(), withdrawals)
+        self.assertEqual(Inventory(), withdrawals)
 
     @test_utils.docfile
     def test_contributions_to_subaccounts(self, filename: str):
@@ -55,7 +55,7 @@ class TestContributions(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         contributions = sut.get_contributions_total()
 
-        self.assertEquals(Inventory.from_string("20 GBP"), contributions)
+        self.assertEqual(Inventory.from_string("20 GBP"), contributions)
 
     @test_utils.docfile
     def test_other_transfers_are_ignored(self, filename: str):
@@ -76,7 +76,7 @@ class TestContributions(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         contributions = sut.get_contributions_total()
 
-        self.assertEquals(Inventory.from_string(""), contributions)
+        self.assertEqual(Inventory.from_string(""), contributions)
 
     @test_utils.docfile
     def test_withdrawals_and_contriutions_are_separate(self, filename: str):
@@ -101,8 +101,8 @@ class TestContributions(test_utils.TestCase):
         contributions = sut.get_contributions_total()
         withdrawals = sut.get_withdrawals_total()
 
-        self.assertEquals(Inventory.from_string("4 GBP"), contributions)
-        self.assertEquals(Inventory.from_string("-3 GBP"), withdrawals)
+        self.assertEqual(Inventory.from_string("4 GBP"), contributions)
+        self.assertEqual(Inventory.from_string("-3 GBP"), withdrawals)
 
     @test_utils.docfile
     def test_list_withdrawals_entries(self, filename: str):
@@ -127,15 +127,13 @@ class TestContributions(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_withdrawals_entries()
 
-        self.assertEquals(2, len(result))
+        self.assertEqual(Inventory.from_string("-3 GBP"), result[1].change)
+        self.assertEqual(Inventory.from_string("-3 GBP"), result[2].change)
 
-        self.assertEquals(Inventory.from_string("-3 GBP"), result[0].change)
-        self.assertEquals(Inventory.from_string("-3 GBP"), result[1].change)
-
-        self.assertIsInstance(result[0].transaction, Transaction)
-        self.assertEquals("withdrawal 1", result[0].transaction.narration)
         self.assertIsInstance(result[1].transaction, Transaction)
-        self.assertEquals("withdrawal 2", result[1].transaction.narration)
+        self.assertEqual("withdrawal 1", result[1].transaction.narration)
+        self.assertIsInstance(result[2].transaction, Transaction)
+        self.assertEqual("withdrawal 2", result[2].transaction.narration)
 
     @test_utils.docfile
     def test_only_negative_postings_are_considered_withdrawals(self, filename: str):
@@ -178,15 +176,13 @@ class TestContributions(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_contributions_entries()
 
-        self.assertEquals(2, len(result))
+        self.assertEqual(Inventory.from_string("3 GBP"), result[1].change)
+        self.assertEqual(Inventory.from_string("3 GBP"), result[2].change)
 
-        self.assertEquals(Inventory.from_string("3 GBP"), result[0].change)
-        self.assertEquals(Inventory.from_string("3 GBP"), result[1].change)
-
-        self.assertIsInstance(result[0].transaction, Transaction)
-        self.assertEquals("contribution 1", result[0].transaction.narration)
         self.assertIsInstance(result[1].transaction, Transaction)
-        self.assertEquals("contribution 2", result[1].transaction.narration)
+        self.assertEqual("contribution 1", result[1].transaction.narration)
+        self.assertIsInstance(result[2].transaction, Transaction)
+        self.assertEqual("contribution 2", result[2].transaction.narration)
 
     @test_utils.docfile
     def test_only_positive_postings_are_considered_contributions(self, filename: str):

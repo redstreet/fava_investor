@@ -29,7 +29,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_unrealized_gains_total()
 
-        self.assertEquals({"USD": 1}, result)
+        self.assertEqual({"USD": 1}, result)
 
     @test_utils.docfile
     def test_get_unrealized_gains_entries(self, filename: str):
@@ -72,7 +72,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_unrealized_gains_total()
 
-        self.assertEquals(Inventory(), result)
+        self.assertEqual(Inventory(), result)
 
     @test_utils.docfile
     def test_ignoring_realized_gains(self, filename: str):
@@ -99,7 +99,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_unrealized_gains_total()
 
-        self.assertEquals({"USD": 2}, result)
+        self.assertEqual({"USD": 2}, result)
 
     @test_utils.docfile
     def test_get_unrealized_gains(self, filename: str):
@@ -116,7 +116,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_unrealized_gains_total()
 
-        self.assertEquals({"USD": 1}, result)
+        self.assertEqual({"USD": 1}, result)
 
     @test_utils.docfile
     def test_realized_gains(self, filename: str):
@@ -137,7 +137,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_realized_gains_total()
 
-        self.assertEquals(Inventory.from_string("1 USD"), result)
+        self.assertEqual(Inventory.from_string("1 USD"), result)
 
     @test_utils.docfile
     def test_realized_gains_multiple_transactions(self, filename: str):
@@ -154,17 +154,17 @@ class TestGains(test_utils.TestCase):
         2020-02-23 * "sell with gain"
           Assets:Account  -1 AA {2 USD}
           Assets:Bank  3 USD
-          Income:Gains
+          Income:Gains  -1 USD
 
         2020-02-24 * "sell with gain again"
           Assets:Account  -1 AA {1 USD}
           Assets:Bank  3 USD
-          Income:Gains
+          Income:Gains  -2 USD
         """
         sut = get_sut(filename, CONFIG)
         result = sut.get_realized_gains_total()
 
-        self.assertEquals(Inventory.from_string("3 USD"), result)
+        self.assertEqual(Inventory.from_string("3 USD"), result)
 
     @test_utils.docfile
     def test_realized_lose(self, filename: str):
@@ -185,4 +185,4 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_realized_gains_total()
 
-        self.assertEquals(Inventory.from_string("-1 USD"), result)
+        self.assertEqual(Inventory.from_string("-1 USD"), result)

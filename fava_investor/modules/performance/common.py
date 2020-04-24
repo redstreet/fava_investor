@@ -2,7 +2,7 @@ import re
 from collections import namedtuple
 
 Accounts = namedtuple("Accounts", "value internal external internalized")
-Row = namedtuple("Row", "transaction change balance")
+Row = namedtuple("Row", "transaction change")
 
 
 def filter_matching(accounts, patterns):
