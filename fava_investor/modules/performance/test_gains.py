@@ -13,6 +13,10 @@ def get_sut(filename, config) -> GainsCalculator:
     return GainsCalculator(accapi, get_accounts_from_config(accapi, config))
 
 
+def i(string):
+    return Inventory.from_string(string)
+
+
 class TestGains(test_utils.TestCase):
     @test_utils.docfile
     def test_get_unrealized_gains(self, filename: str):
@@ -48,6 +52,7 @@ class TestGains(test_utils.TestCase):
 
         2020-02-22 price AA  2 USD
         """
+        self.skipTest("gains per account not implemented yet")
         sut = get_sut(filename, CONFIG)
         result = sut.get_unrealized_gains_per_account()
 
@@ -99,7 +104,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_unrealized_gains_total()
 
-        self.assertEqual({"USD": 2}, result)
+        self.assertEqual(i("2 USD"), result)
 
     @test_utils.docfile
     def test_get_unrealized_gains(self, filename: str):
@@ -116,7 +121,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_unrealized_gains_total()
 
-        self.assertEqual({"USD": 1}, result)
+        self.assertEqual(i("1 USD"), result)
 
     @test_utils.docfile
     def test_realized_gains(self, filename: str):
@@ -137,7 +142,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_realized_gains_total()
 
-        self.assertEqual(Inventory.from_string("1 USD"), result)
+        self.assertEqual(i("1 USD"), result)
 
     @test_utils.docfile
     def test_realized_gains_multiple_transactions(self, filename: str):
@@ -164,7 +169,7 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_realized_gains_total()
 
-        self.assertEqual(Inventory.from_string("3 USD"), result)
+        self.assertEqual(i("3 USD"), result)
 
     @test_utils.docfile
     def test_realized_lose(self, filename: str):
@@ -185,4 +190,4 @@ class TestGains(test_utils.TestCase):
         sut = get_sut(filename, CONFIG)
         result = sut.get_realized_gains_total()
 
-        self.assertEqual(Inventory.from_string("-1 USD"), result)
+        self.assertEqual(i("-1 USD"), result)

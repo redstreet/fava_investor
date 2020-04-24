@@ -1,4 +1,3 @@
-import copy
 from typing import List
 
 from beancount.core.inventory import Inventory

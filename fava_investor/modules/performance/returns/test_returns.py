@@ -2,21 +2,21 @@ __copyright__ = "Copyright (C) 2014-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
 import datetime
-import textwrap
-import sys
 import subprocess
+import sys
+import textwrap
 import unittest
 from os import path
 
-from beancount.core.inventory import Inventory
-
-from .returns import Snapshot
-from fava_investor.modules.performance.returns import returns
 from beancount import loader
 from beancount.core import inventory
+from beancount.core.inventory import Inventory
 from beancount.parser import cmptest
 from beancount.parser import options
 from beancount.utils import test_utils
+
+from fava_investor.modules.performance.returns import returns
+from .returns import Snapshot
 
 
 def dates_from_timeline(timeline):
@@ -658,7 +658,7 @@ class TestReturnsInternalize(cmptest.TestCase):
             "Expenses:Commissions",
             "Expenses:Fees",
         }
-        new_entries, replaced_entries = returns.internalize(
+        new_entries, replaced_entries, _ = returns.internalize(
             entries, "Equity:Internalized", accounts_value, accounts_intflows
         )
 
@@ -722,7 +722,7 @@ class TestReturnsInternalize(cmptest.TestCase):
         self.assertFalse(errors)
 
         # Check internalizing when including cash accounts.
-        new_entries, replaced_entries = returns.internalize(
+        new_entries, replaced_entries, _ = returns.internalize(
             entries,
             "Equity:Internalized",
             {"Assets:Invest:Cash", "Assets:Invest:BOOG"},
@@ -731,7 +731,7 @@ class TestReturnsInternalize(cmptest.TestCase):
         self.assertEqual([], replaced_entries)
 
         # Check internalizing when excluding cash accounts.
-        new_entries, replaced_entries = returns.internalize(
+        new_entries, replaced_entries, _ = returns.internalize(
             entries,
             "Equity:Internalized",
             {"Assets:Invest:BOOG"},

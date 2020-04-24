@@ -19,9 +19,9 @@ import datetime
 import logging
 from os import path
 
-from beancount.core import getters
-from beancount.core import data
 from beancount import loader
+from beancount.core import data
+from beancount.core import getters
 
 from fava_investor.modules.performance.returns import returns
 

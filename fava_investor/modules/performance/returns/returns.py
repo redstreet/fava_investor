@@ -221,18 +221,17 @@ import datetime
 import logging
 import re
 
-from beancount.core.number import ZERO
 from beancount import loader
-from beancount.parser import printer
-from beancount.core import data
-from beancount.core import inventory
-from beancount.core import getters
-from beancount.core import flags
 from beancount.core import convert
+from beancount.core import data
+from beancount.core import flags
+from beancount.core import getters
+from beancount.core import inventory
 from beancount.core import prices
-from beancount.utils import misc_utils
+from beancount.core.number import ZERO
+from beancount.parser import printer
 from beancount.utils import date_utils
-
+from beancount.utils import misc_utils
 
 # A snapshot of a particular set of accounts at a point in time. The balances
 # aren't converted to their prices, this is done in a separate step.
@@ -667,7 +666,7 @@ def create_timeline(
     ]
 
     # Internalize entries with internal/external flows.
-    entries, internalized_entries = internalize(
+    entries, internalized_entries, _ = internalize(
         entries,
         transfer_account,
         accounts_value,

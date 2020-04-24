@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+from beancount.core import prices, convert
 from beancount.core.data import Transaction
 from beancount.core.inventory import Inventory
 
@@ -33,13 +34,17 @@ def get_balance_split(accounts, accapi):
     _, _, old_new = returns.internalize(
         accapi.ledger.entries, "Equity:Internalized", accounts.value, accounts.internal, accounts.internalized
     )
+    price_map = prices.build_price_map(accapi.ledger.entries)
 
     rows = []
+    balance = Inventory()
     for original_entry, internalized_entries in old_new:
         dividends = Inventory()
         contributions = Inventory()
         withdrawals = Inventory()
         gains_realized = Inventory()
+        unrealized = Inventory()
+        unrealized_diff = Inventory()
         for entry in internalized_entries:
             if not isinstance(entry, Transaction):
                 continue
@@ -48,6 +53,8 @@ def get_balance_split(accounts, accapi):
             internal = any([p.account in accounts.internal for p in entry.postings])
             internalized = any([p.account in accounts.internalized for p in entry.postings])
             external = any([is_external(p.account) for p in entry.postings])
+
+            add_only_postings_from(balance, entry, accounts.value)
 
             if (value and internal) or (not value and internalized and external):
                 add_only_postings_from(dividends, entry, accounts.internal, None)
@@ -59,9 +66,18 @@ def get_balance_split(accounts, accapi):
             if value and internal and is_commodity_sale(entry, accounts.value):
                 add_only_postings_from(gains_realized, entry, accounts.internal)
 
+            # gains
+            current_value = balance.reduce(convert.get_value, price_map, entry.date)
+            current_cost = balance.reduce(convert.get_cost)
+            new_unrealized = current_value.add_inventory(-current_cost)
+            if new_unrealized != unrealized:
+                unrealized_diff = unrealized_diff.add_inventory(
+                    Inventory({**new_unrealized.add_inventory(-unrealized)})
+                )
 
-        rows.append((original_entry, contributions, withdrawals, -dividends, -gains_realized))
+        rows.append((original_entry, contributions, withdrawals, -dividends, -gains_realized, unrealized_diff))
     return rows
+
 
 def is_commodity_sale(entry: Transaction, value_accounts):
     for posting in entry.postings:
@@ -71,9 +87,9 @@ def is_commodity_sale(entry: Transaction, value_accounts):
             return True
     return False
 
+
 def sum_inventories(inv_list):
     sum = Inventory()
     for inv in inv_list:
         sum.add_inventory(inv)
     return sum
-
