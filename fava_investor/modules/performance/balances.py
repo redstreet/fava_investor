@@ -1,6 +1,6 @@
-from beancount.core.account import parent, parents
+import re
 
-from fava_investor.modules.performance.split import get_matching_accounts
+from beancount.core.account import parent, parents
 
 
 def get_balances_tree(accapi, config):
@@ -11,8 +11,8 @@ def get_balances_tree(accapi, config):
     return tree
 
 
-def get_value_accounts_and_parents(tree, accounts, patterns):
-    result = get_matching_accounts(accounts, patterns)
+def get_value_accounts_and_parents(tree, accounts, pattern):
+    result = set([acc for acc in accounts if re.match(pattern, acc)])
     ancestors = [p.name for acc in result for p in tree.ancestors(acc)]
     return result.union(ancestors)
 
