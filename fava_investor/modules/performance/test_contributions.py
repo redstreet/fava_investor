@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from pprint import pformat
 
 from beancount import loader
