@@ -28,7 +28,7 @@ def i(string):
 def get_split(filename, config_override=None):
     defaults = {
         "accounts_pattern": "^Assets:Account",
-        "accounts_internal_pattern": "^(Income|Expense):",
+        "accounts_internal_pattern": "^(Income|Expenses):",
         "accounts_internalized_pattern": "^Income:Dividends",
     }
     if not config_override:
@@ -98,33 +98,6 @@ class TestContributions(test_utils.TestCase):
         self.assertEqual({}, result)
 
     @test_utils.docfile
-    def test_withdrawals_and_contriutions_are_separate(self, filename: str):
-        """
-        2020-01-01 open Assets:Bank
-        2020-01-01 open Assets:Account
-
-        2020-01-01 * "contrib"
-            Assets:Account  1 GBP
-            Assets:Bank
-
-        2020-01-01 * "withdrawal"
-            Assets:Account  -1 GBP
-            Assets:Bank
-
-        2020-01-01 * "both"
-            Assets:Account  -2 GBP
-            Assets:Account  3 GBP
-            Assets:Bank
-        """
-
-        split = get_split(filename)
-        contributions = sum_inventories(split.contributions)
-        withdrawals = sum_inventories(split.withdrawals)
-
-        self.assertEqual(i("4 GBP"), contributions)
-        self.assertEqual(i("-3 GBP"), withdrawals)
-
-    @test_utils.docfile
     def test_list_withdrawals_entries(self, filename: str):
         """
         2020-01-01 open Assets:Bank
@@ -158,22 +131,6 @@ class TestContributions(test_utils.TestCase):
         self.assertEqual("withdrawal 2", split.transactions[2].narration)
 
     @test_utils.docfile
-    def test_only_negative_postings_are_considered_withdrawals(self, filename: str):
-        """
-        2020-01-01 open Assets:Bank
-        2020-01-01 open Assets:Account:A
-        2020-01-01 open Assets:Account:B
-
-        2020-01-02 * "withdrawal"
-            Assets:Account:A  -1 GBP
-            Assets:Account:A  2 GBP
-            Assets:Account:B  -4 GBP
-            Assets:Bank
-        """
-        split = get_split(filename)
-        self.assertEqual(Inventory.from_string("-5 GBP"), split.withdrawals[0])
-
-    @test_utils.docfile
     def test_list_contribution_entries(self, filename: str):
         """
         2020-01-01 open Assets:Bank
@@ -203,23 +160,6 @@ class TestContributions(test_utils.TestCase):
         self.assertEqual("contribution 2", split.transactions[2].narration)
 
     @test_utils.docfile
-    def test_only_positive_postings_are_considered_contributions(self, filename: str):
-        """
-        2020-01-01 open Assets:Bank
-        2020-01-01 open Assets:Account:A
-        2020-01-01 open Assets:Account:B
-
-        2020-01-02 * "contribution"
-            Assets:Account:A  1 GBP
-            Assets:Account:A  -2 GBP
-            Assets:Account:B  4 GBP
-            Assets:Bank
-        """
-        split = get_split(filename)
-
-        self.assertEqual(Inventory.from_string("5 GBP"), split.contributions[0])
-
-    @test_utils.docfile
     def test_filtered_out_value_accounts_are_treated_as_external(self, filename: str):
         """
         2020-01-01 open Assets:Bank
@@ -241,3 +181,40 @@ class TestContributions(test_utils.TestCase):
         split = get_split(filename)
 
         self.assertEqual(Inventory.from_string("2 GBP"), sum_inventories(split.contributions))
+
+    @test_utils.docfile
+    def test_asset_on_loan_with_contributed_part(self, filename: str):
+        """
+        2020-01-01 open Assets:Bank
+        2020-01-01 open Assets:Account:Loan
+        2020-01-01 open Assets:Account:Asset
+
+        2020-01-02 price AA 15 GBP
+
+        2020-01-02 * "transfer"
+            Assets:Account:Loan  -6 GBP
+            Assets:Account:Asset  1 AA {11 GBP}
+            Assets:Bank  -5 GBP
+
+        """
+        split = get_split(filename)
+
+        self.assertEqual(Inventory.from_string("5 GBP"), sum_inventories(split.contributions))
+
+    @test_utils.docfile
+    def test_asset_sold_loan_returned_and_rest_withdrawn(self, filename: str):
+        """
+        2020-01-01 open Assets:Bank
+        2020-01-01 open Assets:Account:Loan
+        2020-01-01 open Assets:Account:Asset
+
+        2020-01-02 price AA 15 GBP
+
+        2020-01-02 * "transfer"
+            Assets:Account:Loan  6 GBP
+            Assets:Account:Asset  -1 AA {11 GBP}
+            Assets:Bank  5 GBP
+        """
+        split = get_split(filename)
+
+        self.assertEqual(Inventory.from_string("-5 GBP"), sum_inventories(split.withdrawals))

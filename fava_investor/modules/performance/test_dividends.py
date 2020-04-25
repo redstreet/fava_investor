@@ -26,8 +26,8 @@ class TestDividends(test_utils.TestCase):
         2020-01-01 open Income:Dividends
 
         2020-01-01 * "dividend"
-            Assets:Bank  5 GBP
-            Income:Dividends
+            Assets:Bank
+            Income:Dividends  -5 GBP
         """
         config = {
             "accounts_pattern": "^Assets:Account",
@@ -54,3 +54,17 @@ class TestDividends(test_utils.TestCase):
         }
         split = get_split(filename, config)
         self.assertEqual(Inventory(), sum_inventories(split.dividends))
+
+    @test_utils.docfile
+    def test_cost(self, filename: str):
+        """
+        2020-01-01 open Assets:Account
+        2020-01-01 open Expenses:ServiceFee
+
+        2020-01-01 * "dividend"
+            Assets:Account  -5 GBP
+            Expenses:ServiceFee
+        """
+        split = get_split(filename)
+        inventories = sum_inventories(split.costs)
+        self.assertEqual(Inventory.from_string("-5 GBP"), inventories)
