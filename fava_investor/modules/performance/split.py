@@ -116,7 +116,15 @@ def include_postings(inventory, transaction, include_accounts=None, exclude_acco
 def calculate_balances(inventories):
     result = []
     balance = Inventory()
+    last_balance = Inventory()
     for inv in inventories:
-        balance.add_inventory(inv)
-        result.append(copy.copy(balance))
+        if inv != {}:
+            balance.add_inventory(inv)
+            result.append(copy.copy(balance))
+            last_balance = balance
+        else:
+            result.append(Inventory())
+
+    if result[-1] == {}:
+        result[-1] = last_balance
     return result

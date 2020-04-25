@@ -21,8 +21,8 @@ def get_ledger(filename):
     return FavaInvestorAPI(FavaLedger(filename))
 
 
-def i(string):
-    return Inventory.from_string(string)
+def i(string=None):
+    return Inventory.from_string(string if string else "")
 
 
 def get_split(filename, config_override=None):
