@@ -1,6 +1,6 @@
 from beancount.core.account import parent, parents
 
-from fava_investor.modules.performance.common import get_matching_accounts
+from fava_investor.modules.performance.split import get_matching_accounts
 
 
 def get_balances_tree(accapi, config):

@@ -1,25 +1,16 @@
 from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
-from .common import get_accounts_from_config
-from .gains import GainsCalculator
-from .test_balances import get_ledger
-
-CONFIG = {"accounts_pattern": "^Assets:Account", "accounts_internal_pattern": "^Income:Gains$"}
-
-
-def get_sut(filename, config) -> GainsCalculator:
-    accapi = get_ledger(filename)
-    return GainsCalculator(accapi, get_accounts_from_config(accapi, config))
-
-
-def i(string):
-    return Inventory.from_string(string)
+from .split import sum_inventories
+from .test_contributions import get_split, i
 
 
 class TestGains(test_utils.TestCase):
+    def assertInventoriesSum(self, inventory_string, inventories: list):
+        self.assertEqual(Inventory.from_string(inventory_string), sum_inventories(inventories))
+
     @test_utils.docfile
-    def test_get_unrealized_gains(self, filename: str):
+    def test_get_unrealized_gain(self, filename: str):
         """
         2020-01-01 open Assets:Bank
         2020-01-01 open Assets:Account
@@ -30,10 +21,9 @@ class TestGains(test_utils.TestCase):
 
         2020-02-22 price AA  2 USD
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_unrealized_gains_total()
+        split = get_split(filename)
 
-        self.assertEqual({"USD": 1}, result)
+        self.assertInventoriesSum("1 USD", split.gains_unrealized)
 
     @test_utils.docfile
     def test_get_unrealized_gains_entries(self, filename: str):
@@ -53,7 +43,7 @@ class TestGains(test_utils.TestCase):
         2020-02-22 price AA  2 USD
         """
         self.skipTest("gains per account not implemented yet")
-        sut = get_sut(filename, CONFIG)
+        sut = get_sut(filename)
         result = sut.get_unrealized_gains_per_account()
 
         expected = {
@@ -74,10 +64,8 @@ class TestGains(test_utils.TestCase):
 
         2020-02-22 price AA  2 USD
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_unrealized_gains_total()
-
-        self.assertEqual(Inventory(), result)
+        split = get_split(filename)
+        self.assertInventoriesSum("", split.gains_unrealized)
 
     @test_utils.docfile
     def test_ignoring_realized_gains(self, filename: str):
@@ -90,6 +78,7 @@ class TestGains(test_utils.TestCase):
           Assets:Account  1 AA {1 USD}
           Assets:Bank
 
+
         2020-02-23 * "realized gain"
           Assets:Account  -1 AA {1 USD}
           Assets:Bank  2 USD
@@ -99,12 +88,10 @@ class TestGains(test_utils.TestCase):
           Assets:Account  1 AA {2 USD}
           Assets:Bank
 
-        2020-02-24 price AA  4 USD
+        2020-02-24 price AA  10 USD
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_unrealized_gains_total()
-
-        self.assertEqual(i("2 USD"), result)
+        split = get_split(filename)
+        self.assertInventoriesSum("8 USD", split.gains_unrealized)
 
     @test_utils.docfile
     def test_get_unrealized_gains(self, filename: str):
@@ -118,10 +105,9 @@ class TestGains(test_utils.TestCase):
 
         2020-02-22 price AA  2 USD
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_unrealized_gains_total()
+        split = get_split(filename)
 
-        self.assertEqual(i("1 USD"), result)
+        self.assertInventoriesSum("1 USD", split.gains_unrealized)
 
     @test_utils.docfile
     def test_realized_gains(self, filename: str):
@@ -139,10 +125,9 @@ class TestGains(test_utils.TestCase):
           Assets:Bank  2 USD
           Income:Gains
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_realized_gains_total()
+        split = get_split(filename)
 
-        self.assertEqual(i("1 USD"), result)
+        self.assertInventoriesSum("1 USD", split.gains_realized)
 
     @test_utils.docfile
     def test_realized_gains_multiple_transactions(self, filename: str):
@@ -166,10 +151,9 @@ class TestGains(test_utils.TestCase):
           Assets:Bank  3 USD
           Income:Gains  -2 USD
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_realized_gains_total()
+        split = get_split(filename)
 
-        self.assertEqual(i("3 USD"), result)
+        self.assertInventoriesSum("3 USD", split.gains_realized)
 
     @test_utils.docfile
     def test_realized_lose(self, filename: str):
@@ -187,7 +171,6 @@ class TestGains(test_utils.TestCase):
           Assets:Bank  1 USD
           Income:Gains
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_realized_gains_total()
+        split = get_split(filename)
 
-        self.assertEqual(i("-1 USD"), result)
+        self.assertInventoriesSum("-1 USD", split.gains_realized)

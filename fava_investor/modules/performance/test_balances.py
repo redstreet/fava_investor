@@ -1,24 +1,8 @@
-from pprint import pformat
-
-from beancount import loader
-from beancount.ops import validation
 from beancount.utils import test_utils
-from fava.core import FavaLedger
 from freezegun import freeze_time
 
-from fava_investor import FavaInvestorAPI
 from fava_investor.modules.performance.balances import get_balances_tree
-
-
-def get_ledger(filename):
-    _, errors, _ = loader.load_file(
-        filename, extra_validations=validation.HARDCORE_VALIDATIONS
-    )
-    if errors:
-        raise ValueError("Errors in ledger file: \n" + pformat(errors))
-
-    return FavaInvestorAPI(FavaLedger(filename))
-
+from fava_investor.modules.performance.test_contributions import get_ledger
 
 CONFIG = {"accounts_pattern": "^Assets:Account"}
 

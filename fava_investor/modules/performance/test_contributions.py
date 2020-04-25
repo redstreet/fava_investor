@@ -1,17 +1,43 @@
+from collections import OrderedDict
+from pprint import pformat
+
+from beancount import loader
 from beancount.core.data import Transaction
 from beancount.core.inventory import Inventory
+from beancount.ops import validation
 from beancount.utils import test_utils
+from fava.core import FavaLedger
 
-from .common import get_accounts_from_config
-from .contributions import ContributionsCalculator
-from .test_balances import get_ledger
-
-CONFIG = {"accounts_pattern": "^Assets:Account"}
+from .split import split_journal, sum_inventories
+from favainvestorapi import FavaInvestorAPI
 
 
-def get_sut(filename, config) -> ContributionsCalculator:
-    accapi = get_ledger(filename)
-    return ContributionsCalculator(accapi, get_accounts_from_config(accapi, config))
+def get_ledger(filename):
+    _, errors, _ = loader.load_file(
+        filename, extra_validations=validation.HARDCORE_VALIDATIONS
+    )
+    if errors:
+        raise ValueError("Errors in ledger file: \n" + pformat(errors))
+
+    return FavaInvestorAPI(FavaLedger(filename))
+
+
+def i(string):
+    return Inventory.from_string(string)
+
+
+def get_split(filename, config_override=None):
+    defaults = {
+        "accounts_pattern": "^Assets:Account",
+        "accounts_internal_pattern": "^(Income|Expense):",
+        "accounts_internalized_pattern": "^Income:Dividends",
+    }
+    if not config_override:
+        config_override = {}
+
+    config = {**defaults, **config_override}
+    ledger = get_ledger(filename)
+    return split_journal(ledger, config["accounts_pattern"], config["accounts_internal_pattern"], config["accounts_internalized_pattern"])
 
 
 class TestContributions(test_utils.TestCase):
@@ -22,9 +48,8 @@ class TestContributions(test_utils.TestCase):
         2020-01-01 open Assets:Account
         2020-01-01 open Assets:Account:Sub
         """
-        sut = get_sut(filename, CONFIG)
-        contributions = sut.get_contributions_total()
-        self.assertEqual(Inventory(), contributions)
+        result = sum_inventories(get_split(filename).contributions)
+        self.assertEqual({}, result)
 
     @test_utils.docfile
     def test_no_withdrawals(self, filename: str):
@@ -33,9 +58,8 @@ class TestContributions(test_utils.TestCase):
         2020-01-01 open Assets:Account
         2020-01-01 open Assets:Account:Sub
         """
-        sut = get_sut(filename, CONFIG)
-        withdrawals = sut.get_withdrawals_total()
-        self.assertEqual(Inventory(), withdrawals)
+        result = sum_inventories(get_split(filename).withdrawals)
+        self.assertEqual({}, result)
 
     @test_utils.docfile
     def test_contributions_to_subaccounts(self, filename: str):
@@ -52,10 +76,8 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:Sub  10 GBP
             Assets:Bank
         """
-        sut = get_sut(filename, CONFIG)
-        contributions = sut.get_contributions_total()
-
-        self.assertEqual(Inventory.from_string("20 GBP"), contributions)
+        result = sum_inventories(get_split(filename).contributions)
+        self.assertEqual(i("20 GBP"), result)
 
     @test_utils.docfile
     def test_other_transfers_are_ignored(self, filename: str):
@@ -73,10 +95,8 @@ class TestContributions(test_utils.TestCase):
             Assets:Bank  20 GBP
             Assets:Bank2
         """
-        sut = get_sut(filename, CONFIG)
-        contributions = sut.get_contributions_total()
-
-        self.assertEqual(Inventory.from_string(""), contributions)
+        result = sum_inventories(get_split(filename).contributions)
+        self.assertEqual({}, result)
 
     @test_utils.docfile
     def test_withdrawals_and_contriutions_are_separate(self, filename: str):
@@ -97,12 +117,13 @@ class TestContributions(test_utils.TestCase):
             Assets:Account  3 GBP
             Assets:Bank
         """
-        sut = get_sut(filename, CONFIG)
-        contributions = sut.get_contributions_total()
-        withdrawals = sut.get_withdrawals_total()
 
-        self.assertEqual(Inventory.from_string("4 GBP"), contributions)
-        self.assertEqual(Inventory.from_string("-3 GBP"), withdrawals)
+        split = get_split(filename)
+        contributions = sum_inventories(split.contributions)
+        withdrawals = sum_inventories(split.withdrawals)
+
+        self.assertEqual(i("4 GBP"), contributions)
+        self.assertEqual(i("-3 GBP"), withdrawals)
 
     @test_utils.docfile
     def test_list_withdrawals_entries(self, filename: str):
@@ -124,16 +145,18 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:A  -3 GBP
             Assets:Bank
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_withdrawals_entries()
+        split = get_split(filename)
 
-        self.assertEqual(Inventory.from_string("-3 GBP"), result[1].change)
-        self.assertEqual(Inventory.from_string("-3 GBP"), result[2].change)
+        self.assertEqual({}, split.withdrawals[0])
+        self.assertEqual(i("-3 GBP"), split.withdrawals[1])
+        self.assertEqual(i("-3 GBP"), split.withdrawals[2])
 
-        self.assertIsInstance(result[1].transaction, Transaction)
-        self.assertEqual("withdrawal 1", result[1].transaction.narration)
-        self.assertIsInstance(result[2].transaction, Transaction)
-        self.assertEqual("withdrawal 2", result[2].transaction.narration)
+        self.assertIsInstance(split.transactions[0], Transaction)
+        self.assertIsInstance(split.transactions[1], Transaction)
+        self.assertIsInstance(split.transactions[2], Transaction)
+        self.assertEqual("contrib", split.transactions[0].narration)
+        self.assertEqual("withdrawal 1", split.transactions[1].narration)
+        self.assertEqual("withdrawal 2", split.transactions[2].narration)
 
     @test_utils.docfile
     def test_only_negative_postings_are_considered_withdrawals(self, filename: str):
@@ -148,10 +171,8 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:B  -4 GBP
             Assets:Bank
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_withdrawals_entries()
-
-        self.assertEqual(Inventory.from_string("-5 GBP"), result[0].change)
+        split = get_split(filename)
+        self.assertEqual(Inventory.from_string("-5 GBP"), split.withdrawals[0])
 
     @test_utils.docfile
     def test_list_contribution_entries(self, filename: str):
@@ -173,16 +194,14 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:A  3 GBP
             Assets:Bank
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_contributions_entries()
+        split = get_split(filename)
+        self.assertEqual(Inventory.from_string("3 GBP"), split.contributions[1])
+        self.assertEqual(Inventory.from_string("3 GBP"), split.contributions[2])
 
-        self.assertEqual(Inventory.from_string("3 GBP"), result[1].change)
-        self.assertEqual(Inventory.from_string("3 GBP"), result[2].change)
-
-        self.assertIsInstance(result[1].transaction, Transaction)
-        self.assertEqual("contribution 1", result[1].transaction.narration)
-        self.assertIsInstance(result[2].transaction, Transaction)
-        self.assertEqual("contribution 2", result[2].transaction.narration)
+        self.assertIsInstance(split.transactions[1], Transaction)
+        self.assertEqual("contribution 1", split.transactions[1].narration)
+        self.assertIsInstance(split.transactions[2], Transaction)
+        self.assertEqual("contribution 2", split.transactions[2].narration)
 
     @test_utils.docfile
     def test_only_positive_postings_are_considered_contributions(self, filename: str):
@@ -197,10 +216,9 @@ class TestContributions(test_utils.TestCase):
             Assets:Account:B  4 GBP
             Assets:Bank
         """
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_contributions_entries()
+        split = get_split(filename)
 
-        self.assertEqual(Inventory.from_string("5 GBP"), result[0].change)
+        self.assertEqual(Inventory.from_string("5 GBP"), split.contributions[0])
 
     @test_utils.docfile
     def test_filtered_out_value_accounts_are_treated_as_external(self, filename: str):
@@ -221,7 +239,6 @@ class TestContributions(test_utils.TestCase):
             "Not implemented. It will be needed to calculate returns for selected account as well."
         )
 
-        sut = get_sut(filename, CONFIG)
-        result = sut.get_contributions_total()
+        split = get_split(filename)
 
-        self.assertEqual(Inventory.from_string("2 GBP"), result)
+        self.assertEqual(Inventory.from_string("2 GBP"), sum_inventories(split.contributions))
