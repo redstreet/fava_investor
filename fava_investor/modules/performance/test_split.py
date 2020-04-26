@@ -126,6 +126,17 @@ class TestSplit(SplitTestCase):
         """
         self.assertSumOfSplitsEqualValue(filename)
 
+    @test_utils.docfile
+    def test_sum_of_each_split_should_match_balance(self, filename):
+        """
+        2020-01-01 open Assets:Account
+        2020-01-01 open Expenses:ServiceFee
+        2020-01-02 * "cost"
+            Assets:Account  1 USD
+            Expenses:ServiceFee
+        """
+
+        self.assertSumOfSplitsEqualValue(filename)
 
 def get_value(ledger, price_map, account, date):
     if isinstance(date, str):
