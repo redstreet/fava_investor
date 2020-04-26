@@ -13,13 +13,13 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
     # AssetAllocClass
     # -----------------------------------------------------------------------------------------------------------
-    def build_assetalloc_by_class(self, begin=None, end=None):
+    def build_assetalloc_by_class(self):
         accapi = FavaInvestorAPI(self.ledger)
         return libassetalloc.assetalloc(accapi, self.config.get('asset_alloc_by_class', {}))
 
     # AssetAllocAccount
     # -----------------------------------------------------------------------------------------------------------
-    def build_aa_by_account(self, begin=None, end=None):
+    def build_aa_by_account(self):
         accapi = FavaInvestorAPI(self.ledger)
         # if begin:
         #     tree = Tree(iter_entry_dates(self.ledger.entries, begin, end))
@@ -30,17 +30,17 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
     # Cash Drag
     # -----------------------------------------------------------------------------------------------------------
-    def build_cashdrag(self, begin=None, end=None):
+    def build_cashdrag(self):
         accapi = FavaInvestorAPI(self.ledger)
         return libcashdrag.find_loose_cash(accapi, self.config.get('cashdrag', {}))
 
     # TaxLossHarvester
     # -----------------------------------------------------------------------------------------------------------
-    def build_tlh_tables(self, begin=None, end=None):
+    def build_tlh_tables(self):
         accapi = FavaInvestorAPI(self.ledger)
         return libtlh.get_tables(accapi, self.config.get('tlh', {}))
 
-    def recently_sold_at_loss(self, begin=None, end=None):
+    def recently_sold_at_loss(self):
         accapi = FavaInvestorAPI(self.ledger)
         return libtlh.recently_sold_at_loss(accapi, self.config.get('tlh', {}))
 

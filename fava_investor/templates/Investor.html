@@ -13,7 +13,7 @@
 
 {% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
-  {% set results = extension.build_aa_by_account(None, None) %}
+  {% set results = extension.build_aa_by_account() %}
   {% if results|length == 0 %}
      No regexes found in configuration. See example.bc for how to configure this module.
   {% else %}
@@ -28,13 +28,13 @@
 
 {% if (module == 'cashdrag') %}
   <h2>Cash Drag Analysis</h2>
-  {% set results = extension.build_cashdrag(None, None) %}
+  {% set results = extension.build_cashdrag() %}
   {{ querytable.querytable(None, results[0], results[1]) }}
 {% endif %}
 
 {% if (module == 'tlh') %}
   <h2>Tax Loss Harvester</h2>
-  {% set harvests = extension.build_tlh_tables(None, None) %}
+  {% set harvests = extension.build_tlh_tables() %}
 
   <div class="row">
     <div class="column">
@@ -82,7 +82,7 @@
   Note: the below is a list of recent sales with losses provided for your convenience
   in making purchasing decisions around wash sales. (This is not meant to be financial
   or tax advice).
-  {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
+  {% set lossy_sales = extension.recently_sold_at_loss() %}
   {% set table_empty_msg = None %}
   {% if lossy_sales[1]|length == 0 %}
     {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
@@ -166,7 +166,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 {% if (module == 'aa_class') %}
   <h2>Portfolio: Asset Allocation by Class</h2>
 
-  {% set results = extension.build_assetalloc_by_class(None, None) %}
+  {% set results = extension.build_assetalloc_by_class() %}
   {{ asset_tree(results[0]) }}
 
   {{ asset_allocation_hierarchy(results[0].serialise(results[0]['currency']), label='Asset Allocation') }}
