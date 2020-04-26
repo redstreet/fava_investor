@@ -29,6 +29,8 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
     accounts_value = set([acc for acc in accounts if re.match(pattern_value, acc)])
     accounts_internal = set([acc for acc in accounts if re.match(pattern_internal, acc)])
     accounts_internalized = set([acc for acc in accounts if re.match(pattern_internalized, acc)])
+    accounts_expenses = set([acc for acc in accounts if re.match("^Expenses:", acc)]) & accounts_internal
+    accounts_income = set([acc for acc in accounts if re.match("^Income:", acc)]) & accounts_internal
 
     if needs_dummy_transaction(accapi.ledger.entries):
         accapi.ledger.entries.append(Transaction(None, None, None, None, "UNREALIZED GAINS NEW BALANCE", [], [], []))
@@ -67,13 +69,13 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
 
             if (value and internal and not is_commodity_sale(entry, accounts_value)) \
                     or (not value and internalized and external):
-                include_postings(dividends, entry, accounts_internal, filter=lambda posting: posting.units.number < 0)
+                include_postings(dividends, entry, accounts_income, filter=lambda posting: posting.units.number < 0)
 
             if value and internal:
-                include_postings(costs, entry, accounts_internal, filter=lambda posting: posting.units.number > 0)
+                include_postings(costs, entry, accounts_expenses)
 
             if value and internal and is_commodity_sale(entry, accounts_value):
-                include_postings(gains_realized, entry, accounts_internal, filter=lambda posting: posting.units.number < 0)
+                include_postings(gains_realized, entry, accounts_income)
 
             if value and external:
                 include_postings(contributions, entry, exclude_accounts=accounts_value | accounts_internal,

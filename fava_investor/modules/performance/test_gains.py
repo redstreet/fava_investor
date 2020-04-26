@@ -163,11 +163,10 @@ class TestGains(SplitTestCase):
 
         2020-02-23 * "sell with lose"
           Assets:Account  -1 AA {2 USD}
-          Assets:Bank  1 USD
+          Assets:Account  1 USD
           Income:Gains
-        """
-        self.skipTest("how do we differentiate lose from cost/commission?")
-        split = get_split(filename)
 
-        self.assertInventoriesSum("-1 USD", split.gains_realized)
+        2020-02-24 balance Assets:Account  1 USD
+        """
+        self.assertSumOfSplitsEqual(filename, "1 USD")
 

@@ -19,6 +19,37 @@ class SplitTestCase(test_utils.TestCase):
         self.assertEqual(Inventory.from_string(inventory_string), sum_inventories(inventories),
                          "Sum of given inventories does not match expected balance:\n" + pformat(inventories))
 
+    def assertInventory(self, expected_inventory_str, inventory):
+        self.assertEqual(i(expected_inventory_str), inventory)
+
+    def assertSumOfSplitsEqualValue(self, filename, account="Assets:Account"):
+        ledger = get_ledger(filename)
+        split = get_split(filename)
+
+        final_value = get_value(ledger, build_price_map_with_fallback_to_cost(ledger.ledger.entries),
+                                account, ledger.ledger.entries[-1].date)
+        self.assertEqual(self.get_split_sum(split), final_value,
+                         f"Sum of splits doesnt equal {account} value. Splits: {self.get_readable_splits(split)}")
+
+    def assertSumOfSplitsEqual(self, filename, value):
+        split = get_split(filename)
+        self.assertEqual(self.get_split_sum(split), i(value),
+                         f"Sum of splits doesnt equal given inventory. Splits: {self.get_readable_splits(split)}")
+
+    def get_readable_splits(self, split):
+        return f"\ncontrib    {split.contributions}" \
+               + f"\nwithdrawal {split.withdrawals}" \
+               + f"\ndividends  {split.dividends}" \
+               + f"\ncosts      {split.costs}" \
+               + f"\ngains r.   {split.gains_realized}" \
+               + f"\ngains u.   {split.gains_unrealized}"
+
+    def get_split_sum(self, split):
+        split_list = list(split)
+        split_list = split_list[3:]  # remove balance and transactions
+        sum = sum_inventories([sum_inventories(s) for s in split_list])
+        return sum
+
 
 class TestSplit(SplitTestCase):
     @test_utils.docfile
@@ -61,49 +92,6 @@ class TestSplit(SplitTestCase):
         self.assertSumOfSplitsEqualValue(filename)
 
     @test_utils.docfile
-    def test_sum_of_each_split_should_match_balance(self, filename):
-        """
-        2020-01-01 open Assets:Account
-        2020-01-01 open Assets:Bank
-        2020-01-01 open Expenses:ServiceFee
-        2020-01-01 open Income:Dividends
-        2020-01-01 open Income:Gains
-
-        2020-01-01 * "contribution"
-            Assets:Account  1 USD
-            Assets:Bank
-
-        2020-01-02 * "withdrawal"
-            Assets:Account  -1 USD
-            Assets:Bank
-
-        2020-01-02 * "dividend"
-            Assets:Account  1 USD
-            Income:Dividends
-
-        2020-01-02 * "cost"
-            Assets:Account  1 USD
-            Expenses:ServiceFee
-
-        2020-01-02 * "realized gain"
-            Assets:Account  1 SHARE {1 USD}
-            Assets:Account
-
-        2020-01-02 * "realized gain"
-            Assets:Account  -1 SHARE {1 USD}
-            Assets:Account
-            Income:Gains  -1 USD
-
-        2020-01-02 * "unrealized gain"
-            Assets:Account  1 SHARE {1 USD}
-            Assets:Account
-
-        2020-01-02 price SHARE 2 USD
-        """
-
-        self.assertSumOfSplitsEqualValue(filename)
-
-    @test_utils.docfile
     def test_unrealized_gains_in_discounted_purchase(self, filename: str):
         """
         2020-01-01 open Assets:Bank
@@ -137,30 +125,6 @@ class TestSplit(SplitTestCase):
 
         """
         self.assertSumOfSplitsEqualValue(filename)
-
-    def assertInventory(self, expected_inventory_str, inventory):
-        self.assertEqual(i(expected_inventory_str), inventory)
-
-    def assertSumOfSplitsEqualValue(self, filename, account="Assets:Account"):
-        split = get_split(filename)
-        ledger = get_ledger(filename)
-
-        final_value = get_value(ledger, build_price_map_with_fallback_to_cost(ledger.ledger.entries),
-                                account, ledger.ledger.entries[-1].date)
-        self.assertEqual(self.get_split_sum(split), final_value, f"Sum of splits doesnt equal {account} value. Splits: "
-                         + f"\ncontrib    {split.contributions}"
-                         + f"\nwithdrawal {split.withdrawals}"
-                         + f"\ndividends  {split.dividends}"
-                         + f"\ncosts      {split.costs}"
-                         + f"\ngains r.   {split.gains_realized}"
-                         + f"\ngains u.   {split.gains_unrealized}"
-                         )
-
-    def get_split_sum(self, split):
-        split_list = list(split)
-        split_list = split_list[3:]  # remove balance and transactions
-        sum = sum_inventories([sum_inventories(s) for s in split_list])
-        return sum
 
 
 def get_value(ledger, price_map, account, date):
