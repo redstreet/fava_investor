@@ -60,7 +60,8 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         config = self.config.get("performance", {})
         split = split_journal(FavaInvestorAPI(self.ledger),
                               config.get("accounts_pattern", "^Assets:Investments"),
-                              config.get("accounts_internal_pattern", "^(Income|Expense):"),
+                              config.get("accounts_income_pattern", "^Income:"),
+                              config.get("accounts_expenses_pattern", "^Expenses:"),
                               config.get("accounts_internalized_pattern", "^Income:Dividends"))
         return split
 

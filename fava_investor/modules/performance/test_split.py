@@ -137,6 +137,7 @@ class TestSplit(SplitTestCase):
 
         self.assertSumOfSplitsEqualValue(filename)
 
+
 def get_value(ledger, price_map, account, date):
     if isinstance(date, str):
         date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
@@ -252,15 +253,16 @@ def get_split(filename, config_override=None):
 def get_split_with_meta(filename, config_override=None):
     defaults = {
         "accounts_pattern": "^Assets:Account",
-        "accounts_internal_pattern": "^(Income|Expenses):",
+        "accounts_income_pattern": "^Income:",
+        "accounts_expenses_pattern": "^Expenses:",
         "accounts_internalized_pattern": "^Income:Dividends",
     }
     if not config_override:
         config_override = {}
     config = {**defaults, **config_override}
     ledger = get_ledger(filename)
-    split = split_journal(ledger, config["accounts_pattern"], config["accounts_internal_pattern"],
-                          config["accounts_internalized_pattern"])
+    split = split_journal(ledger, config["accounts_pattern"], config["accounts_income_pattern"],
+                          config["accounts_expenses_pattern"], config["accounts_internalized_pattern"])
     return split
 
 

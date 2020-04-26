@@ -25,14 +25,14 @@ def needs_dummy_transaction(entries):
             return has_prices_after_last_transaction
 
 
-def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized="^Income:Dividend",
-                  income_pattern="^Income:", expenses_pattern="^Expenses:"):
+def split_journal(accapi, pattern_value, income_pattern="^Income:", expenses_pattern="^Expenses:",
+                  pattern_internalized="^Income:Dividend"):
     accounts = accapi.accounts
     accounts_value = set([acc for acc in accounts if re.match(pattern_value, acc)])
-    accounts_internal = set([acc for acc in accounts if re.match(pattern_internal, acc)])
     accounts_internalized = set([acc for acc in accounts if re.match(pattern_internalized, acc)])
-    accounts_expenses = set([acc for acc in accounts if re.match(expenses_pattern, acc)]) & accounts_internal
-    accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)]) & accounts_internal
+    accounts_expenses = set([acc for acc in accounts if re.match(expenses_pattern, acc)])
+    accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)])
+    accounts_internal = accounts_income | accounts_expenses
 
     if needs_dummy_transaction(accapi.ledger.entries):
         date = copy.copy(accapi.ledger.entries[-1].date)
