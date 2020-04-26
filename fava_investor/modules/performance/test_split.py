@@ -7,6 +7,7 @@ from beancount.core.amount import Amount
 from beancount.core.inventory import Inventory
 from beancount.ops import validation
 from beancount.utils import test_utils
+from beancount.utils.bisect_key import bisect_left_with_key
 from fava.core import FavaLedger
 
 from fava_investor import FavaInvestorAPI, split_journal

@@ -26,7 +26,7 @@ def needs_dummy_transaction(entries):
 
 
 def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized="^Income:Dividend",
-                  income_pattern="^Income:", expenses_pattern="^Expenses:", limit=None):
+                  income_pattern="^Income:", expenses_pattern="^Expenses:"):
     accounts = accapi.accounts
     accounts_value = set([acc for acc in accounts if re.match(pattern_value, acc)])
     accounts_internal = set([acc for acc in accounts if re.match(pattern_internal, acc)])
@@ -35,7 +35,8 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
     accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)]) & accounts_internal
 
     if needs_dummy_transaction(accapi.ledger.entries):
-        accapi.ledger.entries.append(Transaction(None, None, None, None, "UNREALIZED GAINS NEW BALANCE", [], [], []))
+        date = copy.copy(accapi.ledger.entries[-1].date)
+        accapi.ledger.entries.append(Transaction(None, date, None, None, "UNREALIZED GAINS NEW BALANCE", [], [], []))
 
     _, _, original_and_internalized = returns.internalize(accapi.ledger.entries, "Equity:Internalized", accounts_value,
                                                           accounts_internal, accounts_internalized)
@@ -49,16 +50,12 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
     is_external = lambda acc: acc not in accounts_value \
                               and acc not in accounts_internal \
                               and acc not in accounts_internalized
-    i = 0
     for original_entry, internalized_entries in original_and_internalized:
-        i += 1
         dividends = Inventory()
         costs = Inventory()
         contributions = Inventory()
         withdrawals = Inventory()
         gains_realized = Inventory()
-        if limit is not None and i > limit:
-            break
         for entry in internalized_entries:
             if not isinstance(entry, Transaction):
                 continue

@@ -53,12 +53,12 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         accapi = FavaInvestorAPI(self.ledger)
         return get_balances_tree(accapi, self.config.get('performance', {}))
 
-    def get_split(self, limit=None):
+    def get_split(self):
         config = self.config.get("performance", {})
         split = split_journal(FavaInvestorAPI(self.ledger),
                               config.get("accounts_pattern", "^Assets:Investments"),
                               config.get("accounts_internal_pattern", "^(Income|Expense):"),
-                              config.get("accounts_internalized_pattern", "^Income:Dividends"), limit=limit)
+                              config.get("accounts_internalized_pattern", "^Income:Dividends"))
         return split
 
     def build_contributions_journal(self):
@@ -99,23 +99,21 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
     def testing(self):
         result = []
-        for limit in [50, 500, 50000]:
-            split = self.get_split(limit)
-            parts = split.parts
-            row = {
-                'contributions': sum_inventories(parts.contributions),
-                'withdrawals': sum_inventories(parts.withdrawals),
-                'dividends': sum_inventories(parts.dividends),
-                'costs': sum_inventories(parts.costs),
-                'realized': sum_inventories(parts.gains_realized),
-                'unrealized': sum_inventories(parts.gains_unrealized),
-            }
-            checksum = sum_inventories(row.values())
+        split = self.get_split()
+        parts = split.parts
+        row = {
+            'contributions': sum_inventories(parts.contributions),
+            'withdrawals': sum_inventories(parts.withdrawals),
+            'dividends': sum_inventories(parts.dividends),
+            'costs': sum_inventories(parts.costs),
+            'realized': sum_inventories(parts.gains_realized),
+            'unrealized': sum_inventories(parts.gains_unrealized),
+        }
+        checksum = sum_inventories(row.values())
 
-            row['date'] = split.transactions[-1].date
-            row['limit'] = limit
-            row['value'] = split.values[-1]
-            row["checksum"] = checksum
-            row["error"] = sum_inventories([checksum, -split.values[-1]])
-            result.append(row)
+        row['date'] = split.transactions[-1].date
+        row['value'] = split.values[-1]
+        row["checksum"] = checksum
+        row["error"] = sum_inventories([checksum, -split.values[-1]])
+        result.append(row)
         return result

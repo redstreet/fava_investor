@@ -1,6 +1,9 @@
-from beancount.utils import test_utils
+import datetime
 
-from .test_split import SplitTestCase, get_split, i
+from beancount.utils import test_utils
+from beancount.utils.bisect_key import bisect_left_with_key
+
+from .test_split import SplitTestCase, get_split, i, get_ledger, get_split_with_meta
 
 
 class TestGains(SplitTestCase):
@@ -142,4 +145,22 @@ class TestGains(SplitTestCase):
         2020-02-24 balance Assets:Account  1 USD
         """
         self.assertSumOfSplitsEqual(filename, "1 USD")
+
+    @test_utils.docfile
+    def test_generated_dummy_transaction_has_date_to_work_in_templates_with_filters(self, filename):
+        """
+        2020-01-01 open Assets:Account
+        2020-01-01 open Assets:Bank
+
+        2020-01-02 * "contribution"
+            Assets:Account  1 AA {1 USD}
+            Assets:Bank
+
+        2020-01-04 price AA 2 USD
+        """
+        split = get_split_with_meta(filename)
+        self.assertEqual("UNREALIZED GAINS NEW BALANCE", split.transactions[-1].narration)
+        self.assertIsNotNone(split.transactions[-1].date)
+
+
 

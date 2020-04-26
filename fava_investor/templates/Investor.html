@@ -240,7 +240,6 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     {% set rows = extension.testing() %}
     <table style="width:100%">
         <tr>
-            <th>entries count</th>
             <th>contrib</th>
             <th>withdr</th>
             <th>divi</th>
@@ -253,7 +252,6 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
         </tr>
         {% for r in rows %}
             <tr>
-                <td>{{ r.limit }}</td>
                 <td>{% for pos in r.contributions|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
                 <td>{% for pos in r.withdrawals|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
                 <td>{% for pos in r.dividends|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
