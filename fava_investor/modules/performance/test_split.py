@@ -25,7 +25,6 @@ class SplitTestCase(test_utils.TestCase):
     def assertSumOfSplitsEqualValue(self, filename, account="Assets:Account"):
         ledger = get_ledger(filename)
         split = get_split(filename)
-
         final_value = get_value(ledger, build_price_map_with_fallback_to_cost(ledger.ledger.entries),
                                 account, ledger.ledger.entries[-1].date)
         self.assertEqual(self.get_split_sum(split), final_value,
@@ -46,7 +45,6 @@ class SplitTestCase(test_utils.TestCase):
 
     def get_split_sum(self, split):
         split_list = list(split)
-        split_list = split_list[3:]  # remove balance and transactions
         sum = sum_inventories([sum_inventories(s) for s in split_list])
         return sum
 
@@ -246,6 +244,11 @@ def get_ledger(filename):
 
 
 def get_split(filename, config_override=None):
+    split = get_split_with_meta(filename, config_override)
+    return split.parts
+
+
+def get_split_with_meta(filename, config_override=None):
     defaults = {
         "accounts_pattern": "^Assets:Account",
         "accounts_internal_pattern": "^(Income|Expenses):",
@@ -253,11 +256,11 @@ def get_split(filename, config_override=None):
     }
     if not config_override:
         config_override = {}
-
     config = {**defaults, **config_override}
     ledger = get_ledger(filename)
-    return split_journal(ledger, config["accounts_pattern"], config["accounts_internal_pattern"],
-                         config["accounts_internalized_pattern"])
+    split = split_journal(ledger, config["accounts_pattern"], config["accounts_internal_pattern"],
+                          config["accounts_internalized_pattern"])
+    return split
 
 
 def i(string=""):

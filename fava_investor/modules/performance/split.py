@@ -10,8 +10,9 @@ from beancount.core.prices import build_price_map
 
 from fava_investor.modules.performance.returns import returns
 
+Split = namedtuple("Split", "transactions balances values parts")
 SplitEntries = namedtuple("Balance",
-                          "transactions balances values contributions withdrawals dividends costs gains_realized gains_unrealized")
+                          "contributions withdrawals dividends costs gains_realized gains_unrealized")
 Change = namedtuple("Change", "transaction change")
 
 
@@ -24,13 +25,14 @@ def needs_dummy_transaction(entries):
             return has_prices_after_last_transaction
 
 
-def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized="^Income:Dividend", limit=None):
+def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized="^Income:Dividend",
+                  income_pattern="^Income:", expenses_pattern="^Expenses:", limit=None):
     accounts = accapi.accounts
     accounts_value = set([acc for acc in accounts if re.match(pattern_value, acc)])
     accounts_internal = set([acc for acc in accounts if re.match(pattern_internal, acc)])
     accounts_internalized = set([acc for acc in accounts if re.match(pattern_internalized, acc)])
-    accounts_expenses = set([acc for acc in accounts if re.match("^Expenses:", acc)]) & accounts_internal
-    accounts_income = set([acc for acc in accounts if re.match("^Income:", acc)]) & accounts_internal
+    accounts_expenses = set([acc for acc in accounts if re.match(expenses_pattern, acc)]) & accounts_internal
+    accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)]) & accounts_internal
 
     if needs_dummy_transaction(accapi.ledger.entries):
         accapi.ledger.entries.append(Transaction(None, None, None, None, "UNREALIZED GAINS NEW BALANCE", [], [], []))
@@ -40,7 +42,8 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
     price_map = build_price_map_with_fallback_to_cost(accapi.ledger.entries)
 
     balance = Inventory()
-    result = SplitEntries([], [], [], [], [], [], [], [], [])
+    split_entries = SplitEntries([], [], [], [], [], [])
+    split = Split([], [], [], split_entries)
     last_unrealized_gain = Inventory()
 
     is_external = lambda acc: acc not in accounts_value \
@@ -92,28 +95,26 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
         unrealized_gain_change.add_inventory(unrealized_gain).add_inventory(-last_unrealized_gain)
         last_unrealized_gain = unrealized_gain
 
-        if unrealized_gain_change != {}:
-            a= 1
-        result.contributions.append(-contributions)
-        result.withdrawals.append(-withdrawals)
-        result.dividends.append(-dividends)
-        result.costs.append(-costs)
-        result.gains_realized.append(-gains_realized)
-        result.gains_unrealized.append(unrealized_gain_change)
+        split_entries.contributions.append(-contributions)
+        split_entries.withdrawals.append(-withdrawals)
+        split_entries.dividends.append(-dividends)
+        split_entries.costs.append(-costs)
+        split_entries.gains_realized.append(-gains_realized)
+        split_entries.gains_unrealized.append(unrealized_gain_change)
 
         current_value = balance.reduce(convert.get_value, price_map, original_entry.date)
-        result.balances.append(copy.copy(balance))
-        result.values.append(current_value)
-        result.transactions.append(original_entry)
+        split.balances.append(copy.copy(balance))
+        split.values.append(current_value)
+        split.transactions.append(original_entry)
 
     try:
         slice = [
-            sum_inventories(result.contributions),
-            sum_inventories(result.withdrawals),
-            sum_inventories(result.dividends),
-            sum_inventories(result.costs),
-            sum_inventories(result.gains_unrealized),
-            sum_inventories(result.gains_realized),
+            sum_inventories(split_entries.contributions),
+            sum_inventories(split_entries.withdrawals),
+            sum_inventories(split_entries.dividends),
+            sum_inventories(split_entries.costs),
+            sum_inventories(split_entries.gains_unrealized),
+            sum_inventories(split_entries.gains_realized),
         ]
         checksum = sum_inventories(slice)
         # assert checksum == balance, f"Sum of splits have to match regular balance. Total balance and checksum: \n{balance}\n{checksum}\n"
@@ -121,7 +122,7 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
         raise e  # breakpoint here :D
     except Exception as e:
         raise e
-    return result
+    return split
 
 
 def is_commodity_sale(entry: Transaction, value_accounts):

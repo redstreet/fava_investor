@@ -3,7 +3,7 @@ from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
 from .split import sum_inventories
-from .test_split import SplitTestCase, i, get_split
+from .test_split import SplitTestCase, i, get_split, get_split_with_meta
 
 
 class TestWithdrawals(SplitTestCase):
@@ -43,11 +43,11 @@ class TestWithdrawals(SplitTestCase):
             Assets:Account:A  -3 GBP
             Assets:Bank
         """
-        split = get_split(filename)
+        split = get_split_with_meta(filename)
 
-        self.assertEqual({}, split.withdrawals[0])
-        self.assertEqual(i("-3 GBP"), split.withdrawals[1])
-        self.assertEqual(i("-3 GBP"), split.withdrawals[2])
+        self.assertEqual({}, split.parts.withdrawals[0])
+        self.assertEqual(i("-3 GBP"), split.parts.withdrawals[1])
+        self.assertEqual(i("-3 GBP"), split.parts.withdrawals[2])
 
         self.assertIsInstance(split.transactions[0], Transaction)
         self.assertIsInstance(split.transactions[1], Transaction)
