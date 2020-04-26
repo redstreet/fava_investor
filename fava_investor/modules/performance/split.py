@@ -10,7 +10,7 @@ from beancount.core.prices import build_price_map
 
 from fava_investor.modules.performance.returns import returns
 
-Split = namedtuple("Split", "transactions balances values parts")
+Split = namedtuple("Split", "transactions values parts")
 SplitEntries = namedtuple("Balance",
                           "contributions withdrawals dividends costs gains_realized gains_unrealized")
 Change = namedtuple("Change", "transaction change")
@@ -43,7 +43,7 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
 
     balance = Inventory()
     split_entries = SplitEntries([], [], [], [], [], [])
-    split = Split([], [], [], split_entries)
+    split = Split([], [], split_entries)
     last_unrealized_gain = Inventory()
 
     is_external = lambda acc: acc not in accounts_value \
@@ -103,25 +103,9 @@ def split_journal(accapi, pattern_value, pattern_internal, pattern_internalized=
         split_entries.gains_unrealized.append(unrealized_gain_change)
 
         current_value = balance.reduce(convert.get_value, price_map, original_entry.date)
-        split.balances.append(copy.copy(balance))
         split.values.append(current_value)
         split.transactions.append(original_entry)
 
-    try:
-        slice = [
-            sum_inventories(split_entries.contributions),
-            sum_inventories(split_entries.withdrawals),
-            sum_inventories(split_entries.dividends),
-            sum_inventories(split_entries.costs),
-            sum_inventories(split_entries.gains_unrealized),
-            sum_inventories(split_entries.gains_realized),
-        ]
-        checksum = sum_inventories(slice)
-        # assert checksum == balance, f"Sum of splits have to match regular balance. Total balance and checksum: \n{balance}\n{checksum}\n"
-    except AssertionError as e:
-        raise e  # breakpoint here :D
-    except Exception as e:
-        raise e
     return split
 
 
