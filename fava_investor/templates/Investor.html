@@ -247,9 +247,8 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
             <th>costs</th>
             <th>realized</th>
             <th>unrealized</th>
-            <th>balance</th>
-            <th>value</th>
             <th>sum of splits</th>
+            <th>value</th>
             <th>error</th>
         </tr>
         {% for r in rows %}
@@ -261,9 +260,8 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
                 <td>{% for pos in r.costs|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
                 <td>{% for pos in r.realized|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
                 <td>{% for pos in r.unrealized|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.balance|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.value|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
                 <td>{% for pos in r.checksum|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.value|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
                 <td style="color: red; font-weight: bolder">{% for pos in r.error|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
             </tr>
         {% endfor %}

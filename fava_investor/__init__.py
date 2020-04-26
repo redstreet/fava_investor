@@ -63,58 +63,58 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
     def build_contributions_journal(self):
         split = self.get_split()
-        balances = calculate_balances(split.contributions)
-        return map(lambda i: (split.transactions[i], None, split.contributions[i], balances[i]),
+        balances = calculate_balances(split.parts.contributions)
+        return map(lambda i: (split.transactions[i], None, split.parts.contributions[i], balances[i]),
                    range(0, len(split.transactions)))
 
     def build_withdrawals_journal(self):
         split = self.get_split()
-        balances = calculate_balances(split.withdrawals)
-        return map(lambda i: (split.transactions[i], None, split.withdrawals[i], balances[i]),
+        balances = calculate_balances(split.parts.withdrawals)
+        return map(lambda i: (split.transactions[i], None, split.parts.withdrawals[i], balances[i]),
                    range(0, len(split.transactions)))
 
     def build_realized_gains_journal(self):
         split = self.get_split()
-        balances = calculate_balances(split.gains_realized)
-        return map(lambda i: (split.transactions[i], None, split.gains_realized[i], balances[i]),
+        balances = calculate_balances(split.parts.gains_realized)
+        return map(lambda i: (split.transactions[i], None, split.parts.gains_realized[i], balances[i]),
                    range(0, len(split.transactions)))
 
     def build_unrealized_gains_journal(self):
         split = self.get_split()
-        balances = calculate_balances(split.gains_unrealized)
-        return map(lambda i: (split.transactions[i], None, split.gains_unrealized[i], balances[i]),
+        balances = calculate_balances(split.parts.gains_unrealized)
+        return map(lambda i: (split.transactions[i], None, split.parts.gains_unrealized[i], balances[i]),
                    range(0, len(split.transactions)))
 
     def build_dividends_journal(self):
         split = self.get_split()
-        balances = calculate_balances(split.dividends)
-        return map(lambda i: (split.transactions[i], None, split.dividends[i], balances[i]),
+        balances = calculate_balances(split.parts.dividends)
+        return map(lambda i: (split.transactions[i], None, split.parts.dividends[i], balances[i]),
                    range(0, len(split.transactions)))
 
     def build_costs_journal(self):
         split = self.get_split()
-        balances = calculate_balances(split.costs)
-        return map(lambda i: (split.transactions[i], None, split.costs[i], balances[i]),
+        balances = calculate_balances(split.parts.costs)
+        return map(lambda i: (split.transactions[i], None, split.parts.costs[i], balances[i]),
                    range(0, len(split.transactions)))
 
     def testing(self):
         result = []
         for limit in [50, 500, 50000]:
             split = self.get_split(limit)
+            parts = split.parts
             row = {
-                'contributions': sum_inventories(split.contributions),
-                'withdrawals': sum_inventories(split.withdrawals),
-                'dividends': sum_inventories(split.dividends),
-                'costs': sum_inventories(split.costs),
-                'realized': sum_inventories(split.gains_realized),
-                'unrealized': sum_inventories(split.gains_unrealized),
+                'contributions': sum_inventories(parts.contributions),
+                'withdrawals': sum_inventories(parts.withdrawals),
+                'dividends': sum_inventories(parts.dividends),
+                'costs': sum_inventories(parts.costs),
+                'realized': sum_inventories(parts.gains_realized),
+                'unrealized': sum_inventories(parts.gains_unrealized),
             }
             checksum = sum_inventories(row.values())
 
             row['date'] = split.transactions[-1].date
             row['limit'] = limit
             row['value'] = split.values[-1]
-            row['balance'] = split.balances[-1]
             row["checksum"] = checksum
             row["error"] = sum_inventories([checksum, -split.values[-1]])
             result.append(row)
