@@ -60,34 +60,32 @@ def split_journal(accapi, pattern_value, income_pattern="^Income:", expenses_pat
         internal = any([p.account in accounts_internal for p in entry.postings])
         income = any([p.account in accounts_income for p in entry.postings])
         expense = any([p.account in accounts_expenses for p in entry.postings])
-        internalized = any([p.account in accounts_internalized for p in entry.postings])
         external = any([is_external(p.account) for p in entry.postings])
 
-        include_postings(balance, entry, accounts_value)
+        balance += include_postings(entry, accounts_value)
 
         if (value and internal and not is_commodity_sale(entry, accounts_value)) \
-                or (not value and internalized and external):
-            include_postings(dividends, entry, accounts_income, filter=lambda posting: posting.units.number < 0)
+                or (not value and income and external):
+            dividends += include_postings(entry, accounts_income,
+                                          lambda_filter=lambda posting: posting.units.number < 0)
 
         if value and expense:
-            include_postings(costs, entry, accounts_expenses)
+            costs += include_postings(entry, accounts_expenses)
 
         if value and income and is_commodity_sale(entry, accounts_value):
-            include_postings(gains_realized, entry, accounts_income)
+            gains_realized += include_postings(entry, accounts_income)
 
         if value and external:
-            include_postings(contributions, entry, exclude_accounts=accounts_value | accounts_internal,
-                             filter=lambda posting: posting.units.number < 0)
-            include_postings(withdrawals, entry, exclude_accounts=accounts_value | accounts_internal,
-                             filter=lambda posting: posting.units.number > 0)
+            contributions += include_postings(entry, exclude_accounts=accounts_value | accounts_internal,
+                                              lambda_filter=lambda posting: posting.units.number < 0)
+            withdrawals += include_postings(entry, exclude_accounts=accounts_value | accounts_internal,
+                                            lambda_filter=lambda posting: posting.units.number > 0)
 
         # unrealized gain
         current_value = balance.reduce(convert.get_value, price_map, entry.date)
         current_cost = balance.reduce(convert.get_cost)
-        unrealized_gain = Inventory()
-        unrealized_gain.add_inventory(current_value).add_inventory(-current_cost)
-        unrealized_gain_change = Inventory()
-        unrealized_gain_change.add_inventory(unrealized_gain).add_inventory(-last_unrealized_gain)
+        unrealized_gain = current_value + -current_cost
+        unrealized_gain_change = unrealized_gain + -last_unrealized_gain
         last_unrealized_gain = unrealized_gain
 
         split_entries.contributions.append(-contributions)
@@ -116,7 +114,7 @@ def is_commodity_sale(entry: Transaction, value_accounts):
 def sum_inventories(inv_list):
     sum = Inventory()
     for inv in inv_list:
-        sum.add_inventory(inv)
+        sum += inv
     return sum
 
 
@@ -124,15 +122,18 @@ def get_matching_accounts(accounts, pattern):
     return set([acc for acc in accounts if re.match(pattern, acc)])
 
 
-def include_postings(inventory, transaction, include_accounts=None, exclude_accounts=None, filter=None):
+def include_postings(transaction, include_accounts=None, exclude_accounts=None, lambda_filter=None):
     exclude_accounts = exclude_accounts if exclude_accounts else []
-    filter = filter if filter is not None else lambda x: True
+    lambda_filter = lambda_filter if lambda_filter is not None else lambda x: True
+    inventory = Inventory()
 
     for posting in transaction.postings:
         if (include_accounts is None or posting.account in include_accounts) \
                 and posting.account not in exclude_accounts \
-                and filter(posting):
+                and lambda_filter(posting):
             inventory.add_position(posting)
+
+    return inventory
 
 
 def calculate_balances(inventories):
@@ -143,7 +144,7 @@ def calculate_balances(inventories):
     last_balance = Inventory()
     for inv in inventories:
         if inv != {}:
-            balance.add_inventory(inv)
+            balance += inv
             result.append(copy.copy(balance))
             last_balance = balance
         else:

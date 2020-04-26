@@ -51,5 +51,5 @@ def remove_from_parent(account, node, tree):
 def reduce_parents_balances(account, node, tree):
     for parent_account in parents(account):
         parent_node = tree[parent_account]
-        parent_node.balance_children.add_inventory(-node.balance)
-        parent_node.balance_children.add_inventory(-node.balance_children)
+        parent_node.balance_children += -node.balance
+        parent_node.balance_children += -node.balance_children
