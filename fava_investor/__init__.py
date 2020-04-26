@@ -1,4 +1,7 @@
 """Fava Investor: Investing related reports and tools for Beancount/Fava"""
+import copy
+
+from beancount.core.inventory import Inventory
 from fava.ext import FavaExtensionBase
 
 from .modules import performance
@@ -98,10 +101,9 @@ class Investor(FavaExtensionBase):  # pragma: no cover
                    range(0, len(split.transactions)))
 
     def testing(self):
-        result = []
         split = self.get_split()
         parts = split.parts
-        row = {
+        summary = {
             'contributions': sum_inventories(parts.contributions),
             'withdrawals': sum_inventories(parts.withdrawals),
             'dividends': sum_inventories(parts.dividends),
@@ -109,11 +111,24 @@ class Investor(FavaExtensionBase):  # pragma: no cover
             'realized': sum_inventories(parts.gains_realized),
             'unrealized': sum_inventories(parts.gains_unrealized),
         }
-        checksum = sum_inventories(row.values())
+        checksum = sum_inventories(summary.values())
 
-        row['date'] = split.transactions[-1].date
-        row['value'] = split.values[-1]
-        row["checksum"] = checksum
-        row["error"] = sum_inventories([checksum, -split.values[-1]])
-        result.append(row)
-        return result
+        summary['date'] = split.transactions[-1].date
+        summary['value'] = split.values[-1]
+        summary["checksum"] = checksum
+        summary["error"] = sum_inventories([checksum, -split.values[-1]])
+
+        journal = []
+        error_sum = Inventory()
+        for i in range(0, len(split.transactions)):
+            parts = split.parts
+            parts_sum = parts.contributions[i] + parts.withdrawals[i] + parts.dividends[i] + parts.costs[i] + \
+                        parts.gains_realized[i] + parts.gains_unrealized[i]
+            if i == 0:
+                current_value = Inventory()
+            else:
+                current_value = split.values[i] + (-split.values[i-1])
+            error = -current_value + parts_sum
+            error_sum += error
+            journal.append((split.transactions[i], None, error, copy.copy(error_sum)))
+        return summary, journal

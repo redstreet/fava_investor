@@ -237,7 +237,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 {% if (module == 'test') %}
     <h2>Portfolio: Test</h2>
 
-    {% set rows = extension.testing() %}
+    {% set summary, journal = extension.testing() %}
     <table style="width:100%">
         <tr>
             <th>contrib</th>
@@ -250,18 +250,20 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
             <th>value</th>
             <th>error</th>
         </tr>
-        {% for r in rows %}
-            <tr>
-                <td>{% for pos in r.contributions|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.withdrawals|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.dividends|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.costs|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.realized|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.unrealized|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.checksum|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td>{% for pos in r.value|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-                <td style="color: red; font-weight: bolder">{% for pos in r.error|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            </tr>
-        {% endfor %}
+        <tr>
+            <td>{% for pos in summary.contributions|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>{% for pos in summary.withdrawals|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>{% for pos in summary.dividends|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>{% for pos in summary.costs|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>{% for pos in summary.realized|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>{% for pos in summary.unrealized|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>{% for pos in summary.checksum|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>{% for pos in summary.value|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td style="color: red; font-weight: bolder">{% for pos in summary.error|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+        </tr>
     </table>
+
+    {% import '_journal_table.html' as journal_table with context %}
+
+    {{ journal_table.journal_table(journal, True) }}
 {% endif %}
