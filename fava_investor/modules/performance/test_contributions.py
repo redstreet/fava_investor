@@ -1,45 +1,12 @@
-from pprint import pformat
-
-from beancount import loader
 from beancount.core.data import Transaction
 from beancount.core.inventory import Inventory
-from beancount.ops import validation
 from beancount.utils import test_utils
-from fava.core import FavaLedger
 
-from .split import split_journal, sum_inventories
-from favainvestorapi import FavaInvestorAPI
-
-
-def get_ledger(filename):
-    _, errors, _ = loader.load_file(
-        filename, extra_validations=validation.HARDCORE_VALIDATIONS
-    )
-    if errors:
-        raise ValueError("Errors in ledger file: \n" + pformat(errors))
-
-    return FavaInvestorAPI(FavaLedger(filename))
+from .split import sum_inventories
+from .test_split import SplitTestCase, i, get_split
 
 
-def i(string=None):
-    return Inventory.from_string(string if string else "")
-
-
-def get_split(filename, config_override=None):
-    defaults = {
-        "accounts_pattern": "^Assets:Account",
-        "accounts_internal_pattern": "^(Income|Expenses):",
-        "accounts_internalized_pattern": "^Income:Dividends",
-    }
-    if not config_override:
-        config_override = {}
-
-    config = {**defaults, **config_override}
-    ledger = get_ledger(filename)
-    return split_journal(ledger, config["accounts_pattern"], config["accounts_internal_pattern"], config["accounts_internalized_pattern"])
-
-
-class TestContributions(test_utils.TestCase):
+class TestContributions(SplitTestCase):
     @test_utils.docfile
     def test_no_contributions(self, filename: str):
         """
@@ -207,8 +174,6 @@ class TestContributions(test_utils.TestCase):
         2020-01-01 open Assets:Bank
         2020-01-01 open Assets:Account:Loan
         2020-01-01 open Assets:Account:Asset
-
-        2020-01-02 price AA 15 GBP
 
         2020-01-02 * "transfer"
             Assets:Account:Loan  6 GBP

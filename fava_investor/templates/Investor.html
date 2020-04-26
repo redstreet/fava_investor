@@ -4,7 +4,7 @@
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
-  {% for key, label in [
+    {% for key, label in [
     ('aa_class', _('Asset Allocation Classes')),
     ('aa_account', _('Asset Allocation Accounts')),
     ('cashdrag', _('Cash Drag')),
@@ -15,90 +15,92 @@
     ('dividends', _('Dividends')),
     ('costs', _('Costs')),
     ('gains_realized', _('Gains realized')),
-    ('gains_unrealized', _('Gains unrealized'))
+    ('gains_unrealized', _('Gains unrealized')),
+    ('test', _('Test split'))
     ] %}
-  <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
-  {% endfor %}
+        <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %}
+            {{ label }}{% endif %}</b></h3>
+    {% endfor %}
 </div>
 
 {% if (module == 'aa_account') %}
-  <h2>Portfolio: Asset Allocation by Accounts</h2>
-  {% set results = extension.build_aa_by_account(None, None) %}
-  {% if results|length == 0 %}
-     No regexes found in configuration. See example.bc for how to configure this module.
-  {% else %}
-    {% for portfolio in results %}
-        <h3>{{portfolio[0]}}</h3>
-        {{ querytable.querytable(None, *portfolio[1]) }}
-        <br />
-    {% endfor %}
-  {% endif %}
+    <h2>Portfolio: Asset Allocation by Accounts</h2>
+    {% set results = extension.build_aa_by_account(None, None) %}
+    {% if results|length == 0 %}
+        No regexes found in configuration. See example.bc for how to configure this module.
+    {% else %}
+        {% for portfolio in results %}
+            <h3>{{ portfolio[0] }}</h3>
+            {{ querytable.querytable(None, *portfolio[1]) }}
+            <br/>
+        {% endfor %}
+    {% endif %}
 {% endif %}
 
 
 {% if (module == 'cashdrag') %}
-  <h2>Cash Drag Analysis</h2>
-  {% set results = extension.build_cashdrag(None, None) %}
-  Total = {{ results[2]|format_currency(ledger.options.operating_currency[0]) }}
-  {{ querytable.querytable(None, results[0], results[1]) }}
+    <h2>Cash Drag Analysis</h2>
+    {% set results = extension.build_cashdrag(None, None) %}
+    Total = {{ results[2]|format_currency(ledger.options.operating_currency[0]) }}
+    {{ querytable.querytable(None, results[0], results[1]) }}
 {% endif %}
 
 {% if (module == 'tlh') %}
-  <h2>Tax Loss Harvester</h2>
-  {% set harvests = extension.build_tlh_tables(None, None) %}
+    <h2>Tax Loss Harvester</h2>
+    {% set harvests = extension.build_tlh_tables(None, None) %}
 
-  <div class="row">
-    <div class="column">
-      <h3 style="text-align:left">Summary</h3>
-      <table class="sortable">
-        <thead>
-          <tr>
-            <th data-sort="string">{{ _('Summary') }}</th>
-            <th data-sort="string">{{ _('Val') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for key, value in harvests[1].items() %}
-          <tr>
-            <td>{{ key }}</td>
-            <td align="right">{{ value }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <br />
+    <div class="row">
+        <div class="column">
+            <h3 style="text-align:left">Summary</h3>
+            <table class="sortable">
+                <thead>
+                <tr>
+                    <th data-sort="string">{{ _('Summary') }}</th>
+                    <th data-sort="string">{{ _('Val') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for key, value in harvests[1].items() %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td align="right">{{ value }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <br/>
+        </div>
+        <div class="column">
+            <h3 style="text-align:left">Losses by Commodity</h3>
+            {{ querytable.querytable(None, *harvests[3]) }}
+            <br/>
+        </div>
     </div>
-    <div class="column">
-      <h3 style="text-align:left">Losses by Commodity</h3>
-      {{ querytable.querytable(None, *harvests[3]) }}
-      <br />
-    </div>
-  </div>
 
 
-  <h3>Candidates for tax loss harvesting</h3>
-  {{ querytable.querytable(None, *harvests[0]) }}
-  <br />
+    <h3>Candidates for tax loss harvesting</h3>
+    {{ querytable.querytable(None, *harvests[0]) }}
+    <br/>
 
 
-  <h3>Potential Wash Sales: purchases within the past 30 days</h3>
-  {% if harvests[2][0]|length == 0 %}
-    <p>None found!</p>
-  {% else %}
-    {{ querytable.querytable(None, *harvests[2]) }}
-  {% endif %}
-  <br />
+    <h3>Potential Wash Sales: purchases within the past 30 days</h3>
+    {% if harvests[2][0]|length == 0 %}
+        <p>None found!</p>
+    {% else %}
+        {{ querytable.querytable(None, *harvests[2]) }}
+    {% endif %}
+    <br/>
 
-  <h3>What not to buy</h3>
-  Note: the below is a list of recent sales with losses provided for your convenience
-  in making purchasing decisions around wash sales. (This is not meant to be financial
-  or tax advice).
-  {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
-  {% if lossy_sales|length == 0 %}
-    <p>No sales with losses found in the last 30 days.</p>
-  {% else %}
-    {{ querytable.querytable(None, *lossy_sales) }}
-  {% endif %}
+    <h3>What not to buy</h3>
+    Note: the below is a list of recent sales with losses provided for your convenience
+    in making purchasing decisions around wash sales. (This is not meant to be financial
+    or tax advice).
+    {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
+    {% if lossy_sales|length == 0 %}
+        <p>No sales with losses found in the last 30 days.</p>
+    {% else %}
+        {{ querytable.querytable(None, *lossy_sales) }}
+    {% endif %}
 
 
 {% endif %}
@@ -115,26 +117,29 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 #}
 
 {% macro asset_tree(account_node) %}
-<ol class="flex-table tree-table{{ ' two-currencies' if ledger.options.operating_currency|length > 1 else '' }}" title="{{ table_hover_text }}">
-  <li class="head">
-    <p>
-      <span class="account-cell"><button type="button" class="link expand-all hidden" title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></span>
-      {% for currency in ledger.options.operating_currency %}
-      <span class="num">{{ currency }}</span>
-      {% endfor %}
-      <span class="num other">{{ _('Percentage') }}</span>
-    </p>
-  </li>
-  {% for account in ([account_node] if account_node.name else account_node.children) recursive %}
-  <li{{ '' }}>
-    <p{{ ' class=has-balance' }}>
-    <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}" data-account-name="{{ account.name }}">
+    <ol class="flex-table tree-table{{ ' two-currencies' if ledger.options.operating_currency|length > 1 else '' }}"
+        title="{{ table_hover_text }}">
+        <li class="head">
+            <p>
+                <span class="account-cell"><button type="button" class="link expand-all hidden"
+                                                   title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></span>
+                {% for currency in ledger.options.operating_currency %}
+                    <span class="num">{{ currency }}</span>
+                {% endfor %}
+                <span class="num other">{{ _('Percentage') }}</span>
+            </p>
+        </li>
+        {% for account in ([account_node] if account_node.name else account_node.children) recursive %}
+            <li{{ '' }}>
+                <p{{ ' class=has-balance' }}>
+    <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}"
+          data-account-name="{{ account.name }}">
     <a href='' class='account'>
       {{ account.name }}
     </a>
     </span>
-    {% for currency in ledger.options.operating_currency %}
-    <span class="num">
+                    {% for currency in ledger.options.operating_currency %}
+                        <span class="num">
       <span class="balance">
         <span class="number">{{ account.balance|format_currency(currency) }}</span>
       </span>
@@ -142,31 +147,32 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
         <span class="number">{{ account.balance_children|format_currency(currency) }}</span>
       </span>
     </span>
-    {% endfor %}
-    <span class="num other">
+                    {% endfor %}
+                    <span class="num other">
       {% set percentage_parent =  '{:3.0f}% of {}'.format(account.percentage_parent, account.parent.name) if account.parent else '' %}
       <span class="balance">
         <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) }}</span>
       </span>
       <span class="balance-children">
-        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
+        <span class="number"
+              title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
       </span>
     </span>
-    </p>
-    {% if account.children %}
-    <ol>
-      {{ loop(account.children|sort(attribute='name')) }}
+                </p>
+                {% if account.children %}
+                    <ol>
+                        {{ loop(account.children|sort(attribute='name')) }}
+                    </ol>
+                {% endif %}
+            </li>
+        {% endfor %}
     </ol>
-    {% endif %}
-  </li>
-  {% endfor %}
-</ol>
 {% endmacro %}
 
 {% if (module == 'aa_class') %}
-  <h2>Portfolio: Asset Allocation by Class</h2>
-  {% set results = extension.build_assetalloc_by_class(None, None) %}
-  {{ asset_tree(results[0]) }}
+    <h2>Portfolio: Asset Allocation by Class</h2>
+    {% set results = extension.build_assetalloc_by_class(None, None) %}
+    {{ asset_tree(results[0]) }}
 
 {% endif %}
 
@@ -211,7 +217,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 {% endif %}
 
 {% if (module == 'gains_realized') %}
-    <h2>Portfolio: Gains</h2>
+    <h2>Portfolio: Realized gains</h2>
 
     {% set register = extension.build_realized_gains_journal() %}
     {% import '_journal_table.html' as journal_table with context %}
@@ -220,10 +226,46 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 {% endif %}
 
 {% if (module == 'gains_unrealized') %}
-    <h2>Portfolio: Gains</h2>
+    <h2>Portfolio: Unrealized gains</h2>
 
     {% set register = extension.build_unrealized_gains_journal() %}
     {% import '_journal_table.html' as journal_table with context %}
 
     {{ journal_table.journal_table(register, True) }}
+{% endif %}
+
+{% if (module == 'test') %}
+    <h2>Portfolio: Test</h2>
+
+    {% set rows = extension.testing() %}
+    <table style="width:100%">
+        <tr>
+            <th>entries count</th>
+            <th>contrib</th>
+            <th>withdr</th>
+            <th>divi</th>
+            <th>costs</th>
+            <th>realized</th>
+            <th>unrealized</th>
+            <th>balance</th>
+            <th>value</th>
+            <th>sum of splits</th>
+            <th>error</th>
+        </tr>
+        {% for r in rows %}
+            <tr>
+                <td>{{ r.limit }}</td>
+                <td>{% for pos in r.contributions|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.withdrawals|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.dividends|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.costs|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.realized|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.unrealized|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.balance|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.value|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td>{% for pos in r.checksum|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+                <td style="color: red; font-weight: bolder">{% for pos in r.error|cost_or_value(r.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
 {% endif %}

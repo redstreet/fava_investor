@@ -2,10 +2,10 @@ from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
 from .split import sum_inventories
-from .test_contributions import get_split
+from .test_split import SplitTestCase, get_split
 
 
-class TestDividends(test_utils.TestCase):
+class TestDividends(SplitTestCase):
     @test_utils.docfile
     def test_dividend(self, filename: str):
         """

@@ -1,13 +1,9 @@
-from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
-from .split import sum_inventories
-from .test_contributions import get_split, i
+from .test_split import SplitTestCase, get_split, i
 
 
-class TestGains(test_utils.TestCase):
-    def assertInventoriesSum(self, inventory_string, inventories: list):
-        self.assertEqual(Inventory.from_string(inventory_string), sum_inventories(inventories))
+class TestGains(SplitTestCase):
 
     @test_utils.docfile
     def test_get_unrealized_gain(self, filename: str):
@@ -15,14 +11,13 @@ class TestGains(test_utils.TestCase):
         2020-01-01 open Assets:Bank
         2020-01-01 open Assets:Account
 
-        2020-02-22 * "Buy stock"
+        2020-02-21 * "Buy stock"
           Assets:Account  1 AA {1 USD}
           Assets:Bank
 
         2020-02-22 price AA  2 USD
         """
         split = get_split(filename)
-
         self.assertInventoriesSum("1 USD", split.gains_unrealized)
 
     @test_utils.docfile
@@ -40,9 +35,9 @@ class TestGains(test_utils.TestCase):
           Assets:Account:B  2 AA {1 USD}
           Assets:Bank
 
-        2020-02-22 price AA  2 USD
+        2020-02-24 price AA  2 USD
         """
-        self.skipTest("gains per account not implemented yet")
+        self.skipTest("todo ")
         sut = get_sut(filename)
         result = sut.get_unrealized_gains_per_account()
 
@@ -166,11 +161,13 @@ class TestGains(test_utils.TestCase):
           Assets:Account  1 AA {2 USD}
           Assets:Bank
 
-        2020-02-23 * "sell with gain"
+        2020-02-23 * "sell with lose"
           Assets:Account  -1 AA {2 USD}
           Assets:Bank  1 USD
           Income:Gains
         """
+        self.skipTest("how do we differentiate lose from cost/commission?")
         split = get_split(filename)
 
         self.assertInventoriesSum("-1 USD", split.gains_realized)
+

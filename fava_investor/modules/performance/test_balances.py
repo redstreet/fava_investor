@@ -2,12 +2,12 @@ from beancount.utils import test_utils
 from freezegun import freeze_time
 
 from fava_investor.modules.performance.balances import get_balances_tree
-from fava_investor.modules.performance.test_contributions import get_ledger
+from fava_investor.modules.performance.test_split import SplitTestCase, get_ledger
 
 CONFIG = {"accounts_pattern": "^Assets:Account"}
 
 
-class TestBalances(test_utils.TestCase):
+class TestBalances(SplitTestCase):
     @test_utils.docfile
     @freeze_time("2020-03-10")
     def test_sums(self, filename: str):

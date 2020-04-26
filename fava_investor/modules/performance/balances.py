@@ -3,11 +3,18 @@ import re
 from beancount.core.account import parent, parents
 
 
-def get_balances_tree(accapi, config):
+def get_balances_tree(accapi, config, limit=None):
+    tmp = accapi.ledger.entries
+
+    if limit is not None:
+        accapi.ledger.entries = tmp[:limit]
+
     tree = accapi.ledger.root_tree_closed
     accounts_to_keep = get_value_accounts_and_parents(tree, accapi.ledger.accounts,
                                                       config.get("accounts_pattern", "^Assets:.*"))
     filter_tree(tree, accounts_to_keep)
+
+    accapi.ledger.entries = tmp
     return tree
 
 

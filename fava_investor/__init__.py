@@ -1,10 +1,9 @@
 """Fava Investor: Investing related reports and tools for Beancount/Fava"""
-from beancount.core.inventory import Inventory
 from fava.ext import FavaExtensionBase
 
 from .modules import performance
 from .modules.performance.balances import get_balances_tree
-from .modules.performance.split import split_journal, sum_inventories, calculate_balances
+from .modules.performance.split import split_journal, sum_inventories, calculate_balances, SplitEntries
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
@@ -54,12 +53,12 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         accapi = FavaInvestorAPI(self.ledger)
         return get_balances_tree(accapi, self.config.get('performance', {}))
 
-    def get_split(self):
+    def get_split(self, limit=None):
         config = self.config.get("performance", {})
         split = split_journal(FavaInvestorAPI(self.ledger),
                               config.get("accounts_pattern", "^Assets:Investments"),
                               config.get("accounts_internal_pattern", "^(Income|Expense):"),
-                              config.get("accounts_internalized_pattern", "^Income:Dividends"))
+                              config.get("accounts_internalized_pattern", "^Income:Dividends"), limit=limit)
         return split
 
     def build_contributions_journal(self):
@@ -97,3 +96,26 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         balances = calculate_balances(split.costs)
         return map(lambda i: (split.transactions[i], None, split.costs[i], balances[i]),
                    range(0, len(split.transactions)))
+
+    def testing(self):
+        result = []
+        for limit in [50, 500, 50000]:
+            split = self.get_split(limit)
+            row = {
+                'contributions': sum_inventories(split.contributions),
+                'withdrawals': sum_inventories(split.withdrawals),
+                'dividends': sum_inventories(split.dividends),
+                'costs': sum_inventories(split.costs),
+                'realized': sum_inventories(split.gains_realized),
+                'unrealized': sum_inventories(split.gains_unrealized),
+            }
+            checksum = sum_inventories(row.values())
+
+            row['date'] = split.transactions[-1].date
+            row['limit'] = limit
+            row['value'] = split.values[-1]
+            row['balance'] = split.balances[-1]
+            row["checksum"] = checksum
+            row["error"] = sum_inventories([checksum, -split.values[-1]])
+            result.append(row)
+        return result
