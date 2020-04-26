@@ -6,7 +6,7 @@ from fava.ext import FavaExtensionBase
 
 from .modules import performance
 from .modules.performance.balances import get_balances_tree
-from .modules.performance.split import split_journal, sum_inventories, calculate_balances, SplitEntries
+from .modules.performance.split import get_balance_split_history, sum_inventories, calculate_balances, SplitEntries
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
@@ -58,11 +58,11 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
     def get_split(self):
         config = self.config.get("performance", {})
-        split = split_journal(FavaInvestorAPI(self.ledger),
-                              config.get("accounts_pattern", "^Assets:Investments"),
-                              config.get("accounts_income_pattern", "^Income:"),
-                              config.get("accounts_expenses_pattern", "^Expenses:"),
-                              config.get("accounts_internalized_pattern", "^Income:Dividends"))
+        split = get_balance_split_history(FavaInvestorAPI(self.ledger),
+                                          config.get("accounts_pattern", "^Assets:Investments"),
+                                          config.get("accounts_income_pattern", "^Income:"),
+                                          config.get("accounts_expenses_pattern", "^Expenses:"),
+                                          config.get("accounts_internalized_pattern", "^Income:Dividends"))
         return split
 
     def build_contributions_journal(self):

@@ -7,7 +7,6 @@ from .test_split import SplitTestCase, get_split, i, get_ledger, get_split_with_
 
 
 class TestGains(SplitTestCase):
-
     @test_utils.docfile
     def test_get_unrealized_gain(self, filename: str):
         """
@@ -147,7 +146,9 @@ class TestGains(SplitTestCase):
         self.assertSumOfSplitsEqual(filename, "1 USD")
 
     @test_utils.docfile
-    def test_generated_dummy_transaction_has_date_to_work_in_templates_with_filters(self, filename):
+    def test_generated_dummy_transaction_has_date_to_work_in_templates_with_filters(
+        self, filename
+    ):
         """
         2020-01-01 open Assets:Account
         2020-01-01 open Assets:Bank
@@ -159,8 +160,7 @@ class TestGains(SplitTestCase):
         2020-01-04 price AA 2 USD
         """
         split = get_split_with_meta(filename)
-        self.assertEqual("UNREALIZED GAINS NEW BALANCE", split.transactions[-1].narration)
+        self.assertEqual(
+            "UNREALIZED GAINS NEW BALANCE", split.transactions[-1].narration
+        )
         self.assertIsNotNone(split.transactions[-1].date)
-
-
-

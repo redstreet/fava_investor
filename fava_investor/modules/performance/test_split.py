@@ -10,15 +10,22 @@ from beancount.utils import test_utils
 from beancount.utils.bisect_key import bisect_left_with_key
 from fava.core import FavaLedger
 
-from fava_investor import FavaInvestorAPI, split_journal
-from fava_investor.modules.performance.split import calculate_balances, sum_inventories, \
-    build_price_map_with_fallback_to_cost
+from fava_investor import FavaInvestorAPI, get_balance_split_history
+from fava_investor.modules.performance.split import (
+    calculate_balances,
+    sum_inventories,
+    build_price_map_with_fallback_to_cost,
+)
 
 
 class SplitTestCase(test_utils.TestCase):
     def assertInventoriesSum(self, inventory_string, inventories: list):
-        self.assertEqual(Inventory.from_string(inventory_string), sum_inventories(inventories),
-                         "Sum of given inventories does not match expected balance:\n" + pformat(inventories))
+        self.assertEqual(
+            Inventory.from_string(inventory_string),
+            sum_inventories(inventories),
+            "Sum of given inventories does not match expected balance:\n"
+            + pformat(inventories),
+        )
 
     def assertInventory(self, expected_inventory_str, inventory):
         self.assertEqual(i(expected_inventory_str), inventory)
@@ -26,23 +33,35 @@ class SplitTestCase(test_utils.TestCase):
     def assertSumOfSplitsEqualValue(self, filename, account="Assets:Account"):
         ledger = get_ledger(filename)
         split = get_split(filename)
-        final_value = get_value(ledger, build_price_map_with_fallback_to_cost(ledger.ledger.entries),
-                                account, ledger.ledger.entries[-1].date)
-        self.assertEqual(self.get_split_sum(split), final_value,
-                         f"Sum of splits doesnt equal {account} value. Splits: {self.get_readable_splits(split)}")
+        final_value = get_value(
+            ledger,
+            build_price_map_with_fallback_to_cost(ledger.ledger.entries),
+            account,
+            ledger.ledger.entries[-1].date,
+        )
+        self.assertEqual(
+            self.get_split_sum(split),
+            final_value,
+            f"Sum of splits doesnt equal {account} value. Splits: {self.get_readable_splits(split)}",
+        )
 
     def assertSumOfSplitsEqual(self, filename, value):
         split = get_split(filename)
-        self.assertEqual(self.get_split_sum(split), i(value),
-                         f"Sum of splits doesnt equal given inventory. Splits: {self.get_readable_splits(split)}")
+        self.assertEqual(
+            self.get_split_sum(split),
+            i(value),
+            f"Sum of splits doesnt equal given inventory. Splits: {self.get_readable_splits(split)}",
+        )
 
     def get_readable_splits(self, split):
-        return f"\ncontrib    {split.contributions}" \
-               + f"\nwithdrawal {split.withdrawals}" \
-               + f"\ndividends  {split.dividends}" \
-               + f"\ncosts      {split.costs}" \
-               + f"\ngains r.   {split.gains_realized}" \
-               + f"\ngains u.   {split.gains_unrealized}"
+        return (
+            f"\ncontrib    {split.contributions}"
+            + f"\nwithdrawal {split.withdrawals}"
+            + f"\ndividends  {split.dividends}"
+            + f"\ncosts      {split.costs}"
+            + f"\ngains r.   {split.gains_realized}"
+            + f"\ngains u.   {split.gains_unrealized}"
+        )
 
     def get_split_sum(self, split):
         split_list = list(split)
@@ -140,7 +159,7 @@ class TestSplit(SplitTestCase):
 
 def get_value(ledger, price_map, account, date):
     if isinstance(date, str):
-        date = datetime.datetime.strptime(date, '%Y-%m-%d').date()
+        date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
     balance = ledger.root_tree()[account].balance
     reduce = balance.reduce(convert.get_value, price_map, date)
     inv = Inventory()
@@ -152,11 +171,23 @@ def get_value(ledger, price_map, account, date):
 
 class TestPriceMap(SplitTestCase):
     def assertHasPrice(self, currency_pair, date_str, price_map):
-        self.assertIn(currency_pair, price_map, msg=f"currency pair not found in given price map")
+        self.assertIn(
+            currency_pair, price_map, msg=f"currency pair not found in given price map"
+        )
 
-        date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-        prices_found = len([amount for price_date, amount in price_map[currency_pair] if price_date == date])
-        self.assertGreater(prices_found, 0, msg=f"price not found for {currency_pair} and date {date_str}")
+        date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        prices_found = len(
+            [
+                amount
+                for price_date, amount in price_map[currency_pair]
+                if price_date == date
+            ]
+        )
+        self.assertGreater(
+            prices_found,
+            0,
+            msg=f"price not found for {currency_pair} and date {date_str}",
+        )
 
     @test_utils.docfile
     def test_fallback_to_purchase_price(self, filename):
@@ -188,10 +219,14 @@ class TestPriceMap(SplitTestCase):
         ledger = get_ledger(filename)
         price_map = build_price_map_with_fallback_to_cost(ledger.ledger.entries)
 
-        self.assertEqual(i("2 USD"), get_value(ledger, price_map, 'Assets:Account', "2020-01-02"))
+        self.assertEqual(
+            i("2 USD"), get_value(ledger, price_map, "Assets:Account", "2020-01-02")
+        )
 
     @test_utils.docfile
-    def test_no_fallback_if_there_is_price_in_following_entries_with_same_date(self, filename):
+    def test_no_fallback_if_there_is_price_in_following_entries_with_same_date(
+        self, filename
+    ):
         """
         2020-01-01 open Assets:Account
         2020-01-01 open Assets:Bank
@@ -205,7 +240,9 @@ class TestPriceMap(SplitTestCase):
         ledger = get_ledger(filename)
         price_map = build_price_map_with_fallback_to_cost(ledger.ledger.entries)
 
-        self.assertEqual(i("2 USD"), get_value(ledger, price_map, 'Assets:Account', "2020-01-02"))
+        self.assertEqual(
+            i("2 USD"), get_value(ledger, price_map, "Assets:Account", "2020-01-02")
+        )
 
 
 class TestCalculateBalances(test_utils.TestCase):
@@ -261,8 +298,13 @@ def get_split_with_meta(filename, config_override=None):
         config_override = {}
     config = {**defaults, **config_override}
     ledger = get_ledger(filename)
-    split = split_journal(ledger, config["accounts_pattern"], config["accounts_income_pattern"],
-                          config["accounts_expenses_pattern"], config["accounts_internalized_pattern"])
+    split = get_balance_split_history(
+        ledger,
+        config["accounts_pattern"],
+        config["accounts_income_pattern"],
+        config["accounts_expenses_pattern"],
+        config["accounts_internalized_pattern"],
+    )
     return split
 
 

@@ -98,13 +98,13 @@ class TestContributions(SplitTestCase):
             Assets:Account:A  2 GBP
             Assets:Account:B
         """
-        self.skipTest(
-            "value account filtering not implemented"
-        )
+        self.skipTest("value account filtering not implemented")
 
         split = get_split(filename)
 
-        self.assertEqual(Inventory.from_string("2 GBP"), sum_inventories(split.contributions))
+        self.assertEqual(
+            Inventory.from_string("2 GBP"), sum_inventories(split.contributions)
+        )
 
     @test_utils.docfile
     def test_asset_on_loan_with_contributed_part(self, filename: str):
@@ -123,4 +123,6 @@ class TestContributions(SplitTestCase):
         """
         split = get_split(filename)
 
-        self.assertEqual(Inventory.from_string("5 GBP"), sum_inventories(split.contributions))
+        self.assertEqual(
+            Inventory.from_string("5 GBP"), sum_inventories(split.contributions)
+        )

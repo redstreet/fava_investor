@@ -17,7 +17,9 @@ class TestDividends(SplitTestCase):
             Income:Dividends
         """
         split = get_split(filename)
-        self.assertEqual(Inventory.from_string("5 GBP"), sum_inventories(split.dividends))
+        self.assertEqual(
+            Inventory.from_string("5 GBP"), sum_inventories(split.dividends)
+        )
 
     @test_utils.docfile
     def test_dividend_paid_out_to_external_account(self, filename: str):
@@ -30,4 +32,6 @@ class TestDividends(SplitTestCase):
             Income:Dividends  -5 GBP
         """
         split = get_split(filename)
-        self.assertEqual(Inventory.from_string("5 GBP"), sum_inventories(split.dividends))
+        self.assertEqual(
+            Inventory.from_string("5 GBP"), sum_inventories(split.dividends)
+        )
