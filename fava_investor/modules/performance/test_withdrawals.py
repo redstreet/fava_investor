@@ -21,9 +21,7 @@ class TestWithdrawals(SplitTestCase):
         """
         split = get_split(filename)
 
-        self.assertEqual(
-            Inventory.from_string("-5 GBP"), sum_inventories(split.withdrawals)
-        )
+        self.assertInventoriesSum("-5 GBP", split.withdrawals)
 
     @test_utils.docfile
     def test_list_withdrawals_entries(self, filename: str):
@@ -65,5 +63,5 @@ class TestWithdrawals(SplitTestCase):
         2020-01-01 open Assets:Account
         2020-01-01 open Assets:Account:Sub
         """
-        result = sum_inventories(get_split(filename).withdrawals)
-        self.assertEqual({}, result)
+        split = get_split(filename)
+        self.assertInventoriesSum("0", split.withdrawals)

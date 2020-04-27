@@ -2,7 +2,6 @@ from beancount.core.data import Transaction
 from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
-from .split import sum_inventories
 from .test_split import SplitTestCase, i, get_split, get_split_with_meta
 
 
@@ -14,8 +13,7 @@ class TestContributions(SplitTestCase):
         2020-01-01 open Assets:Account
         2020-01-01 open Assets:Account:Sub
         """
-        result = sum_inventories(get_split(filename).contributions)
-        self.assertEqual({}, result)
+        self.assertSumOfSplitsEqual(filename, "0")
 
     @test_utils.docfile
     def test_contributions_to_subaccounts(self, filename: str):
@@ -32,8 +30,7 @@ class TestContributions(SplitTestCase):
             Assets:Account:Sub  10 GBP
             Assets:Bank
         """
-        result = sum_inventories(get_split(filename).contributions)
-        self.assertEqual(i("20 GBP"), result)
+        self.assertSumOfSplitsEqual(filename, "20 GBP")
 
     @test_utils.docfile
     def test_other_transfers_are_ignored(self, filename: str):
@@ -51,8 +48,7 @@ class TestContributions(SplitTestCase):
             Assets:Bank  20 GBP
             Assets:Bank2
         """
-        result = sum_inventories(get_split(filename).contributions)
-        self.assertEqual({}, result)
+        self.assertSumOfSplitsEqual(filename, "0")
 
     @test_utils.docfile
     def test_list_contribution_entries(self, filename: str):
@@ -101,10 +97,7 @@ class TestContributions(SplitTestCase):
         self.skipTest("value account filtering not implemented")
 
         split = get_split(filename)
-
-        self.assertEqual(
-            Inventory.from_string("2 GBP"), sum_inventories(split.contributions)
-        )
+        self.assertInventoriesSum("2 GBP", split.contributions)
 
     @test_utils.docfile
     def test_asset_on_loan_with_contributed_part(self, filename: str):
@@ -122,7 +115,4 @@ class TestContributions(SplitTestCase):
 
         """
         split = get_split(filename)
-
-        self.assertEqual(
-            Inventory.from_string("5 GBP"), sum_inventories(split.contributions)
-        )
+        self.assertInventoriesSum("5 GBP", split.contributions)
