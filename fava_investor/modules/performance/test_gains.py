@@ -1,7 +1,5 @@
 from beancount.utils import test_utils
 
-from beancount.utils import test_utils
-
 from .test_split import SplitTestCase, get_split, get_split_with_meta
 
 

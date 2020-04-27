@@ -1,8 +1,6 @@
 from beancount.core.data import Transaction
-from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
-from .split import sum_inventories
 from .test_split import SplitTestCase, i, get_split, get_split_with_meta
 
 
