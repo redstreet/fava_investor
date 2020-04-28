@@ -65,40 +65,22 @@ class Investor(FavaExtensionBase):  # pragma: no cover
                                           config.get("accounts_internalized_pattern", "^Income:Dividends"))
         return split
 
-    def build_contributions_journal(self):
+    def build_split_journal(self, kind):
+        split_values_by_kind = {
+            'contributions': lambda split: split.parts.contributions,
+            'withdrawals': lambda split: split.parts.withdrawals,
+            'dividends': lambda split: split.parts.dividends,
+            'costs': lambda split: split.parts.costs,
+            'gains_realized': lambda split: split.parts.gains_realized,
+            'gains_unrealized': lambda split: split.parts.gains_unrealized,
+            'accounts_value': lambda split: split.values,
+        }
         split = self.get_split()
-        balances = calculate_balances(split.parts.contributions)
-        return map(lambda i: (split.transactions[i], None, split.parts.contributions[i], balances[i]),
-                   range(0, len(split.transactions)))
+        split_values = split_values_by_kind[kind](split)
 
-    def build_withdrawals_journal(self):
-        split = self.get_split()
-        balances = calculate_balances(split.parts.withdrawals)
-        return map(lambda i: (split.transactions[i], None, split.parts.withdrawals[i], balances[i]),
-                   range(0, len(split.transactions)))
+        balances = calculate_balances(split_values)
 
-    def build_realized_gains_journal(self):
-        split = self.get_split()
-        balances = calculate_balances(split.parts.gains_realized)
-        return map(lambda i: (split.transactions[i], None, split.parts.gains_realized[i], balances[i]),
-                   range(0, len(split.transactions)))
-
-    def build_unrealized_gains_journal(self):
-        split = self.get_split()
-        balances = calculate_balances(split.parts.gains_unrealized)
-        return map(lambda i: (split.transactions[i], None, split.parts.gains_unrealized[i], balances[i]),
-                   range(0, len(split.transactions)))
-
-    def build_dividends_journal(self):
-        split = self.get_split()
-        balances = calculate_balances(split.parts.dividends)
-        return map(lambda i: (split.transactions[i], None, split.parts.dividends[i], balances[i]),
-                   range(0, len(split.transactions)))
-
-    def build_costs_journal(self):
-        split = self.get_split()
-        balances = calculate_balances(split.parts.costs)
-        return map(lambda i: (split.transactions[i], None, split.parts.costs[i], balances[i]),
+        return map(lambda i: (split.transactions[i], None, split_values[i], balances[i]),
                    range(0, len(split.transactions)))
 
     def testing(self):
@@ -109,16 +91,18 @@ class Investor(FavaExtensionBase):  # pragma: no cover
             'withdrawals': sum_inventories(parts.withdrawals),
             'dividends': sum_inventories(parts.dividends),
             'costs': sum_inventories(parts.costs),
-            'realized': sum_inventories(parts.gains_realized),
-            'unrealized': sum_inventories(parts.gains_unrealized),
+            'gains_realized': sum_inventories(parts.gains_realized),
+            'gains_unrealized': sum_inventories(parts.gains_unrealized),
         }
         checksum = sum_inventories(summary.values())
 
-        summary['date'] = split.transactions[-1].date
-        summary['value'] = split.values[-1]
-        summary["checksum"] = checksum
+        summary['accounts_value'] = split.values[-1]
+        summary["sum_of_splits"] = checksum
         summary["error"] = sum_inventories([checksum, -split.values[-1]])
+        return summary
 
+    def build_errors_journal(self):
+        split = self.get_split()
         journal = []
         error_sum = Inventory()
         for i in range(0, len(split.transactions)):
@@ -132,4 +116,5 @@ class Investor(FavaExtensionBase):  # pragma: no cover
             error = -current_value + parts_sum
             error_sum += error
             journal.append((split.transactions[i], None, error, copy.copy(error_sum)))
-        return summary, journal
+        return journal
+

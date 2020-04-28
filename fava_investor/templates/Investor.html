@@ -11,13 +11,7 @@
     ('cashdrag', _('Cash Drag')),
     ('tlh', _('Tax Loss Harvestor')),
     ('balances', _('Balances')),
-    ('contributions', _('Contributions')),
-    ('withdrawals', _('Withdrawals')),
-    ('dividends', _('Dividends')),
-    ('costs', _('Costs')),
-    ('gains_realized', _('Gains realized')),
-    ('gains_unrealized', _('Gains unrealized')),
-    ('test', _('Test split'))
+    ('split', _('Split'))
     ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
@@ -188,94 +182,47 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 {% endif %}
 
 
-{% if (module == 'balances') %}
-    <h2>Portfolio: Balances</h2>
+{% for split_type in [
+    'contributions',
+    'withdrawals',
+    'dividends',
+    'costs',
+    'gains_realized',
+    'gains_unrealized',
+    'accounts_value',
+] %}
+    {% if (module == split_type) %}
+        <h2>Split: {{ module }} journal</h2>
+        {% import '_journal_table.html' as journal_table with context %}
+        {{ journal_table.journal_table(extension.build_split_journal(split_type), True) }}
+    {% endif %}
+{% endfor %}
 
-    {% import '_tree_table.html' as tree_table with context %}
-    {% set tree = extension.build_balances_tree() %}
-    {{ tree_table.tree(tree.get('')) }}
-{% endif %}
-
-{% if (module == 'contributions') %}
-    <h2>Portfolio: Contributions</h2>
-
-    {% set register = extension.build_contributions_journal() %}
+{% if (module == 'error') %}
+    <h2>Portfolio: Split errors journal</h2>
     {% import '_journal_table.html' as journal_table with context %}
-
-    {{ journal_table.journal_table(register, True) }}
+    {{ journal_table.journal_table(extension.build_errors_journal(), True) }}
 {% endif %}
 
-{% if (module == 'withdrawals') %}
-    <h2>Portfolio: Withdrawals</h2>
-
-    {% set register = extension.build_withdrawals_journal() %}
-    {% import '_journal_table.html' as journal_table with context %}
-
-    {{ journal_table.journal_table(register, True) }}
-{% endif %}
-
-{% if (module == 'dividends') %}
-    <h2>Portfolio: Dividends</h2>
-    {% set register = extension.build_dividends_journal() %}
-    {% import '_journal_table.html' as journal_table with context %}
-    {{ journal_table.journal_table(register, True) }}
-{% endif %}
-
-{% if (module == 'costs') %}
-    <h2>Portfolio: Costs</h2>
-    {% set register = extension.build_costs_journal() %}
-    {% import '_journal_table.html' as journal_table with context %}
-    {{ journal_table.journal_table(register, True) }}
-{% endif %}
-
-{% if (module == 'gains_realized') %}
-    <h2>Portfolio: Realized gains</h2>
-
-    {% set register = extension.build_realized_gains_journal() %}
-    {% import '_journal_table.html' as journal_table with context %}
-
-    {{ journal_table.journal_table(register, True) }}
-{% endif %}
-
-{% if (module == 'gains_unrealized') %}
-    <h2>Portfolio: Unrealized gains</h2>
-
-    {% set register = extension.build_unrealized_gains_journal() %}
-    {% import '_journal_table.html' as journal_table with context %}
-
-    {{ journal_table.journal_table(register, True) }}
-{% endif %}
-
-{% if (module == 'test') %}
+{% if (module == 'split') %}
     <h2>Portfolio: Test</h2>
+    {% set summary = extension.testing() %}
 
-    {% set summary, journal = extension.testing() %}
-    <table style="width:100%">
+    <table>
+    {% for key in summary %}
+        {% if key in ['sum_of_splits', 'accounts_value', 'error'] %}
+            <tr><td></td></tr>
+        {% endif %}
         <tr>
-            <th>contrib</th>
-            <th>withdr</th>
-            <th>divi</th>
-            <th>costs</th>
-            <th>realized</th>
-            <th>unrealized</th>
-            <th>sum of splits</th>
-            <th>accounts value</th>
-            <th>error</th>
+            <th>{{ key }}</th>
+            <td style="text-align: right">
+            {% for pos in summary[key]|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
+            <td>
+            {% if key != "sum_of_splits" %}
+                <a href="{{ url_for_current(module=key) }}">journal</a>
+            {% endif %}
+            </td>
         </tr>
-        <tr>
-            <td>{% for pos in summary.contributions|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td>{% for pos in summary.withdrawals|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td>{% for pos in summary.dividends|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td>{% for pos in summary.costs|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td>{% for pos in summary.realized|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td>{% for pos in summary.unrealized|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td>{% for pos in summary.checksum|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td>{% for pos in summary.value|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-            <td style="color: red; font-weight: bolder">{% for pos in summary.error|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
-        </tr>
+    {% endfor %}
     </table>
-
-    {% import '_journal_table.html' as journal_table with context %}
-
-    {{ journal_table.journal_table(journal, True) }}
 {% endif %}
