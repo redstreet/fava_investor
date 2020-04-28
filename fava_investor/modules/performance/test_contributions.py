@@ -105,14 +105,29 @@ class TestContributions(SplitTestCase):
         2020-01-01 open Assets:Bank
         2020-01-01 open Assets:Account:Loan
         2020-01-01 open Assets:Account:Asset
-
         2020-01-02 price AA 15 GBP
-
         2020-01-02 * "transfer"
             Assets:Account:Loan  -6 GBP
             Assets:Account:Asset  1 AA {11 GBP}
             Assets:Bank  -5 GBP
-
         """
         split = get_split(filename)
         self.assertInventoriesSum("5 GBP", split.contributions)
+
+    @test_utils.docfile
+    def test_ignoring_irrelevant_external_flows(self, filename: str):
+        """
+        2020-01-01 open Assets:Bank
+        2020-01-01 open Assets:Bank2
+        2020-01-01 open Assets:Bank3
+        2020-01-01 open Assets:Account:Asset
+
+        2020-01-02 price AA 15 GBP
+
+        2020-01-02 * "transfer"
+            Assets:Account:Asset  1 GBP
+            Assets:Bank  9 GBP
+            Assets:Bank2  -10 GBP
+        """
+        split = get_split(filename)
+        self.assertInventoriesSum("1 GBP", split.contributions)
