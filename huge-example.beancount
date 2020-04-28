@@ -27,7 +27,7 @@ option "operating_currency" "USD"
       'include_children': True,
   }],
   'performance': {
-     'accounts_pattern': '^Assets:US:(BofA|ETrade|Federal|Vanguard)',
+     'accounts_pattern': '^Assets:US:(ETrade|Federal|Vanguard)',
      'accounts_income_pattern': '^Income:US:ETrade',
      'accounts_expenses_pattern': '^Expenses:Financial'
   },
