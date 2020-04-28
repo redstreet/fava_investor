@@ -218,7 +218,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
             <td style="text-align: right">
             {% for pos in summary[key]|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
             <td>
-            {% if key != "sum_of_splits" %}
+            {% if key not in ["sum_of_splits", "gains_unrealized"] %}
                 <a href="{{ url_for_current(module=key) }}">journal</a>
             {% endif %}
             </td>

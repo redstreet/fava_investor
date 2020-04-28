@@ -181,17 +181,9 @@ def calculate_balances(inventories):
         return []
     result = []
     balance = Inventory()
-    last_balance = Inventory()
     for inv in inventories:
-        if inv != {}:
-            balance += inv
-            result.append(copy.copy(balance))
-            last_balance = balance
-        else:
-            result.append(Inventory())
-
-    if result[-1] == {}:
-        result[-1] = last_balance
+        balance += inv
+        result.append(copy.copy(balance))
     return result
 
 

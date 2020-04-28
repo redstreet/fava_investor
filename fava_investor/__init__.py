@@ -72,16 +72,18 @@ class Investor(FavaExtensionBase):  # pragma: no cover
             'dividends': lambda split: split.parts.dividends,
             'costs': lambda split: split.parts.costs,
             'gains_realized': lambda split: split.parts.gains_realized,
-            'gains_unrealized': lambda split: split.parts.gains_unrealized,
             'accounts_value': lambda split: split.values,
         }
         split = self.get_split()
         split_values = split_values_by_kind[kind](split)
+        to_keep = []
+        for index in range(0, len(split.transactions)):
+            if split_values[index] != {}:
+                to_keep.append(index)
 
         balances = calculate_balances(split_values)
 
-        return map(lambda i: (split.transactions[i], None, split_values[i], balances[i]),
-                   range(0, len(split.transactions)))
+        return [(split.transactions[i], None, split_values[i], balances[i]) for i in range(0, len(split.transactions)) if i in to_keep]
 
     def testing(self):
         split = self.get_split()
@@ -115,6 +117,7 @@ class Investor(FavaExtensionBase):  # pragma: no cover
                 current_value = split.values[i] + (-split.values[i-1])
             error = -current_value + parts_sum
             error_sum += error
-            journal.append((split.transactions[i], None, error, copy.copy(error_sum)))
+            if error != {}:
+                journal.append((split.transactions[i], None, error, copy.copy(error_sum)))
         return journal
 

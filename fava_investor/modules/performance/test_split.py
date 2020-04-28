@@ -252,20 +252,6 @@ class TestCalculateBalances(test_utils.TestCase):
         expected = [i("10 GBP"), i("25 GBP")]
         self.assertEqual(expected, balances)
 
-    def test_empty_if_no_change(self):
-        input = [i("10 GBP"), i(), i("5 GBP")]
-        balances = calculate_balances(input)
-
-        expected = [i("10 GBP"), i(), i("15 GBP")]
-        self.assertEqual(expected, balances)
-
-    def test_last_entry_is_there_even_if_no_change(self):
-        input = [i("10 GBP"), i(), i()]
-        balances = calculate_balances(input)
-
-        expected = [i("10 GBP"), i(), i("10 GBP")]
-        self.assertEqual(expected, balances)
-
     def test_empty_list(self):
         balances = calculate_balances([])
         self.assertEqual([], balances)
