@@ -1,4 +1,5 @@
 {% import "_query_table.html" as querytable with context %}
+{% import "_charts.html" as charts with context %}
 
 <i>Investor: Reports, analyses, and tools for investments.</i>
 
@@ -18,89 +19,88 @@
     ('gains_unrealized', _('Gains unrealized')),
     ('test', _('Test split'))
     ] %}
-        <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %}
-            {{ label }}{% endif %}</b></h3>
-    {% endfor %}
+  <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
+  {% endfor %}
 </div>
 
+
 {% if (module == 'aa_account') %}
-    <h2>Portfolio: Asset Allocation by Accounts</h2>
-    {% set results = extension.build_aa_by_account(None, None) %}
-    {% if results|length == 0 %}
-        No regexes found in configuration. See example.bc for how to configure this module.
-    {% else %}
-        {% for portfolio in results %}
-            <h3>{{ portfolio[0] }}</h3>
-            {{ querytable.querytable(None, *portfolio[1]) }}
-            <br/>
-        {% endfor %}
-    {% endif %}
+  <h2>Portfolio: Asset Allocation by Accounts</h2>
+  {% set results = extension.build_aa_by_account(None, None) %}
+  {% if results|length == 0 %}
+     No regexes found in configuration. See example.bc for how to configure this module.
+  {% else %}
+    {% for portfolio in results %}
+        <h3>{{portfolio[0]}}</h3>
+        {{ querytable.querytable(None, *portfolio[1]) }}
+        <br />
+    {% endfor %}
+  {% endif %}
 {% endif %}
 
 
 {% if (module == 'cashdrag') %}
-    <h2>Cash Drag Analysis</h2>
-    {% set results = extension.build_cashdrag(None, None) %}
-    Total = {{ results[2]|format_currency(ledger.options.operating_currency[0]) }}
-    {{ querytable.querytable(None, results[0], results[1]) }}
+  <h2>Cash Drag Analysis</h2>
+  {% set results = extension.build_cashdrag(None, None) %}
+  {{ querytable.querytable(None, results[0], results[1]) }}
 {% endif %}
 
 {% if (module == 'tlh') %}
-    <h2>Tax Loss Harvester</h2>
-    {% set harvests = extension.build_tlh_tables(None, None) %}
+  <h2>Tax Loss Harvester</h2>
+  {% set harvests = extension.build_tlh_tables(None, None) %}
 
-    <div class="row">
-        <div class="column">
-            <h3 style="text-align:left">Summary</h3>
-            <table class="sortable">
-                <thead>
-                <tr>
-                    <th data-sort="string">{{ _('Summary') }}</th>
-                    <th data-sort="string">{{ _('Val') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for key, value in harvests[1].items() %}
-                    <tr>
-                        <td>{{ key }}</td>
-                        <td align="right">{{ value }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <br/>
-        </div>
-        <div class="column">
-            <h3 style="text-align:left">Losses by Commodity</h3>
-            {{ querytable.querytable(None, *harvests[3]) }}
-            <br/>
-        </div>
+  <div class="row">
+    <div class="column">
+      <h3 style="text-align:left">Summary</h3>
+      <table class="sortable">
+        <thead>
+          <tr>
+            <th data-sort="string">{{ _('Summary') }}</th>
+            <th data-sort="string">{{ _('Val') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key, value in harvests[1].items() %}
+          <tr>
+            <td>{{ key }}</td>
+            <td align="right">{{ value }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <br />
     </div>
+    <div class="column">
+      <h3 style="text-align:left">Losses by Commodity</h3>
+      {{ querytable.querytable(None, *harvests[3]) }}
+      <br />
+    </div>
+  </div>
 
 
-    <h3>Candidates for tax loss harvesting</h3>
-    {{ querytable.querytable(None, *harvests[0]) }}
-    <br/>
+  <h3>Candidates for tax loss harvesting</h3>
+  {{ querytable.querytable(None, *harvests[0]) }}
+  <br />
 
 
-    <h3>Potential Wash Sales: purchases within the past 30 days</h3>
-    {% if harvests[2][0]|length == 0 %}
-        <p>None found!</p>
-    {% else %}
-        {{ querytable.querytable(None, *harvests[2]) }}
-    {% endif %}
-    <br/>
+  <h3>Potential Wash Sales: purchases within the past 30 days</h3>
+  {% set table_empty_msg = None %}
+  {% if harvests[2][0]|length == 0 %}
+    {% set table_empty_msg = 'No purchases of the candidates above found within the last 30 days!' %}
+  {% endif %}
+  {{ querytable.querytable(table_empty_msg, *harvests[2]) }}
+  <br />
 
-    <h3>What not to buy</h3>
-    Note: the below is a list of recent sales with losses provided for your convenience
-    in making purchasing decisions around wash sales. (This is not meant to be financial
-    or tax advice).
-    {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
-    {% if lossy_sales|length == 0 %}
-        <p>No sales with losses found in the last 30 days.</p>
-    {% else %}
-        {{ querytable.querytable(None, *lossy_sales) }}
-    {% endif %}
+  <h3>What not to buy</h3>
+  Note: the below is a list of recent sales with losses provided for your convenience
+  in making purchasing decisions around wash sales. (This is not meant to be financial
+  or tax advice).
+  {% set lossy_sales = extension.recently_sold_at_loss(None, None) %}
+  {% set table_empty_msg = None %}
+  {% if lossy_sales[1]|length == 0 %}
+    {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
+  {% endif %}
+  {{ querytable.querytable(table_empty_msg, lossy_sales[0], lossy_sales[1]) }}
 
 
 {% endif %}
@@ -108,7 +108,7 @@
 {% set table_hover_text = _('Hold Shift while clicking to expand all children.
 Hold Ctrl or Cmd while clicking to expand one level.') %}
 
-{# TODO: 
+{# TODO:
 - add a format_percentage() to fava's template_filters, and use that here
 - display 0 decimal places for assets (needed for all of fava_investor)
 - fix: asset bucket spacing is too wide
@@ -117,29 +117,26 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 #}
 
 {% macro asset_tree(account_node) %}
-    <ol class="flex-table tree-table{{ ' two-currencies' if ledger.options.operating_currency|length > 1 else '' }}"
-        title="{{ table_hover_text }}">
-        <li class="head">
-            <p>
-                <span class="account-cell"><button type="button" class="link expand-all hidden"
-                                                   title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></span>
-                {% for currency in ledger.options.operating_currency %}
-                    <span class="num">{{ currency }}</span>
-                {% endfor %}
-                <span class="num other">{{ _('Percentage') }}</span>
-            </p>
-        </li>
-        {% for account in ([account_node] if account_node.name else account_node.children) recursive %}
-            <li{{ '' }}>
-                <p{{ ' class=has-balance' }}>
-    <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}"
-          data-account-name="{{ account.name }}">
+<ol class="flex-table tree-table{{ ' two-currencies' if ledger.options.operating_currency|length > 1 else '' }}" title="{{ table_hover_text }}">
+  <li class="head">
+    <p>
+      <span class="account-cell"><button type="button" class="link expand-all hidden" title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></span>
+      {% for currency in ledger.options.operating_currency %}
+      <span class="num">{{ currency }}</span>
+      {% endfor %}
+      <span class="num other">{{ _('Percentage') }}</span>
+    </p>
+  </li>
+  {% for account in ([account_node] if account_node.name else account_node.children) recursive %}
+  <li{{ '' }}>
+    <p{{ ' class=has-balance' }}>
+    <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}" data-account-name="{{ account.name }}">
     <a href='' class='account'>
-      {{ account.name }}
+      {{ account.name.split('_')[-1] }}
     </a>
     </span>
-                    {% for currency in ledger.options.operating_currency %}
-                        <span class="num">
+    {% for currency in ledger.options.operating_currency %}
+    <span class="num">
       <span class="balance">
         <span class="number">{{ account.balance|format_currency(currency) }}</span>
       </span>
@@ -147,34 +144,49 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
         <span class="number">{{ account.balance_children|format_currency(currency) }}</span>
       </span>
     </span>
-                    {% endfor %}
-                    <span class="num other">
+    {% endfor %}
+    <span class="num other">
       {% set percentage_parent =  '{:3.0f}% of {}'.format(account.percentage_parent, account.parent.name) if account.parent else '' %}
       <span class="balance">
-        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) if account.percentage else '' }}</span>
       </span>
       <span class="balance-children">
-        <span class="number"
-              title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) if account.percentage_children else '' }}</span>
       </span>
     </span>
-                </p>
-                {% if account.children %}
-                    <ol>
-                        {{ loop(account.children|sort(attribute='name')) }}
-                    </ol>
-                {% endif %}
-            </li>
-        {% endfor %}
+    </p>
+    {% if account.children %}
+    <ol>
+      {{ loop(account.children|sort(attribute='name')) }}
     </ol>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% endmacro %}
+
+{% macro asset_allocation_hierarchy(serialised_tree, label=None) %}
+{% do charts.chart_data.append({
+'type': 'hierarchy',
+'label': 'Asset Allocation' if not label else label,
+'data': {
+  'modifier': 1,
+  'root': serialised_tree,
+},
+}) %}
 {% endmacro %}
 
 {% if (module == 'aa_class') %}
-    <h2>Portfolio: Asset Allocation by Class</h2>
-    {% set results = extension.build_assetalloc_by_class(None, None) %}
-    {{ asset_tree(results[0]) }}
+  <h2>Portfolio: Asset Allocation by Class</h2>
+
+  {% set results = extension.build_assetalloc_by_class(None, None) %}
+  {{ asset_tree(results[0]) }}
+
+  {{ asset_allocation_hierarchy(results[0].serialise(results[0]['currency']), label='Asset Allocation') }}
+  <script type="application/json" id="chart-data">{{ charts.chart_data|tojson|safe }}</script>
 
 {% endif %}
+
 
 {% if (module == 'balances') %}
     <h2>Portfolio: Balances</h2>

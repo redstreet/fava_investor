@@ -79,7 +79,7 @@ option "render_commas" "True"
   },
   'performance': {
      'accounts_pattern': '^Assets:Investments',
-     'accounts_income_pattern': '^Income:Dividends'
+     'accounts_income_pattern': '^Income:Dividends',
      'accounts_expenses_pattern': '^Expenses:'
   },
   'asset_alloc_by_account': [{

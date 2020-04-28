@@ -48,7 +48,7 @@ def asset_allocation(beancount_file,
     asset_buckets_tree, realacc = libassetalloc.assetalloc(accapi, argsmap)
 
     ftree = formatted_tree(asset_buckets_tree)
-    clicommon.pretty_print_table(ftree)
+    clicommon.pretty_print_table_bare(ftree)
 
     if dump_balances_tree:
         print_balances_tree(realacc, accapi)

@@ -12,7 +12,8 @@ It currently has two modules: asset allocation (by class, by account), and a tax
 harvester, with more in development.  See [design.md](design.md) for more.
 *Contributions welcome!*
 
-![Screenshot](./screenshot.png)
+![Screenshot: TLH](./screenshot.png)
+![Screenshot: Asset Allocation](./screenshot-assetalloc.png)
 
 # Installation
 
@@ -44,7 +45,9 @@ pip install -e ./fava_investor
 ### Running fava_investor
 ```
 cd fava_investor
-fava example.bc
+fava example.beancount
+# or:
+fava huge-example.beancount
 ```
 Then, point your browser to: http://localhost:5000/test
 

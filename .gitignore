@@ -1,4 +1,5 @@
 .*.swp
+.*.picklecache
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
