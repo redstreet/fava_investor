@@ -98,9 +98,10 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         }
         checksum = sum_inventories(summary.values())
 
-        summary['accounts_value'] = split.values[-1]
+        accounts_value = sum_inventories(split.values)
+        summary['accounts_value'] = accounts_value
         summary["sum_of_splits"] = checksum
-        summary["error"] = sum_inventories([checksum, -split.values[-1]])
+        summary["error"] = sum_inventories([checksum, -accounts_value])
         return summary
 
     def build_errors_journal(self):
@@ -109,13 +110,8 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         error_sum = Inventory()
         for i in range(0, len(split.transactions)):
             parts = split.parts
-            parts_sum = parts.contributions[i] + parts.withdrawals[i] + parts.dividends[i] + parts.costs[i] + \
-                        parts.gains_realized[i] + parts.gains_unrealized[i]
-            if i == 0:
-                current_value = Inventory()
-            else:
-                current_value = split.values[i] + (-split.values[i-1])
-            error = -current_value + parts_sum
+            parts_sum = sum_inventories([split_values[i] for split_values in parts])
+            error = -split.values[i] + parts_sum
             error_sum += error
             if error != {}:
                 journal.append((split.transactions[i], None, error, copy.copy(error_sum)))

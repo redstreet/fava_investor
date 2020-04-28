@@ -48,6 +48,7 @@ def get_balance_split_history(
     split_entries = SplitEntries([], [], [], [], [], [])
     split = Split([], [], split_entries)
     last_unrealized_gain = Inventory()
+    last_value = Inventory()
 
     is_external = (
         lambda acc: acc not in accounts_value
@@ -109,8 +110,9 @@ def get_balance_split_history(
         split_entries.gains_realized.append(-gains_realized)
         split_entries.gains_unrealized.append(unrealized_gain_change)
 
-        current_value = balance.reduce(convert.get_value, price_map, entry.date)
-        split.values.append(current_value)
+        value_change = current_value + -last_value
+        last_value = current_value
+        split.values.append(value_change)
         split.transactions.append(entry)
 
     return split
