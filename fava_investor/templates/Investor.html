@@ -192,20 +192,20 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     'accounts_value',
 ] %}
     {% if (module == split_type) %}
-        <h2>Split: {{ module }} journal</h2>
+        <h2>Portfolio: Balance split - {{ module }} journal</h2>
         {% import '_journal_table.html' as journal_table with context %}
         {{ journal_table.journal_table(extension.build_split_journal(split_type), True) }}
     {% endif %}
 {% endfor %}
 
 {% if (module == 'error') %}
-    <h2>Portfolio: Split errors journal</h2>
+    <h2>Portfolio: Balance split - error journal</h2>
     {% import '_journal_table.html' as journal_table with context %}
     {{ journal_table.journal_table(extension.build_errors_journal(), True) }}
 {% endif %}
 
 {% if (module == 'split') %}
-    <h2>Portfolio: Test</h2>
+    <h2>Portfolio: Balance split</h2>
     {% set summary = extension.testing() %}
 
     <table>
