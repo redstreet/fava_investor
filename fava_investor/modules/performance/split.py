@@ -7,10 +7,11 @@ from beancount.core.amount import Amount
 from beancount.core.data import Transaction, Price
 from beancount.core.inventory import Inventory
 from beancount.core.prices import build_price_map
+from fava.util.date import Interval, interval_ends, get_next_interval
 
 Split = namedtuple("Split", "transactions values parts")
 SplitEntries = namedtuple(
-    "Balance",
+    "SplitEntries",
     "contributions withdrawals dividends costs gains_realized gains_unrealized",
 )
 Change = namedtuple("Change", "transaction change")
@@ -22,7 +23,9 @@ def get_balance_split_history(
         income_pattern="^Income:",
         expenses_pattern="^Expenses:",
         pattern_internalized="^Income:Dividend",
+        interval=Interval.MONTH
 ):
+
     accounts = accapi.accounts
     accounts_value = set([acc for acc in accounts if re.match(pattern_value, acc)])
     accounts_internalized = set(
@@ -34,15 +37,18 @@ def get_balance_split_history(
     accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)])
     accounts_internal = accounts_income | accounts_expenses
 
-    if needs_dummy_transaction(accapi.ledger.entries):
-        date = copy.copy(accapi.ledger.entries[-1].date)
-        accapi.ledger.entries.append(
+    entries = accapi.ledger.entries
+    if needs_dummy_transaction(entries):
+        date = copy.copy(entries[-1].date)
+        entries.append(
             Transaction(
                 None, date, None, None, "UNREALIZED GAINS NEW BALANCE", [], [], []
             )
         )
 
-    price_map = build_price_map_with_fallback_to_cost(accapi.ledger.entries)
+    dates = list(interval_ends(entries[0].date, entries[-1].date, interval))
+
+    price_map = build_price_map_with_fallback_to_cost(entries)
 
     balance = Inventory()
     split_entries = SplitEntries([], [], [], [], [], [])
@@ -55,15 +61,47 @@ def get_balance_split_history(
                     and acc not in accounts_internal
                     and acc not in accounts_internalized
     )
-    for entry in accapi.ledger.entries:
+
+    next_interval_start = dates[1]
+    dates = dates[2:]
+
+    dividends = Inventory()
+    costs = Inventory()
+    contributions = Inventory()
+    withdrawals = Inventory()
+    gains_realized = Inventory()
+
+    for entry in entries:
         if not isinstance(entry, Transaction):
             continue
 
-        dividends = Inventory()
-        costs = Inventory()
-        contributions = Inventory()
-        withdrawals = Inventory()
-        gains_realized = Inventory()
+        if entry.date > next_interval_start:
+            next_interval_start = dates[0]
+            dates = dates[1:]
+            # unrealized gain
+            current_value = balance.reduce(convert.get_value, price_map, entry.date)
+            current_cost = balance.reduce(convert.get_cost)
+            unrealized_gain = current_value + -current_cost
+            unrealized_gain_change = unrealized_gain + -last_unrealized_gain
+            last_unrealized_gain = unrealized_gain
+
+            split_entries.contributions.append(contributions)
+            split_entries.withdrawals.append(withdrawals)
+            split_entries.dividends.append(-dividends)
+            split_entries.costs.append(-costs)
+            split_entries.gains_realized.append(-gains_realized)
+            split_entries.gains_unrealized.append(Inventory()) #unrealized_gain_change)
+
+            value_change = current_value + -last_value
+            last_value = copy.copy(current_value)
+            split.values.append(value_change)
+            split.transactions.append(entry)
+
+            dividends = Inventory()
+            costs = Inventory()
+            contributions = Inventory()
+            withdrawals = Inventory()
+            gains_realized = Inventory()
 
         value = any([p.account in accounts_value for p in entry.postings])
         internal = any([p.account in accounts_internal for p in entry.postings])
@@ -71,7 +109,8 @@ def get_balance_split_history(
         expense = any([p.account in accounts_expenses for p in entry.postings])
         external = any([is_external(p.account) for p in entry.postings])
 
-        balance += include_postings(entry, accounts_value)
+        postings = include_postings(entry, accounts_value)
+        balance += postings
 
         if value and external:
             value_change = include_postings_prefer_cost(entry, include_accounts=accounts_value | accounts_internal)
@@ -96,24 +135,23 @@ def get_balance_split_history(
         if value and income and is_commodity_sale(entry, accounts_value):
             gains_realized += include_postings(entry, accounts_income)
 
-        # unrealized gain
-        current_value = balance.reduce(convert.get_value, price_map, entry.date)
-        current_cost = balance.reduce(convert.get_cost)
-        unrealized_gain = current_value + -current_cost
-        unrealized_gain_change = unrealized_gain + -last_unrealized_gain
-        last_unrealized_gain = unrealized_gain
 
-        split_entries.contributions.append(contributions)
-        split_entries.withdrawals.append(withdrawals)
-        split_entries.dividends.append(-dividends)
-        split_entries.costs.append(-costs)
-        split_entries.gains_realized.append(-gains_realized)
-        split_entries.gains_unrealized.append(unrealized_gain_change)
+    # unrealized gain
+    current_value = balance.reduce(convert.get_value, price_map, entries[-1].date)
+    # current_cost = balance.reduce(convert.get_cost)
+    # unrealized_gain = current_value + -current_cost
+    # unrealized_gain_change = unrealized_gain + -last_unrealized_gain
 
-        value_change = current_value + -last_value
-        last_value = current_value
-        split.values.append(value_change)
-        split.transactions.append(entry)
+    split_entries.contributions.append(contributions)
+    split_entries.withdrawals.append(withdrawals)
+    split_entries.dividends.append(-dividends)
+    split_entries.costs.append(-costs)
+    split_entries.gains_realized.append(-gains_realized)
+    split_entries.gains_unrealized.append(Inventory()) #unrealized_gain_change)
+
+    value_change = current_value + -last_value
+    split.values.append(value_change)
+    split.transactions.append(entries[-1].date)
 
     return split
 
@@ -196,12 +234,12 @@ def build_price_map_with_fallback_to_cost(entries):
      if there isn't one for purchased commodity on purchase date or earlier.
     """
     buying_prices = {}
-    prices_by_date = set()
+    first_price_date = {}
     prices = set()
 
     for entry in entries:
         if isinstance(entry, Price):
-            prices_by_date.add((entry.date, entry.currency, entry.amount.currency))
+            first_price_date[(entry.currency, entry.amount.currency)] = entry.date
             prices.add((entry.currency, entry.amount.currency))
 
         if not isinstance(entry, Transaction):
@@ -213,7 +251,9 @@ def build_price_map_with_fallback_to_cost(entries):
                     and p.units is not None
                     and (p.units.currency, p.cost.currency) not in prices
             ):
-                key = (entry.date, p.units.currency, p.cost.currency)
+                key = (p.units.currency, p.cost.currency)
+                if key in buying_prices:
+                    continue
                 buying_prices[key] = Price(
                     {},
                     entry.date,
@@ -223,7 +263,8 @@ def build_price_map_with_fallback_to_cost(entries):
 
     prices_to_add = []
     for key, price in buying_prices.items():
-        if key not in prices_by_date:
+        if key not in first_price_date or first_price_date[key] > price.date:
+            first_price_date[key] = price.date
             prices_to_add.append(price)
 
     return build_price_map(entries + prices_to_add)

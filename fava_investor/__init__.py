@@ -56,13 +56,14 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         accapi = FavaInvestorAPI(self.ledger)
         return get_balances_tree(accapi, self.config.get('performance', {}))
 
-    def get_split(self):
+    def get_split(self, debug=True):
         config = self.config.get("performance", {})
         split = get_balance_split_history(FavaInvestorAPI(self.ledger),
                                           config.get("accounts_pattern", "^Assets:Investments"),
                                           config.get("accounts_income_pattern", "^Income:"),
                                           config.get("accounts_expenses_pattern", "^Expenses:"),
-                                          config.get("accounts_internalized_pattern", "^Income:Dividends"))
+                                          config.get("accounts_internalized_pattern", "^Income:Dividends"),
+                                          debug=debug)
         return split
 
     def build_split_journal(self, kind):
