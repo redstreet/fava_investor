@@ -1,7 +1,8 @@
 from beancount.core.data import Transaction
 from beancount.utils import test_utils
 
-from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split, get_split_with_meta, i
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_interval_balances, \
+    get_interval_balances_with_meta, i
 
 
 class TestWithdrawals(SplitTestCase):
@@ -17,9 +18,9 @@ class TestWithdrawals(SplitTestCase):
             Assets:Account:Asset  -1 AA {11 GBP}
             Assets:Bank  5 GBP
         """
-        split = get_split(filename)
+        parts = get_interval_balances(filename)
 
-        self.assertInventoriesSum("-5 GBP", split.withdrawals)
+        self.assertInventoriesSum("-5 GBP", parts.withdrawals)
 
     @test_utils.docfile
     def test_list_withdrawals_entries(self, filename: str):
@@ -41,7 +42,7 @@ class TestWithdrawals(SplitTestCase):
             Assets:Account:A  -3 GBP
             Assets:Bank
         """
-        split = get_split_with_meta(filename)
+        split = get_interval_balances_with_meta(filename)
 
         self.assertEqual({}, split.parts.withdrawals[0])
         self.assertEqual(i("-3 GBP"), split.parts.withdrawals[1])
@@ -61,5 +62,5 @@ class TestWithdrawals(SplitTestCase):
         2020-01-01 open Assets:Account
         2020-01-01 open Assets:Account:Sub
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("0", split.withdrawals)

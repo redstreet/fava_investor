@@ -1,6 +1,7 @@
 from beancount.utils import test_utils
 
-from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split, get_split_with_meta
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_interval_balances, \
+    get_interval_balances_with_meta
 
 
 class TestGains(SplitTestCase):
@@ -16,7 +17,7 @@ class TestGains(SplitTestCase):
 
         2020-02-22 price AA  2 USD
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("1 USD", split.gains_unrealized)
 
     @test_utils.docfile
@@ -31,7 +32,7 @@ class TestGains(SplitTestCase):
 
         2020-02-22 price AA  2 USD
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("", split.gains_unrealized)
 
     @test_utils.docfile
@@ -57,7 +58,7 @@ class TestGains(SplitTestCase):
 
         2020-02-24 price AA  10 USD
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("8 USD", split.gains_unrealized)
 
     @test_utils.docfile
@@ -72,7 +73,7 @@ class TestGains(SplitTestCase):
 
         2020-02-22 price AA  2 USD
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("1 USD", split.gains_unrealized)
 
     @test_utils.docfile
@@ -91,7 +92,7 @@ class TestGains(SplitTestCase):
           Assets:Bank  2 USD
           Income:Gains
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("1 USD", split.gains_realized)
 
     @test_utils.docfile
@@ -116,7 +117,7 @@ class TestGains(SplitTestCase):
           Assets:Bank  3 USD
           Income:Gains  -2 USD
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("3 USD", split.gains_realized)
 
     @test_utils.docfile
@@ -151,7 +152,7 @@ class TestGains(SplitTestCase):
 
         2020-01-04 price AA 2 USD
         """
-        split = get_split_with_meta(filename)
+        split = get_interval_balances_with_meta(filename)
         last_entry = split.transactions[-1]
         self.assertEqual("UNREALIZED GAINS NEW BALANCE", last_entry.narration)
         self.assertIsNotNone(last_entry.date)

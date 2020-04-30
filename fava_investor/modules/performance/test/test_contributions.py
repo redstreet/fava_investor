@@ -2,7 +2,8 @@ from beancount.core.data import Transaction
 from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
-from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split, get_split_with_meta
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_interval_balances, \
+    get_interval_balances_with_meta
 
 
 class TestContributions(SplitTestCase):
@@ -70,7 +71,7 @@ class TestContributions(SplitTestCase):
             Assets:Account:A  3 GBP
             Assets:Bank
         """
-        split = get_split_with_meta(filename, interval=None)
+        split = get_interval_balances_with_meta(filename, interval=None)
         self.assertEqual(Inventory.from_string("3 GBP"), split.parts.contributions[1])
         self.assertEqual(Inventory.from_string("3 GBP"), split.parts.contributions[2])
 
@@ -96,7 +97,7 @@ class TestContributions(SplitTestCase):
         """
         self.skipTest("value account filtering not implemented")
 
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("2 GBP", split.contributions)
 
     @test_utils.docfile
@@ -111,7 +112,7 @@ class TestContributions(SplitTestCase):
             Assets:Account:Asset  1 AA {11 GBP}
             Assets:Bank  -5 GBP
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("5 GBP", split.contributions)
 
     @test_utils.docfile
@@ -129,5 +130,5 @@ class TestContributions(SplitTestCase):
             Assets:Bank  9 GBP
             Assets:Bank2  -10 GBP
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("1 GBP", split.contributions)

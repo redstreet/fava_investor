@@ -1,6 +1,6 @@
 from beancount.utils import test_utils
 
-from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_interval_balances
 
 
 class TestCosts(SplitTestCase):
@@ -14,7 +14,7 @@ class TestCosts(SplitTestCase):
             Assets:Account  -5 GBP
             Expenses:ServiceFee
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("-5 GBP", split.costs)
 
     @test_utils.docfile

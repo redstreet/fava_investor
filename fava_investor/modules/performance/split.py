@@ -8,19 +8,26 @@ from beancount.core.inventory import Inventory
 from beancount.core.prices import build_price_map
 from fava.util.date import Interval, interval_ends
 
-from fava_investor.modules.performance.accumulators import UnrealizedGainProcessor, CostProcessor, ValueProcessor, \
-    RealizedGainProcessor, DividendsProcessor, ContributionProcessor, Accounts
+from fava_investor.modules.performance.accumulators import UnrealizedGainAccumulator, CostAccumulator, \
+    ValueChangeAccumulator, \
+    RealizedGainAccumulator, DividendsAccumulator, ContributionAccumulator, Accounts, WithdrawalAccumulator
 
-Split = namedtuple("Split", "transactions values parts")
-SplitEntries = namedtuple(
-    "SplitEntries",
-    "contributions withdrawals dividends costs gains_realized gains_unrealized",
+Split = namedtuple("Split", "transactions parts")
+IntervalBalances = namedtuple(
+    "IntervalBalances",
+    "contributions withdrawals dividends costs gains_realized gains_unrealized value_changes errors",
 )
 Change = namedtuple("Change", "transaction change")
 
 
-def get_balance_split_history(
+def collect_results(accumulators, split_entries):
+    for a in accumulators:
+        getattr(split_entries, a.get_id()).append(a.get_result_and_reset())
+
+
+def calculate_interval_balances(
         accapi,
+        accumulators_ids,
         pattern_value,
         income_pattern="^Income:",
         expenses_pattern="^Expenses:",
@@ -34,7 +41,7 @@ def get_balance_split_history(
     accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)])
 
     entries = accapi.ledger.entries
-    if needs_dummy_transaction(entries):
+    if has_prices_after_last_transaction(entries):
         date = copy.copy(entries[-1].date)
         entries.append(
             Transaction(
@@ -50,19 +57,11 @@ def get_balance_split_history(
         next_interval_start = dates[1]
         dates = dates[2:]
 
-    split_entries = SplitEntries([], [], [], [], [], [])
-    split = Split([], [], split_entries)
-
-    price_map = build_price_map_with_fallback_to_cost(entries)
+    split_entries = IntervalBalances([], [], [], [], [], [], [], [])
+    split = Split([], split_entries)
 
     accounts = Accounts(accounts_value, accounts_income, accounts_expenses)
-    contribution_processor = ContributionProcessor(accounts)
-    dividends_processor = DividendsProcessor(accounts)
-    gains_processor = RealizedGainProcessor(accounts)
-    costs_processor = CostProcessor(accounts)
-
-    ug_processor = UnrealizedGainProcessor(accounts, price_map)
-    value_processor = ValueProcessor(accounts, price_map)
+    accumulators = get_accumulators(accounts, entries, accumulators_ids)
 
     first = True
     for entry in entries:
@@ -74,45 +73,32 @@ def get_balance_split_history(
             if interval is not None:
                 next_interval_start = dates[0]
                 dates = dates[1:]
-            contributions, withdrawals = contribution_processor.get_result_and_reset()
-            dividends = dividends_processor.get_result_and_reset()
-            costs = costs_processor.get_result_and_reset()
-            unrealized_gain_change = ug_processor.get_result_and_reset()
-            gains_realized = gains_processor.get_result_and_reset()
-            value = value_processor.get_result_and_reset()
-            split_entries.contributions.append(contributions)
-            split_entries.withdrawals.append(withdrawals)
-            split_entries.dividends.append(dividends)
-            split_entries.costs.append(costs)
-            split_entries.gains_realized.append(gains_realized)
-            split_entries.gains_unrealized.append(unrealized_gain_change)
-            split.values.append(value)
 
-        contribution_processor.process(entry)
-        dividends_processor.process(entry)
-        gains_processor.process(entry)
-        costs_processor.process(entry)
-        ug_processor.process(entry)
-        value_processor.process(entry)
+            collect_results(accumulators, split_entries)
+
+        for accum in accumulators:
+            accum.process(entry)
 
         first = False
 
-    contributions, withdrawals = contribution_processor.get_result_and_reset()
-    dividends = dividends_processor.get_result_and_reset()
-    costs = costs_processor.get_result_and_reset()
-    gains_realized = gains_processor.get_result_and_reset()
-    ug = ug_processor.get_result_and_reset()
-    value = value_processor.get_result_and_reset()
-
-    split_entries.contributions.append(contributions)
-    split_entries.withdrawals.append(withdrawals)
-    split_entries.dividends.append(dividends)
-    split_entries.costs.append(costs)
-    split_entries.gains_realized.append(gains_realized)
-    split_entries.gains_unrealized.append(ug)
-    split.values.append(value)
+    collect_results(accumulators, split_entries)
 
     return split
+
+
+def get_accumulators(accounts, entries, ids):
+    price_map = build_price_map_with_fallback_to_cost(entries)
+    accs = {
+        'contributions': lambda: ContributionAccumulator(accounts),
+        'withdrawals': lambda: WithdrawalAccumulator(accounts),
+        'dividends': lambda: DividendsAccumulator(accounts),
+        'gains_realized': lambda: RealizedGainAccumulator(accounts),
+        'costs': lambda: CostAccumulator(accounts),
+        'gains_unrealized': lambda: UnrealizedGainAccumulator(accounts, price_map),
+        'valuations': lambda: ValueChangeAccumulator(accounts, price_map),
+    }
+
+    return list([accs[key]() for key in ids])
 
 
 def sum_inventories(inv_list):
@@ -176,10 +162,11 @@ def build_price_map_with_fallback_to_cost(entries):
     return build_price_map(entries + prices_to_add)
 
 
-def needs_dummy_transaction(entries):
+def has_prices_after_last_transaction(entries):
     has_prices_after_last_transaction = False
     for entry in reversed(entries):
         if isinstance(entry, Price):
             has_prices_after_last_transaction = True
+
         if isinstance(entry, Transaction):
             return has_prices_after_last_transaction

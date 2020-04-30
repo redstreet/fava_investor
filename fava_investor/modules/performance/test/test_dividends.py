@@ -1,6 +1,6 @@
 from beancount.utils import test_utils
 
-from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_interval_balances
 
 
 class TestDividends(SplitTestCase):
@@ -14,7 +14,7 @@ class TestDividends(SplitTestCase):
             Assets:Account  5 GBP
             Income:Dividends
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("5 GBP", split.dividends)
 
     @test_utils.docfile
@@ -27,5 +27,5 @@ class TestDividends(SplitTestCase):
             Assets:Bank
             Income:Dividends  -5 GBP
         """
-        split = get_split(filename)
+        split = get_interval_balances(filename)
         self.assertInventoriesSum("5 GBP", split.dividends)

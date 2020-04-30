@@ -6,7 +6,7 @@ from fava.ext import FavaExtensionBase
 
 from .modules import performance
 from .modules.performance.balances import get_balances_tree
-from .modules.performance.split import get_balance_split_history, sum_inventories, calculate_balances, SplitEntries
+from .modules.performance.split import calculate_interval_balances, sum_inventories, calculate_balances
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
@@ -56,18 +56,19 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         accapi = FavaInvestorAPI(self.ledger)
         return get_balances_tree(accapi, self.config.get('performance', {}))
 
-    def get_split(self, debug=True):
+    def get_split(self, accumulators):
         config = self.config.get("performance", {})
-        split = get_balance_split_history(FavaInvestorAPI(self.ledger),
-                                          config.get("accounts_pattern", "^Assets:Investments"),
-                                          config.get("accounts_income_pattern", "^Income:"),
-                                          config.get("accounts_expenses_pattern", "^Expenses:"),
-                                          debug=debug)
+        split = calculate_interval_balances(FavaInvestorAPI(self.ledger),
+                                            accumulators,
+                                            config.get("accounts_pattern", "^Assets:Investments"),
+                                            config.get("accounts_income_pattern", "^Income:"),
+                                            config.get("accounts_expenses_pattern", "^Expenses:"),
+                                            )
         return split
 
     def build_split_journal(self, kind):
         split_values_by_kind = {
-            'contributions': lambda split: split.parts.contributions,
+            'contributions': lambda split: split.parts.accumulated,
             'withdrawals': lambda split: split.parts.gains,
             'dividends': lambda split: split.parts.gains,
             'costs': lambda split: split.parts.costs,
@@ -83,13 +84,14 @@ class Investor(FavaExtensionBase):  # pragma: no cover
 
         balances = calculate_balances(split_values)
 
-        return [(split.transactions[i], None, split_values[i], balances[i]) for i in range(0, len(split.transactions)) if i in to_keep]
+        return [(split.transactions[i], None, split_values[i], balances[i]) for i in range(0, len(split.transactions))
+                if i in to_keep]
 
     def testing(self):
         split = self.get_split()
         parts = split.parts
         summary = {
-            'contributions': sum_inventories(parts.contributions),
+            'contributions': sum_inventories(parts.accumulated),
             'withdrawals': sum_inventories(parts.gains),
             'dividends': sum_inventories(parts.gains),
             'costs': sum_inventories(parts.costs),
@@ -116,4 +118,3 @@ class Investor(FavaExtensionBase):  # pragma: no cover
             if error != {}:
                 journal.append((split.transactions[i], None, error, copy.copy(error_sum)))
         return journal
-

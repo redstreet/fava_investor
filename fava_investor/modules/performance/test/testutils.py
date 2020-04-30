@@ -9,8 +9,19 @@ from beancount.ops import validation
 from beancount.utils import test_utils
 from fava.core import FavaLedger
 
-from fava_investor import sum_inventories, FavaInvestorAPI, get_balance_split_history
+from fava_investor import sum_inventories, FavaInvestorAPI, calculate_interval_balances
 from fava_investor.modules.performance.split import build_price_map_with_fallback_to_cost
+
+
+def get_readable_split_parts(split_parts):
+    return (
+            f"\ncontrib    {split_parts.contributions}"
+            + f"\nwithdrawal {split_parts.withdrawals}"
+            + f"\ndividends  {split_parts.dividends}"
+            + f"\ncosts      {split_parts.costs}"
+            + f"\ngains r.   {split_parts.gains_realized}"
+            + f"\ngains u.   {split_parts.gains_unrealized}"
+    )
 
 
 class SplitTestCase(test_utils.TestCase):
@@ -27,7 +38,7 @@ class SplitTestCase(test_utils.TestCase):
 
     def assertSumOfSplitsEqualValue(self, filename, account="Assets:Account"):
         ledger = get_ledger(filename)
-        split = get_split(filename)
+        split_parts = get_interval_balances(filename)
         final_value = get_value(
             ledger,
             build_price_map_with_fallback_to_cost(ledger.ledger.entries),
@@ -36,32 +47,17 @@ class SplitTestCase(test_utils.TestCase):
         )
         self.assertEqual(
             final_value,
-            self.get_split_sum(split),
-            f"Value of account {account} doesnt equal sum of splits. Splits: {self.get_readable_splits(split)}",
+            sum_inteval_balances(split_parts),
+            f"Value of account {account} doesnt equal sum of splits. Splits: {get_readable_split_parts(split_parts)}",
         )
 
     def assertSumOfSplitsEqual(self, filename, value):
-        split = get_split(filename)
+        interval_balances = get_interval_balances(filename)
         self.assertEqual(
-            self.get_split_sum(split),
+            sum_inteval_balances(interval_balances),
             i(value),
-            f"Sum of splits doesnt equal given inventory. Splits: {self.get_readable_splits(split)}",
+            f"Sum of splits doesnt equal given inventory. Splits: {get_readable_split_parts(interval_balances)}",
         )
-
-    def get_readable_splits(self, split):
-        return (
-                f"\ncontrib    {split.contributions}"
-                + f"\nwithdrawal {split.withdrawals}"
-                + f"\ndividends  {split.dividends}"
-                + f"\ncosts      {split.costs}"
-                + f"\ngains r.   {split.gains_realized}"
-                + f"\ngains u.   {split.gains_unrealized}"
-        )
-
-    def get_split_sum(self, split):
-        split_list = list(split)
-        sum = sum_inventories([sum_inventories(s) for s in split_list])
-        return sum
 
 
 def get_ledger(filename):
@@ -74,12 +70,12 @@ def get_ledger(filename):
     return FavaInvestorAPI(FavaLedger(filename))
 
 
-def get_split(filename, config_override=None, interval=None):
-    split = get_split_with_meta(filename, config_override, interval=interval)
+def get_interval_balances(filename, config_override=None, interval=None):
+    split = get_interval_balances_with_meta(filename, config_override, interval=interval)
     return split.parts
 
 
-def get_split_with_meta(filename, config_override=None, interval=None):
+def get_interval_balances_with_meta(filename, config_override=None, interval=None):
     defaults = {
         "accounts_pattern": "^Assets:Account",
         "accounts_income_pattern": "^Income:",
@@ -89,14 +85,26 @@ def get_split_with_meta(filename, config_override=None, interval=None):
         config_override = {}
     config = {**defaults, **config_override}
     ledger = get_ledger(filename)
-    split = get_balance_split_history(
+    balances = calculate_interval_balances(
         ledger,
+        ['contributions', 'withdrawals', 'costs', 'dividends', 'gains_realized', 'gains_unrealized'],
         config["accounts_pattern"],
         config["accounts_income_pattern"],
         config["accounts_expenses_pattern"],
         interval=interval
     )
-    return split
+    return balances
+
+
+def sum_inteval_balances(balances):
+    sum = Inventory()
+    sum += sum_inventories(balances.contributions)
+    sum += sum_inventories(balances.withdrawals)
+    sum += sum_inventories(balances.costs)
+    sum += sum_inventories(balances.dividends)
+    sum += sum_inventories(balances.gains_realized)
+    sum += sum_inventories(balances.gains_unrealized)
+    return sum
 
 
 def i(string=""):

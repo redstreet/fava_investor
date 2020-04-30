@@ -9,7 +9,47 @@ from beancount.core.inventory import Inventory
 Accounts = namedtuple("Accounts", "value income expenses")
 
 
-class UnrealizedGainProcessor:
+class ContributionAccumulator:
+    def __init__(self, accounts: Accounts):
+        self.accumulated = Inventory()
+        self.accounts = accounts
+        self.all_accounts = self.accounts.value | self.accounts.income | self.accounts.expenses
+
+    def posting_filter_condition(self):
+        return lambda posting: posting.units.number > 0
+
+    def get_id(self):
+        return 'contributions'
+
+    def process(self, entry):
+        value = any([p.account in self.accounts.value for p in entry.postings])
+        external = any([p.account not in self.all_accounts for p in entry.postings])
+
+        if not value or not external:
+            return
+
+        included = self.accounts.value | self.accounts.income | self.accounts.expenses
+        relevant = get_postings_prefer_cost(entry,
+                                            include_accounts=included)
+        for position in relevant.get_positions():
+            if self.posting_filter_condition()(position):
+                self.accumulated.add_position(position)
+
+    def get_result_and_reset(self):
+        result = self.accumulated
+        self.accumulated = Inventory()
+        return result
+
+
+class WithdrawalAccumulator(ContributionAccumulator):
+    def posting_filter_condition(self):
+        return lambda posting: posting.units.number < 0
+
+    def get_id(self):
+        return 'withdrawals'
+
+
+class UnrealizedGainAccumulator:
     def __init__(self, accounts: Accounts, price_map):
         self.last_entry_date = None
         self.price_map = price_map
@@ -17,6 +57,9 @@ class UnrealizedGainProcessor:
         self.balance = Inventory()
         self.accounts = accounts
         self.last_result = Inventory()
+
+    def get_id(self):
+        return 'gains_unrealized'
 
     def process(self, entry):
         for p in entry.postings:
@@ -30,15 +73,18 @@ class UnrealizedGainProcessor:
         unrealized_gain = current_value + -current_cost
         self.gain += unrealized_gain + -self.last_result
         self.last_result = copy.copy(self.gain)
-        res = self.gain
+        result = self.gain
         self.gain = Inventory()
-        return res
+        return result
 
 
-class CostProcessor:
+class CostAccumulator:
     def __init__(self, accounts: Accounts):
         self.costs = Inventory()
         self.accounts = accounts
+
+    def get_id(self):
+        return 'costs'
 
     def process(self, entry):
         value = any([p.account in self.accounts.value for p in entry.postings])
@@ -47,18 +93,21 @@ class CostProcessor:
             self.costs += -include_postings(entry, self.accounts.expenses)
 
     def get_result_and_reset(self):
-        res = self.costs
+        result = self.costs
         self.costs = Inventory()
-        return res
+        return result
 
 
-class ValueProcessor:
+class ValueChangeAccumulator:
     last_entry_date = None
 
     def __init__(self, accounts: Accounts, price_map):
         self.price_map = price_map
         self.balance = Inventory()
         self.accounts = accounts
+
+    def get_id(self):
+        return 'value_change'
 
     def process(self, entry):
         for p in entry.postings:
@@ -69,13 +118,19 @@ class ValueProcessor:
     def get_result_and_reset(self):
         value = self.balance.reduce(convert.get_value, self.price_map, self.last_entry_date)
         self.balance.clear()
-        return value
+        result = Inventory()
+        for amount, _ in value:
+            result.add_amount(amount)
+        return result
 
 
-class RealizedGainProcessor:
+class RealizedGainAccumulator:
     def __init__(self, accounts: Accounts):
         self.gains = Inventory()
         self.accounts = accounts
+
+    def get_id(self):
+        return 'gains_realized'
 
     def process(self, entry):
         value = any([p.account in self.accounts.value for p in entry.postings])
@@ -85,16 +140,19 @@ class RealizedGainProcessor:
             self.gains += -postings
 
     def get_result_and_reset(self):
-        res = self.gains
+        result = self.gains
         self.gains = Inventory()
-        return res
+        return result
 
 
-class DividendsProcessor:
+class DividendsAccumulator:
     def __init__(self, accounts: Accounts):
         self.dividends = Inventory()
         self.accounts = accounts
         self.all_accounts = self.accounts.value | self.accounts.income | self.accounts.expenses
+
+    def get_id(self):
+        return 'dividends'
 
     def process(self, entry):
         value = any([p.account in self.accounts.value for p in entry.postings])
@@ -111,38 +169,9 @@ class DividendsProcessor:
             )
 
     def get_result_and_reset(self):
-        res = self.dividends
+        result = self.dividends
         self.dividends = Inventory()
-        return res
-
-
-class ContributionProcessor:
-    def __init__(self, accounts: Accounts):
-        self.withdrawals = Inventory()
-        self.contributions = Inventory()
-        self.accounts = accounts
-        self.all_accounts = self.accounts.value | self.accounts.income | self.accounts.expenses
-
-    def process(self, entry):
-        value = any([p.account in self.accounts.value for p in entry.postings])
-        external = any([p.account not in self.all_accounts for p in entry.postings])
-
-        if not value or not external:
-            return
-
-        relevant = get_postings_prefer_cost(entry,
-                                            include_accounts=self.accounts.value | self.accounts.income | self.accounts.expenses)
-        for position in relevant.get_positions():
-            if position.units.number > 0:
-                self.contributions.add_position(position)
-            else:
-                self.withdrawals.add_position(position)
-
-    def get_result_and_reset(self):
-        res = self.contributions, self.withdrawals
-        self.contributions = Inventory()
-        self.withdrawals = Inventory()
-        return res
+        return result
 
 
 def include_postings(
