@@ -7,7 +7,7 @@ from beancount.core.amount import Amount
 from beancount.core.data import Transaction, Price
 from beancount.core.inventory import Inventory
 from beancount.core.prices import build_price_map
-from fava.util.date import Interval, interval_ends, get_next_interval
+from fava.util.date import Interval, interval_ends
 
 Split = namedtuple("Split", "transactions values parts")
 SplitEntries = namedtuple(
@@ -46,7 +46,13 @@ def get_balance_split_history(
             )
         )
 
-    dates = list(interval_ends(entries[0].date, entries[-1].date, interval))
+    next_interval_start = None
+    if interval is not None:
+        dates = list(interval_ends(entries[0].date, entries[-1].date, interval))
+        if len(dates) == 1:
+            dates.append(dates[0])
+        next_interval_start = dates[1]
+        dates = dates[2:]
 
     price_map = build_price_map_with_fallback_to_cost(entries)
 
@@ -62,22 +68,21 @@ def get_balance_split_history(
                     and acc not in accounts_internalized
     )
 
-    next_interval_start = dates[1]
-    dates = dates[2:]
-
     dividends = Inventory()
     costs = Inventory()
     contributions = Inventory()
     withdrawals = Inventory()
     gains_realized = Inventory()
 
+    first = True
     for entry in entries:
         if not isinstance(entry, Transaction):
             continue
 
-        if entry.date > next_interval_start:
-            next_interval_start = dates[0]
-            dates = dates[1:]
+        if first is False and (interval is None or entry.date > next_interval_start):
+            if interval is not None:
+                next_interval_start = dates[0]
+                dates = dates[1:]
             # unrealized gain
             current_value = balance.reduce(convert.get_value, price_map, entry.date)
             current_cost = balance.reduce(convert.get_cost)
@@ -90,18 +95,20 @@ def get_balance_split_history(
             split_entries.dividends.append(-dividends)
             split_entries.costs.append(-costs)
             split_entries.gains_realized.append(-gains_realized)
-            split_entries.gains_unrealized.append(Inventory()) #unrealized_gain_change)
+            split_entries.gains_unrealized.append(unrealized_gain_change)
 
             value_change = current_value + -last_value
             last_value = copy.copy(current_value)
             split.values.append(value_change)
-            split.transactions.append(entry)
+            split.transactions.append(last_transaction)
 
             dividends = Inventory()
             costs = Inventory()
             contributions = Inventory()
             withdrawals = Inventory()
             gains_realized = Inventory()
+
+        first = False
 
         value = any([p.account in accounts_value for p in entry.postings])
         internal = any([p.account in accounts_internal for p in entry.postings])
@@ -134,24 +141,25 @@ def get_balance_split_history(
 
         if value and income and is_commodity_sale(entry, accounts_value):
             gains_realized += include_postings(entry, accounts_income)
+        last_transaction = entry
 
 
     # unrealized gain
     current_value = balance.reduce(convert.get_value, price_map, entries[-1].date)
-    # current_cost = balance.reduce(convert.get_cost)
-    # unrealized_gain = current_value + -current_cost
-    # unrealized_gain_change = unrealized_gain + -last_unrealized_gain
+    current_cost = balance.reduce(convert.get_cost)
+    unrealized_gain = current_value + -current_cost
+    unrealized_gain_change = unrealized_gain + -last_unrealized_gain
 
     split_entries.contributions.append(contributions)
     split_entries.withdrawals.append(withdrawals)
     split_entries.dividends.append(-dividends)
     split_entries.costs.append(-costs)
     split_entries.gains_realized.append(-gains_realized)
-    split_entries.gains_unrealized.append(Inventory()) #unrealized_gain_change)
+    split_entries.gains_unrealized.append(unrealized_gain_change)
 
     value_change = current_value + -last_value
     split.values.append(value_change)
-    split.transactions.append(entries[-1].date)
+    split.transactions.append(entries[-1])
 
     return split
 

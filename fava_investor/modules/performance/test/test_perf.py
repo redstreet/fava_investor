@@ -1,8 +1,8 @@
 from datetime import datetime
 from pathlib import Path
 
-from .test_split import SplitTestCase, get_split, get_ledger
-from ... import get_balance_split_history
+from fava_investor import get_balance_split_history
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_ledger
 
 
 class TestWithdrawals(SplitTestCase):

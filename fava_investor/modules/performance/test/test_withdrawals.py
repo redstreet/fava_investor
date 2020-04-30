@@ -1,7 +1,7 @@
 from beancount.core.data import Transaction
 from beancount.utils import test_utils
 
-from .test_split import SplitTestCase, i, get_split, get_split_with_meta
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split, get_split_with_meta, i
 
 
 class TestWithdrawals(SplitTestCase):

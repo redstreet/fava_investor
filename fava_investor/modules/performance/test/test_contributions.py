@@ -2,7 +2,7 @@ from beancount.core.data import Transaction
 from beancount.core.inventory import Inventory
 from beancount.utils import test_utils
 
-from .test_split import SplitTestCase, get_split, get_split_with_meta
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split, get_split_with_meta
 
 
 class TestContributions(SplitTestCase):
@@ -70,7 +70,7 @@ class TestContributions(SplitTestCase):
             Assets:Account:A  3 GBP
             Assets:Bank
         """
-        split = get_split_with_meta(filename)
+        split = get_split_with_meta(filename, interval=None)
         self.assertEqual(Inventory.from_string("3 GBP"), split.parts.contributions[1])
         self.assertEqual(Inventory.from_string("3 GBP"), split.parts.contributions[2])
 

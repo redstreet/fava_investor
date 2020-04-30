@@ -1,6 +1,6 @@
 from beancount.utils import test_utils
 
-from .test_split import SplitTestCase, get_split, get_split_with_meta
+from fava_investor.modules.performance.test.testutils import SplitTestCase, get_split, get_split_with_meta
 
 
 class TestGains(SplitTestCase):
