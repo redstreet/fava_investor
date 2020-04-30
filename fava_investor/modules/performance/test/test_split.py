@@ -35,10 +35,6 @@ class TestSplit(SplitTestCase):
             Assets:Account
 
         2020-01-03 price SHARE 2 USD
-
-        2020-01-04 * "irrelevant"
-            Assets:Account  1 GBP
-            Assets:Account
         """
 
         self.assertSumOfSplitsEqualValue(filename)
@@ -89,5 +85,3 @@ class TestSplit(SplitTestCase):
         """
 
         self.assertSumOfSplitsEqualValue(filename)
-
-

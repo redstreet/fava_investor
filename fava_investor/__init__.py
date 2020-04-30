@@ -62,15 +62,14 @@ class Investor(FavaExtensionBase):  # pragma: no cover
                                           config.get("accounts_pattern", "^Assets:Investments"),
                                           config.get("accounts_income_pattern", "^Income:"),
                                           config.get("accounts_expenses_pattern", "^Expenses:"),
-                                          config.get("accounts_internalized_pattern", "^Income:Dividends"),
                                           debug=debug)
         return split
 
     def build_split_journal(self, kind):
         split_values_by_kind = {
             'contributions': lambda split: split.parts.contributions,
-            'withdrawals': lambda split: split.parts.withdrawals,
-            'dividends': lambda split: split.parts.dividends,
+            'withdrawals': lambda split: split.parts.gains,
+            'dividends': lambda split: split.parts.gains,
             'costs': lambda split: split.parts.costs,
             'gains_realized': lambda split: split.parts.gains_realized,
             'accounts_value': lambda split: split.values,
@@ -91,8 +90,8 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         parts = split.parts
         summary = {
             'contributions': sum_inventories(parts.contributions),
-            'withdrawals': sum_inventories(parts.withdrawals),
-            'dividends': sum_inventories(parts.dividends),
+            'withdrawals': sum_inventories(parts.gains),
+            'dividends': sum_inventories(parts.gains),
             'costs': sum_inventories(parts.costs),
             'gains_realized': sum_inventories(parts.gains_realized),
             'gains_unrealized': sum_inventories(parts.gains_unrealized),

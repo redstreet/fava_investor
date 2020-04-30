@@ -35,9 +35,9 @@ class SplitTestCase(test_utils.TestCase):
             ledger.ledger.entries[-1].date,
         )
         self.assertEqual(
-            self.get_split_sum(split),
             final_value,
-            f"Sum of splits doesnt equal {account} value. Splits: {self.get_readable_splits(split)}",
+            self.get_split_sum(split),
+            f"Value of account {account} doesnt equal sum of splits. Splits: {self.get_readable_splits(split)}",
         )
 
     def assertSumOfSplitsEqual(self, filename, value):
@@ -84,7 +84,6 @@ def get_split_with_meta(filename, config_override=None, interval=None):
         "accounts_pattern": "^Assets:Account",
         "accounts_income_pattern": "^Income:",
         "accounts_expenses_pattern": "^Expenses:",
-        "accounts_internalized_pattern": "^Income:Dividends",
     }
     if not config_override:
         config_override = {}
@@ -95,7 +94,6 @@ def get_split_with_meta(filename, config_override=None, interval=None):
         config["accounts_pattern"],
         config["accounts_income_pattern"],
         config["accounts_expenses_pattern"],
-        config["accounts_internalized_pattern"],
         interval=interval
     )
     return split

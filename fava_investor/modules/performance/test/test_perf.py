@@ -23,5 +23,4 @@ class TestWithdrawals(SplitTestCase):
             )
         end = datetime.now().timestamp()
 
-        self.assertEqual(1, (end-start)/n)
-
+        self.assertEqual(1, (end - start) / n)
