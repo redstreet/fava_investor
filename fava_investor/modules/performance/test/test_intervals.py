@@ -72,3 +72,19 @@ class TestIntervals(SplitTestCase):
         self.assertInventory("-2 USD", parts.costs[1])
         self.assertInventory("4 USD", parts.gains_realized[1])
         self.assertInventory("-2 USD", parts.gains_unrealized[1])
+
+    @test_utils.docfile
+    def test_intervals_start_with_first_transaction(self, filename):
+        """
+        1970-01-01 open Assets:Account
+
+        2020-01-02 * "contribution"
+            Assets:Account  -1 USD
+            Assets:Account
+
+        2021-01-02 * "contribution"
+            Assets:Account  1 USD
+            Assets:Account
+        """
+        split = get_interval_balances(filename, interval=Interval.MONTH)
+        self.assertEqual(13, len(split.contributions))

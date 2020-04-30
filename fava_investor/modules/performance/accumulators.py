@@ -15,7 +15,7 @@ class ContributionAccumulator:
         self.accounts = accounts
         self.all_accounts = self.accounts.value | self.accounts.income | self.accounts.expenses
 
-    def posting_filter_condition(self):
+    def get_posting_filter_condition(self):
         return lambda posting: posting.units.number > 0
 
     def get_id(self):
@@ -32,7 +32,7 @@ class ContributionAccumulator:
         relevant = get_postings_prefer_cost(entry,
                                             include_accounts=included)
         for position in relevant.get_positions():
-            if self.posting_filter_condition()(position):
+            if self.get_posting_filter_condition()(position):
                 self.accumulated.add_position(position)
 
     def get_result_and_reset(self):
@@ -42,7 +42,7 @@ class ContributionAccumulator:
 
 
 class WithdrawalAccumulator(ContributionAccumulator):
-    def posting_filter_condition(self):
+    def get_posting_filter_condition(self):
         return lambda posting: posting.units.number < 0
 
     def get_id(self):

@@ -33,46 +33,33 @@ def calculate_interval_balances(
         expenses_pattern="^Expenses:",
         interval=Interval.MONTH
 ):
-    accounts = accapi.accounts
-    accounts_value = set([acc for acc in accounts if re.match(pattern_value, acc)])
-    accounts_expenses = set(
-        [acc for acc in accounts if re.match(expenses_pattern, acc)]
-    )
-    accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)])
 
     entries = accapi.ledger.entries
-    if has_prices_after_last_transaction(entries):
-        date = copy.copy(entries[-1].date)
-        entries.append(
-            Transaction(
-                None, date, None, None, "UNREALIZED GAINS NEW BALANCE", [], [], []
-            )
-        )
+
+    # move that to u. gain accumulator, e.g. init()?
+    add_dummy_transaction_if_has_entries_after_last_transaction(entries)
 
     next_interval_start = None
     if interval is not None:
-        dates = list(interval_ends(entries[0].date, entries[-1].date, interval))
-        if len(dates) == 1:
-            dates.append(dates[0])
-        next_interval_start = dates[1]
-        dates = dates[2:]
+        dates = get_interval_end_dates(entries, interval)
+        next_interval_start = dates.pop()
+
+    accounts = extract_accounts(accapi, expenses_pattern, income_pattern, pattern_value)
+    accumulators = get_accumulators(accounts, entries, accumulators_ids)
 
     split_entries = IntervalBalances([], [], [], [], [], [], [], [])
     split = Split([], split_entries)
-
-    accounts = Accounts(accounts_value, accounts_income, accounts_expenses)
-    accumulators = get_accumulators(accounts, entries, accumulators_ids)
 
     first = True
     for entry in entries:
         if not isinstance(entry, Transaction):
             continue
+
         split.transactions.append(entry)
 
         if first is False and (interval is None or entry.date > next_interval_start):
             if interval is not None:
-                next_interval_start = dates[0]
-                dates = dates[1:]
+                next_interval_start = dates.pop()
 
             collect_results(accumulators, split_entries)
 
@@ -84,6 +71,36 @@ def calculate_interval_balances(
     collect_results(accumulators, split_entries)
 
     return split
+
+
+def get_interval_end_dates(entries, interval):
+    dates = list(interval_ends(entries[0].date, entries[-1].date, interval))
+    if len(dates) == 1:
+        dates.append(dates[0])
+    dates = dates[1:]
+    dates.reverse()
+    return dates
+
+
+def add_dummy_transaction_if_has_entries_after_last_transaction(entries):
+    if has_prices_after_last_transaction(entries):
+        date = copy.copy(entries[-1].date)
+        entries.append(
+            Transaction(
+                None, date, None, None, "UNREALIZED GAINS NEW BALANCE", [], [], []
+            )
+        )
+
+
+def extract_accounts(accapi, expenses_pattern, income_pattern, pattern_value):
+    accounts = accapi.accounts
+    accounts_value = set([acc for acc in accounts if re.match(pattern_value, acc)])
+    accounts_expenses = set(
+        [acc for acc in accounts if re.match(expenses_pattern, acc)]
+    )
+    accounts_income = set([acc for acc in accounts if re.match(income_pattern, acc)])
+    accounts = Accounts(accounts_value, accounts_income, accounts_expenses)
+    return accounts
 
 
 def get_accumulators(accounts, entries, ids):
