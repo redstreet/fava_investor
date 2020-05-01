@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Description: Beancount script for asset allocation reporting
 
-import argparse,argcomplete,argh
+from fava_investor.common.libinvestor import Node
 import collections
 import re
 
@@ -11,9 +11,10 @@ from beancount.core import inventory
 from beancount.core import realization
 from beancount.core.number import Decimal
 
-import os,sys
+import os
+import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
-from libinvestor import Node
+
 
 class AssetClassNode(Node):
     def serialise(self, currency):
@@ -29,9 +30,10 @@ class AssetClassNode(Node):
         }
 
     def pretty_print(self, indent=0):
-        print("{}{} {:4.2f} {:4.2f} {:4.2f} {:4.2f} {:4.2f}".format('-'*indent, self.name, 
-            self.balance, self.balance_children,
-            self.percentage, self.percentage_children, self.percentage_parent))
+        fmt = "{}{} {:4.2f} {:4.2f} {:4.2f} {:4.2f} {:4.2f}"
+        print(fmt.format('-'*indent, self.name,
+                         self.balance, self.balance_children,
+                         self.percentage, self.percentage_children, self.percentage_parent))
         for c in self.children:
             c.pretty_print(indent+1)
 
@@ -42,6 +44,7 @@ def compute_child_balances(node, total):
     node.percentage_children = (node.balance_children / total) * 100
     return node.balance_children
 
+
 def compute_parent_balances(node):
     if node.parent:
         node.percentage_parent = (node.balance_children / node.parent.balance_children) * 100
@@ -49,6 +52,7 @@ def compute_parent_balances(node):
         node.percentage_parent = 100
     for c in node.children:
         compute_parent_balances(c)
+
 
 def treeify(asset_buckets, accapi):
     def ancestors(s):
@@ -93,7 +97,8 @@ def bucketize(vbalance, accapi):
             # print("Warning: skipping negative balance:", pos) #TODO
             continue
         if amount.currency == pos.units.currency and amount.currency != base_currency:
-            sys.stderr.write("Error: unable to convert {} to base currency {} (Missing price directive?)\n".format(pos, base_currency))
+            sys.stderr.write(
+                "Error: unable to convert {} to base currency {} (Missing price directive?)\n".format(pos, base_currency))
             sys.exit(1)
         commodity = pos.units.currency
         metas = commodity_map[commodity].meta
@@ -108,11 +113,14 @@ def bucketize(vbalance, accapi):
             asset_buckets['unknown'] += amount.number * (unallocated / 100)
     return asset_buckets
 
+
 def compute_percent(asset_buckets, asset, total_assets):
     return (asset_buckets[asset]/total_assets)*100
 
+
 def compute_percent_subtotal(asset_buckets, asset, total_assets):
     return (compute_balance_subtotal(asset_buckets, asset) / total_assets) * 100
+
 
 def compute_balance_subtotal(asset_buckets, asset):
     children = [k for k in asset_buckets.keys() if k.startswith(asset) and k != asset]
@@ -121,12 +129,13 @@ def compute_balance_subtotal(asset_buckets, asset):
         subtotal += compute_balance_subtotal(asset_buckets, c)
     return subtotal
 
+
 def build_interesting_realacc(accapi, accounts):
     def is_included_account(realacc):
         for pattern in accounts:
             if re.match(pattern, realacc.account):
                 if realacc.balance == inventory.Inventory():
-                    return False # Remove empty accounts to "clean up" the tree
+                    return False  # Remove empty accounts to "clean up" the tree
                 return True
         return False
 
@@ -163,6 +172,7 @@ def tax_adjust(realacc, accapi):
             tax_adj = account_open_close[acc.account][0].meta.get('asset_allocation_tax_adjustment', 100)
             acc.balance = scale_inventory(acc.balance, tax_adj)
     return realacc
+
 
 def assetalloc(accapi, config={}):
     realacc = build_interesting_realacc(accapi, config.get('accounts_patterns', ['.*']))

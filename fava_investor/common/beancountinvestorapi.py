@@ -7,11 +7,12 @@ from beancount.core import realization
 from beancount.query import query
 from beancount.core.data import Open
 
+
 class AccAPI:
     def __init__(self, beancount_file, options):
         self.entries, _, self.options_map = loader.load_file(beancount_file)
         self.options = options
-        self.begin = self.end = None # Only used in fava
+        self.begin = self.end = None  # Only used in fava
 
     def build_price_map(self):
         return prices.build_price_map(self.entries)
@@ -46,7 +47,7 @@ class AccAPI:
 
     def get_account_open(self):
         oc = getters.get_account_open_close(self.entries)
-        opens = [e for e in oc if isintance(e, Open)]
+        opens = [e for e in oc if isinstance(e, Open)]
         return opens
 
     # def cost_or_value(self, node, date, include_children):
@@ -54,4 +55,3 @@ class AccAPI:
     #     if include_children:
     #         return cost_or_value(node.balance_children, date)
     #     return cost_or_value(node.balance, date)
-

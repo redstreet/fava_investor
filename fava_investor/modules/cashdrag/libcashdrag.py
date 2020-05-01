@@ -1,10 +1,8 @@
 #!/bin/env python3
 
+import fava_investor.common.libinvestor as libinvestor
 from beancount.core.inventory import Inventory
 
-import os,sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
-import libinvestor
 
 def find_cash_commodities(accapi, options):
     """Build list of commodities that are considered cash"""
@@ -21,6 +19,7 @@ def find_cash_commodities(accapi, options):
     commodities_pattern = '(' + '|'.join(cash_commodities) + ')'
     return commodities_pattern
 
+
 def find_loose_cash(accapi, options):
     """Find uninvested cash in specified accounts"""
 
@@ -34,9 +33,9 @@ def find_loose_cash(accapi, options):
     GROUP BY account
     ORDER BY sum(position) DESC
     """.format(accounts_pattern=options.get('accounts_pattern', '^Assets'),
-            accounts_exclude_pattern=options.get('accounts_exclude_pattern', '^   $'), #TODO
-            currencies_pattern=currencies_pattern,
-            )
+               accounts_exclude_pattern=options.get('accounts_exclude_pattern', '^   $'),  # TODO
+               currencies_pattern=currencies_pattern,
+               )
     rtypes, rrows = accapi.query_func(sql)
     if not rtypes:
         return [], {}, [[]]

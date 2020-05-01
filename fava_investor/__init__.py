@@ -6,7 +6,8 @@ from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
 from .modules.cashdrag import libcashdrag
-from .common.favainvestorapi import *
+from .common.favainvestorapi import FavaInvestorAPI
+
 
 class Investor(FavaExtensionBase):  # pragma: no cover
     report_title = "Investor"
@@ -43,4 +44,3 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     def recently_sold_at_loss(self):
         accapi = FavaInvestorAPI(self.ledger)
         return libtlh.recently_sold_at_loss(accapi, self.config.get('tlh', {}))
-
