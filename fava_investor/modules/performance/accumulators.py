@@ -29,8 +29,7 @@ class ContributionAccumulator:
             return
 
         included = self.accounts.value | self.accounts.income | self.accounts.expenses
-        relevant = get_postings_prefer_cost(entry,
-                                            include_accounts=included)
+        relevant = get_postings_prefer_cost(entry, include_accounts=included)
         for position in relevant.get_positions():
             if self.get_posting_filter_condition()(position):
                 self.accumulated.add_position(position)
@@ -107,7 +106,7 @@ class ValueChangeAccumulator:
         self.accounts = accounts
 
     def get_id(self):
-        return 'value_change'
+        return 'value_changes'
 
     def process(self, entry):
         for p in entry.postings:

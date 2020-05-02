@@ -189,6 +189,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
     'costs',
     'gains_realized',
     'gains_unrealized',
+    'value_changes',
 ] %}
     {% if (module == split_type) %}
         <h2>Portfolio: Balance split - {{ module }} journal</h2>
@@ -205,11 +206,11 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 
 {% if (module == 'split') %}
     <h2>Portfolio: Balance split</h2>
-    {% set summary = extension.testing() %}
+    {% set summary = extension.split_summary() %}
 
     <table>
     {% for key in summary %}
-        {% if key in ['sum_of_splits', 'accounts_value', 'error'] %}
+        {% if key in ['sum_of_splits', 'value_changes', 'error'] %}
             <tr><td></td></tr>
         {% endif %}
         <tr>
@@ -217,7 +218,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
             <td style="text-align: right">
             {% for pos in summary[key]|cost_or_value(summary.date) %}{{ pos.units|format_amount }}<br>{% endfor %}
             <td>
-            {% if key not in ["sum_of_splits", "gains_unrealized"] %}
+            {% if key not in ["sum_of_splits", "gains_unrealized", "error"] %}
                 <a href="{{ url_for_current(module=key) }}">journal</a>
             {% endif %}
             </td>

@@ -105,7 +105,6 @@ class TestIntervals(SplitTestCase):
             Assets:Account
             Income:Gains -4 USD
         """
-
         split = get_interval_balances_with_meta(filename, interval=None)
         parts = split.parts
         self.assertEqual(1, len(parts.contributions))

@@ -9,7 +9,7 @@ from beancount.ops import validation
 from beancount.utils import test_utils
 from fava.core import FavaLedger
 
-from fava_investor import sum_inventories, FavaInvestorAPI, calculate_interval_balances
+from fava_investor import sum_inventories, FavaInvestorAPI, calculate_split_parts
 from fava_investor.modules.performance.split import build_price_map_with_fallback_to_cost
 
 
@@ -85,7 +85,7 @@ def get_interval_balances_with_meta(filename, config_override=None, interval='tr
         config_override = {}
     config = {**defaults, **config_override}
     ledger = get_ledger(filename)
-    balances = calculate_interval_balances(
+    balances = calculate_split_parts(
         ledger,
         ['contributions', 'withdrawals', 'costs', 'dividends', 'gains_realized', 'gains_unrealized'],
         config["accounts_pattern"],

@@ -13,20 +13,20 @@ from fava_investor.modules.performance.accumulators import UnrealizedGainAccumul
     RealizedGainAccumulator, DividendsAccumulator, ContributionAccumulator, Accounts, WithdrawalAccumulator
 
 Split = namedtuple("Split", "transactions parts")
-IntervalBalances = namedtuple(
-    "IntervalBalances",
+SplitParts = namedtuple(
+    "SplitParts",
     "contributions withdrawals dividends costs gains_realized gains_unrealized value_changes errors",
 )
 Change = namedtuple("Change", "transaction change")
 
 
-def calculate_interval_balances(
+def calculate_split_parts(
         accapi,
         accumulators_ids,
         pattern_value,
         income_pattern="^Income:",
         expenses_pattern="^Expenses:",
-        interval='transaction'
+        interval=None
 ):
     entries = accapi.ledger.entries
 
@@ -41,7 +41,7 @@ def calculate_interval_balances(
     accounts = extract_accounts(accapi, expenses_pattern, income_pattern, pattern_value)
     accumulators = get_accumulators(accounts, entries, accumulators_ids)
 
-    split_entries = IntervalBalances([], [], [], [], [], [], [], [])
+    split_entries = SplitParts([], [], [], [], [], [], [], [])
     split = Split([], split_entries)
 
     first = True
@@ -106,7 +106,7 @@ def get_accumulators(accounts, entries, ids):
         'gains_realized': lambda: RealizedGainAccumulator(accounts),
         'costs': lambda: CostAccumulator(accounts),
         'gains_unrealized': lambda: UnrealizedGainAccumulator(accounts, price_map),
-        'valuations': lambda: ValueChangeAccumulator(accounts, price_map),
+        'value_changes': lambda: ValueChangeAccumulator(accounts, price_map),
     }
 
     return list([accs[key]() for key in ids])
