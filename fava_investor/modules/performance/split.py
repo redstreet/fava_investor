@@ -6,7 +6,7 @@ from beancount.core.amount import Amount
 from beancount.core.data import Transaction, Price
 from beancount.core.inventory import Inventory
 from beancount.core.prices import build_price_map
-from fava.util.date import Interval, interval_ends
+from fava.util.date import interval_ends
 
 from fava_investor.modules.performance.accumulators import UnrealizedGainAccumulator, CostAccumulator, \
     ValueChangeAccumulator, \
@@ -20,27 +20,21 @@ IntervalBalances = namedtuple(
 Change = namedtuple("Change", "transaction change")
 
 
-def collect_results(accumulators, split_entries):
-    for a in accumulators:
-        getattr(split_entries, a.get_id()).append(a.get_result_and_reset())
-
-
 def calculate_interval_balances(
         accapi,
         accumulators_ids,
         pattern_value,
         income_pattern="^Income:",
         expenses_pattern="^Expenses:",
-        interval=Interval.MONTH
+        interval='transaction'
 ):
-
     entries = accapi.ledger.entries
 
     # move that to u. gain accumulator, e.g. init()?
     add_dummy_transaction_if_has_entries_after_last_transaction(entries)
 
     next_interval_start = None
-    if interval is not None:
+    if interval is not None and interval != 'transaction':
         dates = get_interval_end_dates(entries, interval)
         next_interval_start = dates.pop()
 
@@ -57,8 +51,8 @@ def calculate_interval_balances(
 
         split.transactions.append(entry)
 
-        if first is False and (interval is None or entry.date > next_interval_start):
-            if interval is not None:
+        if first is False and interval is not None and (interval == 'transaction' or entry.date > next_interval_start):
+            if interval is not None and interval != 'transaction':
                 next_interval_start = dates.pop()
 
             collect_results(accumulators, split_entries)
@@ -187,3 +181,8 @@ def has_prices_after_last_transaction(entries):
 
         if isinstance(entry, Transaction):
             return has_prices_after_last_transaction
+
+
+def collect_results(accumulators, split_entries):
+    for a in accumulators:
+        getattr(split_entries, a.get_id()).append(a.get_result_and_reset())

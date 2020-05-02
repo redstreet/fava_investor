@@ -71,7 +71,7 @@ class TestContributions(SplitTestCase):
             Assets:Account:A  3 GBP
             Assets:Bank
         """
-        split = get_interval_balances_with_meta(filename, interval=None)
+        split = get_interval_balances_with_meta(filename)
         self.assertEqual(Inventory.from_string("3 GBP"), split.parts.contributions[1])
         self.assertEqual(Inventory.from_string("3 GBP"), split.parts.contributions[2])
 

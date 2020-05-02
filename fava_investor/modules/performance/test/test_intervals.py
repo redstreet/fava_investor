@@ -74,17 +74,44 @@ class TestIntervals(SplitTestCase):
         self.assertInventory("-2 USD", parts.gains_unrealized[1])
 
     @test_utils.docfile
-    def test_intervals_start_with_first_transaction(self, filename):
+    def test_various_splits_in_total(self, filename):
         """
-        1970-01-01 open Assets:Account
+        2020-01-01 open Assets:Account
+        2020-01-01 open Assets:Bank
+        2020-01-01 open Income:Dividend
+        2020-01-01 open Income:Gains
+        2020-01-01 open Expenses:Costs
 
         2020-01-02 * "contribution"
-            Assets:Account  -1 USD
-            Assets:Account
+            Assets:Account  1 AA {1 USD}
+            Assets:Bank
 
-        2021-01-02 * "contribution"
-            Assets:Account  1 USD
+        2020-01-02 * "dividend"
             Assets:Account
+            Income:Dividend  -4 USD
+
+        2020-01-02 price AA 3 USD
+
+        2020-02-02 * "withdrawal"
+            Assets:Account
+            Assets:Bank  1 USD
+
+        2020-02-02 * "cost"
+            Assets:Account
+            Expenses:Costs  2 USD
+
+        2020-02-02 * "realized gain"
+            Assets:Account  -1 AA {1 USD}
+            Assets:Account
+            Income:Gains -4 USD
         """
-        split = get_interval_balances(filename, interval=Interval.MONTH)
-        self.assertEqual(13, len(split.contributions))
+
+        split = get_interval_balances_with_meta(filename, interval=None)
+        parts = split.parts
+        self.assertEqual(1, len(parts.contributions))
+        self.assertInventory("1 USD", parts.contributions[0])
+        self.assertInventory("-1 USD", parts.withdrawals[0])
+        self.assertInventory("4 USD", parts.dividends[0])
+        self.assertInventory("-2 USD", parts.costs[0])
+        self.assertInventory("4 USD", parts.gains_realized[0])
+        self.assertInventory("0 USD", parts.gains_unrealized[0])

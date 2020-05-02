@@ -1,8 +1,6 @@
 from datetime import datetime
 from pathlib import Path
 
-from fava.util.date import Interval
-
 from fava_investor import calculate_interval_balances
 from fava_investor.modules.performance.test.testutils import SplitTestCase, get_ledger
 
@@ -17,13 +15,13 @@ class TestWithdrawals(SplitTestCase):
         ledger = get_ledger(file)
 
         for i in range(0, n):
-            output = calculate_interval_balances(
+            calculate_interval_balances(
                 ledger,
                 ['withdrawals', 'contributions', 'dividends', 'costs', 'gains_realized', 'gains_unrealized'],
                 '^Assets:US:(ETrade|Federal|Vanguard)',
                 income_pattern='^Income:US:ETrade',
                 expenses_pattern='^Expenses:Financial',
-                interval=Interval.WEEK
+                interval=None
             )
         end = datetime.now().timestamp()
 

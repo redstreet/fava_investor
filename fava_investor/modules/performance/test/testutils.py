@@ -70,12 +70,12 @@ def get_ledger(filename):
     return FavaInvestorAPI(FavaLedger(filename))
 
 
-def get_interval_balances(filename, config_override=None, interval=None):
+def get_interval_balances(filename, config_override=None, interval='transaction'):
     split = get_interval_balances_with_meta(filename, config_override, interval=interval)
     return split.parts
 
 
-def get_interval_balances_with_meta(filename, config_override=None, interval=None):
+def get_interval_balances_with_meta(filename, config_override=None, interval='transaction'):
     defaults = {
         "accounts_pattern": "^Assets:Account",
         "accounts_income_pattern": "^Income:",

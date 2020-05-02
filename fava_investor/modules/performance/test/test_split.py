@@ -36,7 +36,6 @@ class TestSplit(SplitTestCase):
 
         2020-01-03 price SHARE 2 USD
         """
-
         self.assertSumOfSplitsEqualValue(filename)
 
     @test_utils.docfile
@@ -70,7 +69,6 @@ class TestSplit(SplitTestCase):
           Assets:Account      -1 VLS {2 GBP}
           Assets:Account       1 GBP
           Expenses:Commission  1 GBP
-
         """
         self.assertSumOfSplitsEqualValue(filename)
 
@@ -83,5 +81,4 @@ class TestSplit(SplitTestCase):
             Assets:Account  1 USD
             Expenses:ServiceFee
         """
-
         self.assertSumOfSplitsEqualValue(filename)
