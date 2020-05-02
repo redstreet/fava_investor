@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 
-import functools
-import tempfile
-import datetime
-
-from beancount.utils import test_utils
-from beancount import loader
-from beancount.query import query
-import libtlh
-
-import os, sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 import beancountinvestorapi as api
-
+import functools
+import datetime
+from beancount.utils import test_utils
+import libtlh
 # python3 -m unittest discover . to run
+
 
 @functools.lru_cache(maxsize=1)
 def dates():
@@ -30,6 +23,7 @@ def dates():
               'm100': minusdays(today, 100),
               }
     return retval
+
 
 def insert_dates(function, **kwargs):
     """A decorator that rewrites the function's docstring with dates. Needed here because TLH looks back at
@@ -65,7 +59,6 @@ class TestScriptCheck(test_utils.TestCase):
 
         self.assertEqual(0, len(to_sell))
         self.assertEqual(0, len(recent_purchases))
-
 
     @test_utils.docfile
     @insert_dates
@@ -110,4 +103,3 @@ class TestScriptCheck(test_utils.TestCase):
         rtypes, rrows = libtlh.recently_sold_at_loss(accapi, self.options)
 
         self.assertEqual(1, len(rrows))
-

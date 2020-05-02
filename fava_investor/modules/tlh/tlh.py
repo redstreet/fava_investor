@@ -1,25 +1,18 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 # Description: Beancount Tax Loss Harvester
 
-from beancount import loader
-from beancount.query import query
-
-import argparse,argcomplete,argh
-import pickle
-from types import SimpleNamespace
+import libtlh
+import beancountinvestorapi as api
+import argh
+import argcomplete
 import tabulate
 
-import os, sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
-import beancountinvestorapi as api
-import clicommon
-
-import libtlh
 
 def tlh(beancount_file,
         accounts_pattern='',
         loss_threshold=10,
-        wash_pattern = '',
+        wash_pattern='',
         brief=False
         ):
     '''Finds opportunities for tax loss harvesting in a beancount file'''
@@ -27,7 +20,7 @@ def tlh(beancount_file,
     accapi = api.AccAPI(beancount_file, argsmap)
 
     config = {'accounts_pattern': accounts_pattern, 'loss_threshold': loss_threshold,
-            'wash_pattern':wash_pattern}
+              'wash_pattern': wash_pattern}
     harvestable_table, summary, recents, by_commodity = libtlh.get_tables(accapi, config)
     dontbuy = libtlh.recently_sold_at_loss(accapi, config)
     to_sell_types, to_sell = harvestable_table
@@ -57,12 +50,15 @@ def tlh(beancount_file,
         print(warning)
         print("See fava plugin for better formatted and sortable output.")
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+
 def main():
     parser = argh.ArghParser(description="Beancount Tax Loss Harvester")
     argh.set_default_command(parser, tlh)
     argh.completion.autocomplete(parser)
     parser.dispatch()
+
 
 if __name__ == '__main__':
     main()

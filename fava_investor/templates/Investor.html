@@ -22,7 +22,7 @@
   <h2>Portfolio: Asset Allocation by Accounts</h2>
   {% set results = extension.build_aa_by_account(None, None) %}
   {% if results|length == 0 %}
-     No regexes found in configuration. See example.bc for how to configure this module.
+     No regexes found in configuration. See example.beancount for how to configure this module.
   {% else %}
     {% for portfolio in results %}
         <h3>{{portfolio[0]}}</h3>

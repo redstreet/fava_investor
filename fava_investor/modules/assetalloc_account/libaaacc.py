@@ -1,9 +1,9 @@
 #!/bin/env python3
 
 import re
+from beancount.core.data import Open
+from beancount.core.number import Decimal
 
-from beancount.core.data import iter_entry_dates, Open
-from beancount.core.number import ZERO, Decimal
 
 def portfolio_accounts(accapi, configs):
     """An account tree based on matching regex patterns."""
@@ -16,6 +16,7 @@ def portfolio_accounts(accapi, configs):
         portfolios.append(portfolio)
 
     return portfolios
+
 
 def by_account_name(accapi, config):
     """Returns portfolio info based on matching account name."""
@@ -35,6 +36,7 @@ def by_account_name(accapi, config):
     portfolio_data = asset_allocation(selected_nodes, accapi, include_children)
     return title, portfolio_data
 
+
 def by_account_open_metadata(accapi, config):
     """ Returns portfolio info based on matching account open metadata. """
 
@@ -43,6 +45,7 @@ def by_account_open_metadata(accapi, config):
     title = config.get('title', 'Accounts with {} metadata matching {}'.format(metadata_key, pattern))
 
     selected_accounts = []
+    include_children = config.get('include_children', False)
     regexer = re.compile(pattern)
     for entry in accapi.all_entries_by_type[Open]:
         if metadata_key in entry.meta and regexer.match(entry.meta[metadata_key]) is not None:
@@ -51,6 +54,7 @@ def by_account_open_metadata(accapi, config):
     selected_nodes = [accapi.root_tree()[x] for x in selected_accounts]
     portfolio_data = asset_allocation(selected_nodes, accapi, include_children)
     return title, portfolio_data
+
 
 def asset_allocation(nodes, accapi, include_children):
     """Compute percentage of assets in each of the given nodes."""
@@ -73,6 +77,6 @@ def asset_allocation(nodes, accapi, include_children):
     portfolio_total = sum(row['balance'] for row in rows)
     for row in rows:
         if "balance" in row:
-            row["allocation %"] = round( (row["balance"] / portfolio_total) * 100, 1)
+            row["allocation %"] = round((row["balance"] / portfolio_total) * 100, 1)
 
     return types, rows

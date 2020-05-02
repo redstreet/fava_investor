@@ -1,15 +1,11 @@
 #!/bin/env python3
 
-from beancount.core.number import ZERO, Decimal, D
+from fava_investor.common.libinvestor import val, build_table_footer
+from beancount.core.number import Decimal, D
 from beancount.core.inventory import Inventory
 import collections
-import decimal
-import functools
 import locale
 
-import os,sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
-from libinvestor import *
 
 def get_tables(accapi, options):
     retrow_types, to_sell, recent_purchases = find_harvestable_lots(accapi, options)
@@ -18,6 +14,7 @@ def get_tables(accapi, options):
     summary = summarize_tlh(harvestable_table, by_commodity)
     recents = build_recents(recent_purchases)
     return harvestable_table, summary, recents, by_commodity
+
 
 def split_column(cols, col_name, ticker_label='ticker'):
     retval = []
@@ -29,9 +26,11 @@ def split_column(cols, col_name, ticker_label='ticker'):
             retval.append(i)
     return retval
 
+
 def split_currency(value):
     units = value.get_only_position().units
     return units.number, units.currency
+
 
 def find_harvestable_lots(accapi, options):
     """Find tax loss harvestable lots.
@@ -50,7 +49,7 @@ def find_harvestable_lots(accapi, options):
       GROUP BY {account_field}, cost_date, currency, cost_currency, cost_number, account_sortkey(account)
       ORDER BY account_sortkey(account), currency, cost_date
     """.format(account_field=options.get('account_field', 'LEAF(account)'),
-            accounts_pattern=options.get('accounts_pattern', ''))
+               accounts_pattern=options.get('accounts_pattern', ''))
     rtypes, rrows = accapi.query_func(sql)
     if not rtypes:
         return [], {}, [[]]
@@ -63,7 +62,7 @@ def find_harvestable_lots(accapi, options):
     loss_threshold = options.get('loss_threshold', 1)
 
     # our output table is slightly different from our query table:
-    retrow_types = rtypes[:-1] +  [('loss', Decimal), ('wash', str)]
+    retrow_types = rtypes[:-1] + [('loss', Decimal), ('wash', str)]
     retrow_types = split_column(retrow_types, 'units')
     retrow_types = split_column(retrow_types, 'market_value', ticker_label='currency')
 
@@ -82,7 +81,7 @@ def find_harvestable_lots(accapi, options):
 
     for row in rrows:
         if row.market_value.get_only_position() and \
-         (val(row.market_value) - val(row.basis) < -loss_threshold):
+                (val(row.market_value) - val(row.basis) < -loss_threshold):
             loss = D(val(row.basis) - val(row.market_value))
 
             # find wash sales
@@ -93,10 +92,11 @@ def find_harvestable_lots(accapi, options):
                 recent_purchases[ticker] = recent
             wash = '*' if len(recent[1]) else ''
 
-            to_sell.append(RetRow(row.account, *split_currency(row.units), row.acquisition_date, 
-                *split_currency(row.market_value), loss, wash))
+            to_sell.append(RetRow(row.account, *split_currency(row.units), row.acquisition_date,
+                                  *split_currency(row.market_value), loss, wash))
 
     return retrow_types, to_sell, recent_purchases
+
 
 def harvestable_by_commodity(rtype, rrows):
     """Group input by sum(commodity)
@@ -117,6 +117,7 @@ def harvestable_by_commodity(rtype, rrows):
 
     return retrow_types, by_commodity
 
+
 def build_recents(recent_purchases):
     recents = []
     types = []
@@ -125,6 +126,7 @@ def build_recents(recent_purchases):
             recents += recent_purchases[t][1]
             types = recent_purchases[t][0]
     return types, recents
+
 
 def query_recently_bought(ticker, accapi, options):
     """Looking back 30 days for purchases that would cause wash sales"""
@@ -149,6 +151,7 @@ def query_recently_bought(ticker, accapi, options):
       '''.format(**locals())
     rtypes, rrows = accapi.query_func(sql)
     return rtypes, rrows
+
 
 def recently_sold_at_loss(accapi, options):
     """Looking back 30 days for sales that caused losses. These were likely to have been TLH (but not
@@ -176,7 +179,7 @@ def recently_sold_at_loss(accapi, options):
         return [], []
 
     # filter out losses
-    retrow_types = rtypes +  [('loss', Inventory)]
+    retrow_types = rtypes + [('loss', Inventory)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     return_rows = []
     for row in rrows:
@@ -187,6 +190,7 @@ def recently_sold_at_loss(accapi, options):
 
     footer = build_table_footer(retrow_types, return_rows, accapi)
     return retrow_types, return_rows, None, footer
+
 
 def summarize_tlh(harvestable_table, by_commodity):
     # Summary
@@ -201,5 +205,5 @@ def summarize_tlh(harvestable_table, by_commodity):
     summary["Number of lots to sell"] = len(to_sell)
     unique_txns = set((r.account, r.ticker) for r in to_sell)
     summary["Total unique transactions"] = len(unique_txns)
-    summary = {k:'{:n}'.format(int(v)) for k, v in summary.items()}
+    summary = {k: '{:n}'.format(int(v)) for k, v in summary.items()}
     return summary

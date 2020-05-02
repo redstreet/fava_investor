@@ -11,7 +11,8 @@ from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
 from .modules.cashdrag import libcashdrag
-from .common.favainvestorapi import *
+from .common.favainvestorapi import FavaInvestorAPI
+
 
 
 class Investor(FavaExtensionBase):  # pragma: no cover
