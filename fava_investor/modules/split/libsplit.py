@@ -53,18 +53,18 @@ class Bucket:
     def __init__(self, accapi, config_pattern):
         self.label = config_pattern
         self.accapi = accapi
-        self.postings = []
+        self.txnpostings = []
         if not isinstance(config_pattern, list):
             self.pattern = accapi.options[config_pattern]
 
     def update(self, entry):
         for p in entry.postings:
             if re.match(self.pattern, p.account):
-                self.postings.append(data.TxnPosting(entry, p))
+                self.txnpostings.append(data.TxnPosting(entry, p))
 
     def compute_totals(self):
         self.total = inventory.Inventory()
-        for tp in self.postings:
+        for tp in self.txnpostings:
             self.total.add_position(position.get_position(tp.posting))
         price_map = self.accapi.build_price_map()
         currency = self.accapi.get_operating_currencies()[0]
@@ -84,4 +84,4 @@ class AntiBucket(Bucket):
     def update(self, entry):
         for p in entry.postings:
             if not any(re.match(pattern, p.account) for pattern in self.patterns):
-                self.postings.append(data.TxnPosting(entry, p))
+                self.txnpostings.append(data.TxnPosting(entry, p))
