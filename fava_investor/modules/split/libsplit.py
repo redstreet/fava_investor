@@ -21,6 +21,7 @@ def build_buckets(accapi):
     for p in patterns:
         retval[p] = Bucket(accapi, p+'_pattern')
     retval['contribs'] = AntiBucket(accapi, [p+'_pattern' for p in patterns])
+    # TODO: ensure buckets have mutually exclusive accounts
     return retval
 
 
@@ -38,12 +39,12 @@ def compute_totals(buckets):
         b.compute_totals()
     # buckets['accounts'].compute_value()
     totals = {
-        'contribs': -buckets['contribs'].cost,
-        'dividends': -buckets['dividends'].cost,
-        'realized': -buckets['capgains'].cost,
+        'contribs':     -buckets['contribs'].cost,
+        'dividends':    -buckets['dividends'].cost,
+        'realized':     -buckets['capgains'].cost,
+        'unrealized':   buckets['accounts'].value + -buckets['accounts'].cost,
         'basis':        buckets['accounts'].cost,
         'market_value': buckets['accounts'].value,
-        'unrealized':   buckets['accounts'].value + -buckets['accounts'].cost,
     }
     return totals
 
@@ -65,8 +66,14 @@ class Bucket:
         self.total = inventory.Inventory()
         for tp in self.postings:
             self.total.add_position(position.get_position(tp.posting))
+        price_map = self.accapi.build_price_map()
+        currency = self.accapi.get_operating_currencies()[0]
+
         self.cost = self.total.reduce(convert.get_cost)
-        self.value = self.total.reduce(convert.get_value, self.accapi.build_price_map())
+        self.cost = self.cost.reduce(convert.convert_position, currency, price_map)
+
+        self.value = self.total.reduce(convert.get_value, price_map)
+        self.value = self.value.reduce(convert.convert_position, currency, price_map)
 
 
 class AntiBucket(Bucket):

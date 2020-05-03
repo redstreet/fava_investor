@@ -7,6 +7,7 @@ import beancountinvestorapi as api
 import argh
 import argcomplete
 from fava_investor.common.clicommon import *
+from beancount.core.inventory import Inventory
 
 
 def split(beancount_file,
@@ -19,7 +20,10 @@ def split(beancount_file,
     totals = libsplit.get_tables(accapi)
 
     for t in totals.keys():
-        print(t, totals[t])
+        if totals[t] == Inventory():
+            print(t, totals[t], sep=',')
+        else:
+            print(f"{t},{totals[t].get_only_position().units.number}")
 
 # -----------------------------------------------------------------------------
 
