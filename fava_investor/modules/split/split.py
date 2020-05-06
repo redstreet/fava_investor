@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
-# Description: Beancount Tax Loss Harvester
 
 import libsplit
 import beancountinvestorapi as api
