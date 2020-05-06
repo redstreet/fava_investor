@@ -22,7 +22,8 @@ setup(
         'beancount>=2.2.3',
         'fava>=1.13',
         'argh>=0.23.3',
-        'argcomplete>=1.11.1'
+        'argcomplete>=1.11.1',
+        'tabulate>=0.8.3'
     ],
     zip_safe=False,
     classifiers=[
