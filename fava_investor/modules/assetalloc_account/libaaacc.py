@@ -47,7 +47,7 @@ def by_account_open_metadata(accapi, config):
     selected_accounts = []
     include_children = config.get('include_children', False)
     regexer = re.compile(pattern)
-    for entry in accapi.all_entries_by_type[Open]:
+    for entry in accapi.get_account_open():
         if metadata_key in entry.meta and regexer.match(entry.meta[metadata_key]) is not None:
             selected_accounts.append(entry.account)
 
