@@ -29,7 +29,7 @@ pip install fava-investor
 ### Running fava_investor
 Add this to your beancount source, and start up fava as usual:
 ```
-2000-01-01 custom "fava-extension" "fava_investor.fava_investor" "{}"
+2000-01-01 custom "fava-extension" "fava_investor" "{}"
 ```
 
 You should now see an 'Investor' link in the sidebar in fava. For more on how to
