@@ -13,8 +13,8 @@ class FavaInvestorAPI:
     def build_price_map(self):
         return self.ledger.price_map
 
-    def get_commodity_map(self):
-        return getters.get_commodity_map(self.ledger.entries)
+    def get_commodity_directives(self):
+        return getters.get_commodity_directives(self.ledger.entries)
 
     def realize(self):
         return self.ledger.root_account
