@@ -9,7 +9,7 @@ def find_cash_commodities(accapi, options):
 
     meta_label = options.get('metadata_label_cash', 'asset_allocation_Bond_Cash')
     cash_commodities = []
-    for commodity, declaration in accapi.get_commodity_map().items():
+    for commodity, declaration in accapi.get_commodity_directives().items():
         if declaration.meta.get(meta_label, 0) == 100:
             cash_commodities.append(commodity)
 

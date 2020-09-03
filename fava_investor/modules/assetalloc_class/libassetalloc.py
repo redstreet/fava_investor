@@ -84,7 +84,7 @@ def treeify(asset_buckets, accapi):
 
 def bucketize(vbalance, accapi):
     price_map = accapi.build_price_map()
-    commodity_map = accapi.get_commodity_map()
+    commodities = accapi.get_commodity_directives()
     base_currency = accapi.get_operating_currencies()[0]
     meta_prefix = 'asset_allocation_'
     meta_prefix_len = len(meta_prefix)
@@ -101,13 +101,13 @@ def bucketize(vbalance, accapi):
                 "Error: unable to convert {} to base currency {} (Missing price directive?)\n".format(pos, base_currency))
             sys.exit(1)
         commodity = pos.units.currency
-        metas = commodity_map[commodity].meta
+        metas = {} if commodities.get(commodity) is None else commodities[commodity].meta
         unallocated = Decimal('100')
-        for meta in metas:
-            if meta.startswith(meta_prefix):
-                bucket = meta[meta_prefix_len:]
-                asset_buckets[bucket] += amount.number * (metas[meta] / 100)
-                unallocated -= metas[meta]
+        for meta_key, meta_value in metas.items():
+            if meta_key.startswith(meta_prefix):
+                bucket = meta_key[meta_prefix_len:]
+                asset_buckets[bucket] += amount.number * (meta_value / 100)
+                unallocated -= meta_value
         if unallocated:
             print("Warning: {} asset_allocation_* metadata does not add up to 100%. Padding with 'unknown'.".format(commodity))
             asset_buckets['unknown'] += amount.number * (unallocated / 100)

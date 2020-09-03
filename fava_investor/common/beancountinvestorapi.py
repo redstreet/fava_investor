@@ -17,8 +17,8 @@ class AccAPI:
     def build_price_map(self):
         return prices.build_price_map(self.entries)
 
-    def get_commodity_map(self):
-        return getters.get_commodity_map(self.entries)
+    def get_commodity_directives(self):
+        return getters.get_commodity_directives(self.entries)
 
     def realize(self):
         return realization.realize(self.entries)
