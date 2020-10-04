@@ -19,8 +19,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'beancount>=2.2.3',
-        'fava>=1.13',
+        'beancount>=2.3.2',
+        'fava>=1.15',
         'argh>=0.23.3',
         'argcomplete>=1.11.1',
         'tabulate>=0.8.3'
