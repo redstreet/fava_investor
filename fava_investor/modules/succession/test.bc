@@ -1,0 +1,10 @@
+2012-01-01 open Assets:Investments:ETrade
+2012-01-01 open Assets:Investments:Fanguard
+2012-01-01 open Assets:Investments:Midelity
+2012-01-01 open Assets:Investments:Midelity:ABCD
+
+2015-01-01 close Assets:Investments:Midelity
+
+2014-01-01 * "Transfer"
+   Assets:Investments:ETrade
+   Assets:Investments:Midelity -100 USD
