@@ -13,7 +13,9 @@ from beancount.core import realization
 
 p_leaf = re.compile('^[A-Z0-9]*$')
 acc_pattern = re.compile('^Assets:(Investments|Banks)')
-meta_prefix = 'beneficiary'
+meta_prefix = 'beneficiary_'
+ml = len(meta_prefix)
+meta_skip = 'beneficiary_skip'
 
 def is_commodity_leaf(acc, ocs):
     splits = acc.rsplit(':', maxsplit=1)
@@ -43,11 +45,13 @@ def find_active_accounts(accapi, options):
                     # active_accounts.append((acc, balances.get(acc, balance)))
 
                     # active_accounts.append((acc, balances.get(acc, Inventory())))
-
-                    metas = {k:v for (k,v) in ocs[acc][0].meta.items() if meta_prefix in k}
-                    active_accounts.append((acc, metas))
+                    
+                    if meta_skip not in ocs[acc][0].meta:
+                        row = {k[ml:]:v for (k,v) in ocs[acc][0].meta.items() if meta_prefix in k}
+                        row['account'] = acc
+                        active_accounts.append(row)
     # active_accounts.sort(key=lambda x: x[1])
-    active_accounts.sort()
+    active_accounts.sort(key=lambda x: x['account'])
     return active_accounts
 
 
