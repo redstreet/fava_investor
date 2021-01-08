@@ -18,3 +18,21 @@ option "operating_currency" "USD"
 2014-01-02 * "Dividends"
    Assets:Investments:ETrade
    Income:dividends -50 USD
+
+2010-01-01 custom "fava-extension" "plugins.fava.investor.fava_investor" "{
+  'successor': {
+              'acc_pattern' : '^Assets:(Investments|Banks)',
+              'meta_prefix' : 'beneficiary_',
+              'meta_skip' : 'beneficiary_skip',
+              'col_order' : [
+                'account',
+                'last_verified',
+                'todo',
+                'notes',
+                'legal_points',
+                'primary',
+                'contingent'
+              ],
+  }
+
+}"

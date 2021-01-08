@@ -1,5 +1,6 @@
 #!/bin/env python3
 
+import collections
 import re
 import fava_investor.common.libinvestor as libinvestor
 from beancount.core.inventory import Inventory
@@ -11,11 +12,24 @@ from beancount.core import realization
 # - print balances nicely, sort by them, show what percent is complete
 #   - for each commodity_leaf account, ensure there is a parent, else print
 
+
 p_leaf = re.compile('^[A-Z0-9]*$')
-acc_pattern = re.compile('^Assets:(Investments|Banks)')
-meta_prefix = 'beneficiary_'
-ml = len(meta_prefix)
-meta_skip = 'beneficiary_skip'
+
+def partial_order(header, options):
+    """Order the header according to our preference, but don't lose unspecified keys"""
+    # take advantage of python 3.7+'s insertion order preservation
+
+    retval = {}
+    for c in options['col_order']:
+        if c in header:
+            retval[c] = header[c]
+
+    for h in header:
+        if h not in retval:
+            retval[h] = header[h]
+
+    return retval 
+
 
 def is_commodity_leaf(acc, ocs):
     splits = acc.rsplit(':', maxsplit=1)
@@ -26,17 +40,40 @@ def is_commodity_leaf(acc, ocs):
         return parent in ocs
     return False
 
+def build_table(accapi, options):
+    rows = find_active_accounts(accapi, options)
+    all_keys = {j: type(i[j]) for i in rows for j in list(i)}
+    header = partial_order(all_keys, options)
+
+    # add all keys to all rows
+    for i in rows:
+        for j in header:
+            if j not in i:
+                i[j] = ''  # TODO: type could be incorrect
+
+    # so that tabulate builds the column in order
+    rows[0] = partial_order(rows[0], options)
+
+    RowTuple = collections.namedtuple('RowTuple', header)
+    rows = [RowTuple(**i) for i in rows]
+    rtypes = [(k, v) for k,v in header.items()]
+
+    return rtypes, rows, None, None
+    # last one is footer. Could summarize # of TBDs, oldest date, etc.
+
+
 def find_active_accounts(accapi, options):
     """Build list of investment and bank accounts that are open"""
 
     balances = get_balances(accapi)
     # realroot = accapi.realize()
-    # import pdb; pdb.set_trace()
 
+    p_acc_pattern = re.compile(options['acc_pattern'])
+    ml = len(options['meta_prefix'])
     active_accounts = []
     ocs = accapi.get_account_open_close()
     for acc in ocs.keys():
-        if acc_pattern.match(acc):
+        if p_acc_pattern.match(acc):
             if not is_commodity_leaf(acc, ocs):
                 closes = [e for e in ocs[acc] if isinstance(e, Close)]
                 if not closes:
@@ -46,8 +83,8 @@ def find_active_accounts(accapi, options):
 
                     # active_accounts.append((acc, balances.get(acc, Inventory())))
                     
-                    if meta_skip not in ocs[acc][0].meta:
-                        row = {k[ml:]:v for (k,v) in ocs[acc][0].meta.items() if meta_prefix in k}
+                    if options['meta_skip'] not in ocs[acc][0].meta:
+                        row = {k[ml:]:v for (k,v) in ocs[acc][0].meta.items() if options['meta_prefix'] in k}
                         row['account'] = acc
                         active_accounts.append(row)
     # active_accounts.sort(key=lambda x: x[1])

@@ -7,6 +7,7 @@ from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
 from .modules.assetalloc_account import libaaacc
 from .modules.cashdrag import libcashdrag
+from .modules.succession import libsuccession
 from .common.favainvestorapi import FavaInvestorAPI
 
 
@@ -35,6 +36,12 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     def build_cashdrag(self):
         accapi = FavaInvestorAPI(self.ledger)
         return libcashdrag.find_loose_cash(accapi, self.config.get('cashdrag', {}))
+
+    # Successor
+    # -----------------------------------------------------------------------------------------------------------
+    def build_succ(self):
+        accapi = FavaInvestorAPI(self.ledger)
+        return libsuccession.build_table(accapi, self.config.get('successor', {}))
 
     # TaxLossHarvester
     # -----------------------------------------------------------------------------------------------------------
