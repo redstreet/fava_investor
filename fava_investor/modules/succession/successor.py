@@ -2,10 +2,19 @@
 # Description: CLI for succession
 
 import libsuccession
-from fava_investor.common.clicommon import *
+# from fava_investor.common.clicommon import *
 import fava_investor.common.beancountinvestorapi as api
 import argcomplete
 import argh
+import tabulate
+tabulate.PRESERVE_WHITESPACE = True
+
+def pretty_print_table(rtypes, rrows):
+    headers = [i[0] for i in rtypes]
+    print(tabulate.tabulate(rrows,
+                            headers=headers[1:],
+                            tablefmt='simple',
+                            floatfmt=",.0f"))
 
 
 def successor(beancount_file,
@@ -14,6 +23,7 @@ def successor(beancount_file,
               meta_skip = 'beneficiary_skip',
               col_order = [
                 'account',
+                'balance',
                 'last_verified',
                 'todo',
                 'notes',

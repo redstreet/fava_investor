@@ -13,7 +13,7 @@ option "operating_currency" "USD"
 
 2014-01-01 * "Transfer"
    Assets:Investments:ETrade
-   Assets:Investments:Midelity -100 USD
+   Assets:Investments:Midelity -1000 USD
 
 2014-01-02 * "Dividends"
    Assets:Investments:ETrade

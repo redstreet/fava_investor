@@ -28,9 +28,15 @@ class Node(object):
         for c in self.children:
             yield from c.pre_order(level+1)
 
-
 def val(inv):
-    return inv.get_only_position().units.number
+    if inv is not None:
+        pos = inv.get_only_position()
+        if pos is not None:
+            return pos.units.number
+    if inv.is_empty():
+        return 0
+    return None
+
 
 
 def build_table_footer(types, rows, accapi):

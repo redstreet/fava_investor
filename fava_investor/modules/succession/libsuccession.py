@@ -6,6 +6,7 @@ import fava_investor.common.libinvestor as libinvestor
 from beancount.core.inventory import Inventory
 from beancount.core.data import Close
 from beancount.core import realization
+from beancount.core import convert
 
 
 # TODO:
@@ -65,8 +66,10 @@ def build_table(accapi, options):
 def find_active_accounts(accapi, options):
     """Build list of investment and bank accounts that are open"""
 
-    balances = get_balances(accapi)
-    # realroot = accapi.realize()
+    # balances = get_balances(accapi)
+    realacc = accapi.realize()
+    pm = accapi.build_price_map()
+    currency = accapi.get_operating_currencies()[0]
 
     p_acc_pattern = re.compile(options['acc_pattern'])
     ml = len(options['meta_prefix'])
@@ -86,11 +89,21 @@ def find_active_accounts(accapi, options):
                     if options['meta_skip'] not in ocs[acc][0].meta:
                         row = {k[ml:]:v for (k,v) in ocs[acc][0].meta.items() if options['meta_prefix'] in k}
                         row['account'] = acc
+                        row['balance'] = get_balance(realacc, acc, pm, currency)
                         active_accounts.append(row)
     # active_accounts.sort(key=lambda x: x[1])
     active_accounts.sort(key=lambda x: x['account'])
     return active_accounts
 
+
+def get_balance(realacc, account, pm, currency):
+    subtree = realization.get(realacc, account)
+    balance = realization.compute_balance(subtree)
+    vbalance = balance.reduce(convert.get_units)
+    market_value = vbalance.reduce(convert.convert_position, currency, pm)
+    val = libinvestor.val(market_value)
+    return val
+    # return int(val)
 
 def get_balances(accapi):
     """Find all balances"""
