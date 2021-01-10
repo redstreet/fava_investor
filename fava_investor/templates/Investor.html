@@ -104,6 +104,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 #}
 
 {% macro asset_tree(account_node) %}
+<tree-table>
 <ol class="flex-table tree-table{{ ' two-currencies' if ledger.options.operating_currency|length > 1 else '' }}" title="{{ table_hover_text }}">
   <li class="head">
     <p>
@@ -150,6 +151,7 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
   </li>
   {% endfor %}
 </ol>
+</tree-table>
 {% endmacro %}
 
 {% macro asset_allocation_hierarchy(serialised_tree, label=None) %}
