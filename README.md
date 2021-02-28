@@ -38,3 +38,4 @@ configure the extension, see the included `huge-example.beancount`.
 #### Can't get it to run?
 - start up a python interactive shell (`$ python3`), and type: `import fava_investor`. That should succeed if `fava_investor` is installed correctly, or provide an error message for you to investigate
 - monitor the terminal you are running fava from to look for error output from fava_investor
+- Include the error messages you see above when opening bug reports or asking for help
