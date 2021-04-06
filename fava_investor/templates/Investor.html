@@ -1,5 +1,6 @@
 {% import "_query_table.html" as querytable with context %}
 {% import "_charts.html" as charts with context %}
+{% set new_querytable = extension.use_new_querytable() %}
 
 <i>Investor: Reports, analyses, and tools for investments.</i>
 
@@ -19,7 +20,11 @@
   {% else %}
     {% for portfolio in results %}
         <h3>{{portfolio[0]}}</h3>
-        {{ querytable.querytable(None, *portfolio[1]) }}
+        {% if new_querytable %}
+          {{ querytable.querytable(ledger, None, *portfolio[1]) }}
+        {% else %}
+          {{ querytable.querytable(None, *portfolio[1]) }}
+        {% endif %}
         <br />
     {% endfor %}
   {% endif %}
@@ -29,7 +34,11 @@
 {% if (module == 'cashdrag') %}
   <h2>Cash Drag Analysis</h2>
   {% set results = extension.build_cashdrag() %}
-  {{ querytable.querytable(None, *results) }}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, None, *results) }}
+  {% else %}
+    {{ querytable.querytable(None, *results) }}
+  {% endif %}
 {% endif %}
 
 {% if (module == 'tlh') %}
@@ -59,14 +68,22 @@
     </div>
     <div class="column">
       <h3 style="text-align:left">Losses by Commodity</h3>
-      {{ querytable.querytable(None, *harvests[3]) }}
+      {% if new_querytable %}
+        {{ querytable.querytable(ledger, None, *harvests[3]) }}
+      {% else %}
+        {{ querytable.querytable(None, *harvests[3]) }}
+      {% endif %}
       <br />
     </div>
   </div>
 
 
   <h3>Candidates for tax loss harvesting</h3>
-  {{ querytable.querytable(None, *harvests[0]) }}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, None, *harvests[0]) }}
+  {% else %}
+    {{ querytable.querytable(None, *harvests[0]) }}
+  {% endif %}
   <br />
 
 
@@ -75,7 +92,11 @@
   {% if harvests[2][0]|length == 0 %}
     {% set table_empty_msg = 'No purchases of the candidates above found within the last 30 days!' %}
   {% endif %}
-  {{ querytable.querytable(table_empty_msg, *harvests[2]) }}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, table_empty_msg, *harvests[2]) }}
+  {% else %}
+    {{ querytable.querytable(table_empty_msg, *harvests[2]) }}
+  {% endif %}
   <br />
 
   <h3>What not to buy</h3>
@@ -87,7 +108,11 @@
   {% if lossy_sales[1]|length == 0 %}
     {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
   {% endif %}
-  {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, table_empty_msg, *lossy_sales) }}
+  {% else %}
+    {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
+  {% endif %}
 
 
 {% endif %}
