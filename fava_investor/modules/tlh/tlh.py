@@ -5,7 +5,7 @@
 import libtlh
 import beancountinvestorapi as api
 import argh
-import argcomplete
+# import argcomplete
 import tabulate
 
 
@@ -28,7 +28,7 @@ def tlh(beancount_file,
     def pretty_print(title, types, rows):
         if title:
             print(title)
-        headers = [l[0] for l in types]
+        headers = [ts[0] for ts in types]
         if rows:
             print(tabulate.tabulate(rows, headers=headers))
         else:

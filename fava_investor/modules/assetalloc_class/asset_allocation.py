@@ -7,7 +7,7 @@ import beancountinvestorapi as api
 from beancount.core import realization
 from beancount.core import display_context
 import argh
-import argcomplete
+# import argcomplete
 import os
 import sys
 import tabulate
@@ -38,7 +38,7 @@ def formatted_tree(root):
 
 
 @argh.arg('--accounts_patterns', nargs='+')
-def asset_allocation(beancount_file,
+def asset_allocation(beancount_file,  # NOQA
                      accounts_patterns: 'Regex patterns of accounts to include in asset allocation.' = '',
                      dump_balances_tree=False,
                      skip_tax_adjustment=False,

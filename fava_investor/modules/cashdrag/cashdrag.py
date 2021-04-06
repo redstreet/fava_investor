@@ -4,11 +4,11 @@
 import libcashdrag
 from fava_investor.common.clicommon import pretty_print_table
 import fava_investor.common.beancountinvestorapi as api
-import argcomplete
+# import argcomplete
 import argh
 
 
-def cashdrag(beancount_file,
+def cashdrag(beancount_file,  # NOQA
              accounts_pattern: 'Regex pattern of accounts to include in hunting cash drag.' = '',
              accounts_exclude_pattern: 'Regex pattern of accounts to exclude in hunting cash drag.' = '',
              debug=False):
