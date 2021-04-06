@@ -37,7 +37,7 @@ def formatted_tree(root):
                             tablefmt='simple'))
 
 
-@argh.arg('--accounts_patterns', nargs='+')
+@argh.arg('--accounts_patterns', nargs='+')  # NOQA
 def asset_allocation(beancount_file,  # NOQA
                      accounts_patterns: 'Regex patterns of accounts to include in asset allocation.' = '',
                      dump_balances_tree=False,
