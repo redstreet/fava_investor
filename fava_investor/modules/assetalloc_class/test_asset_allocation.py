@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from beancount.utils import test_utils
 import asset_allocation
 
@@ -9,6 +12,7 @@ class TestScriptCheck(test_utils.TestCase):
     @test_utils.docfile
     def test_basic_unspecified(self, filename):
         """
+        option "operating_currency" "USD"
         2010-01-01 open Assets:Investments:Brokerage
         2010-01-01 open Assets:Bank
 
@@ -27,6 +31,7 @@ class TestScriptCheck(test_utils.TestCase):
     @test_utils.docfile
     def test_basic_specified(self, filename):
         """
+        option "operating_currency" "USD"
         2010-01-01 open Assets:Investments:Brokerage
         2010-01-01 open Assets:Bank
         2010-01-01 commodity BNCT
@@ -48,6 +53,7 @@ class TestScriptCheck(test_utils.TestCase):
     @test_utils.docfile
     def test_basic_account_filter(self, filename):
         """
+        option "operating_currency" "USD"
         2010-01-01 open Assets:Investments:Brokerage
         2010-01-01 open Assets:Investments:XTrade
         2010-01-01 open Assets:Bank
@@ -75,6 +81,7 @@ class TestScriptCheck(test_utils.TestCase):
     @test_utils.docfile
     def test_basic_filter_exclude_parent(self, filename):
         """
+        option "operating_currency" "USD"
         2010-01-01 open Assets:Investments:Brokerage
         2010-01-01 open Assets:Investments:XTrade
         2010-01-01 open Assets:Bank
@@ -106,6 +113,7 @@ class TestScriptCheck(test_utils.TestCase):
     @test_utils.docfile
     def test_tree_empty_parent(self, filename):
         """
+        option "operating_currency" "USD"
         2010-01-01 open Assets:Investments:XTrade
         2010-01-01 open Assets:Bank
 
@@ -124,11 +132,12 @@ class TestScriptCheck(test_utils.TestCase):
                                                                       '--accounts_patterns', 'Assets:Investments'])
         self.assertEqual(0, result)
         self.assertRegex(stdout.getvalue(), "equity.*100.0%")
-        self.assertRegex(stdout.getvalue(), " international.*100.0%")
+        self.assertRegex(stdout.getvalue(), " equity_international.*100.0%")
 
     @test_utils.docfile
     def test_parent_with_assets(self, filename):
         """
+        option "operating_currency" "USD"
         2010-01-01 open Assets:Investments:Brokerage
         2010-01-01 open Assets:Bank
 
@@ -154,4 +163,4 @@ class TestScriptCheck(test_utils.TestCase):
                                                                       '--accounts_patterns', 'Assets:Investments'])
         self.assertEqual(0, result)
         self.assertRegex(stdout.getvalue(), " bond *800 *100.0% *")
-        self.assertRegex(stdout.getvalue(), "  local *400 *50.0% *")
+        self.assertRegex(stdout.getvalue(), "  bond_local *400 *50.0% *")

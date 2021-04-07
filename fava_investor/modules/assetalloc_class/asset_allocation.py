@@ -31,10 +31,10 @@ def formatted_tree(root):
         rows.append((' '*level+n.name, '{:,.0f}'.format(n.balance_children),
                      '{:.1f}%'.format(n.percentage_children)))
 
-    print(tabulate.tabulate(rows,
+    return tabulate.tabulate(rows,
                             headers=['asset_type', 'amount', 'percentage'],
                             colalign=('left', 'decimal', 'right'),
-                            tablefmt='simple'))
+                            tablefmt='simple')
 
 
 @argh.arg('--accounts_patterns', nargs='+')  # NOQA
@@ -50,8 +50,7 @@ def asset_allocation(beancount_file,  # NOQA
         del argsmap['accounts_patterns']
     asset_buckets_tree, realacc = libassetalloc.assetalloc(accapi, argsmap)
 
-    ftree = formatted_tree(asset_buckets_tree)
-    clicommon.pretty_print_table_bare(ftree)
+    print(formatted_tree(asset_buckets_tree))
 
     if dump_balances_tree:
         print_balances_tree(realacc, accapi)
