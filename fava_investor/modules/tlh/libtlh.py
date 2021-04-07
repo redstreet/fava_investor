@@ -155,7 +155,7 @@ def query_recently_bought(ticker, accapi, options):
 
 def recently_sold_at_loss(accapi, options):
     """Looking back 30 days for sales that caused losses. These were likely to have been TLH (but not
-    necessarily so. This tells us what NOT to buy in order to avoid wash sales."""
+    necessarily so). This tells us what NOT to buy in order to avoid wash sales."""
 
     operating_currencies = accapi.get_operating_currencies_regex()
     wash_pattern = options.get('wash_pattern', '')

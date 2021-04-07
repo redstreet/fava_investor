@@ -44,7 +44,7 @@ def tlh(beancount_file,
         pretty_print("Lot detail", *harvestable_table)
         pretty_print("Wash sale purchases:", *recents)
         print()
-        pretty_print("What not to buy", *dontbuy)
+        pretty_print("What not to buy", dontbuy[0], dontbuy[1])
 
         warning = '''Note: Turn OFF dividend reinvestment for all these tickers across ALL accounts'''
         print(warning)
