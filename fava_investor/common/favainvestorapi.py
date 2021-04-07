@@ -1,5 +1,6 @@
 from beancount.core import getters
 from fava.template_filters import cost_or_value
+from beancount.core.data import Open
 
 
 class FavaInvestorAPI:
@@ -35,6 +36,11 @@ class FavaInvestorAPI:
 
     def get_account_open_close(self):
         return getters.get_account_open_close(self.ledger.entries)
+
+    def get_account_open(self):
+        oc = getters.get_account_open_close(self.entries)
+        opens = [e for e in oc if isinstance(e, Open)]
+        return opens
 
     def cost_or_value(self, node, date, include_children):
         if include_children:
