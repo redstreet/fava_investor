@@ -23,8 +23,11 @@ See screenshots [here](https://github.com/redstreet/fava_investor) if not visibl
 
 ## Installation via pip
 ```bash
-pip install fava-investor
+pip3 install fava-investor
 ```
+
+Or to install the bleeding edge version from git:
+`pip3 install git+https://github.com/redstreet/fava_investor`
 
 ### Running fava_investor
 Add this to your beancount source, and start up fava as usual:
