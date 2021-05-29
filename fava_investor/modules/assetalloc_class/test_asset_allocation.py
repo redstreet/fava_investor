@@ -2,8 +2,8 @@
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from beancount.utils import test_utils
+sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import asset_allocation
 
 

@@ -5,8 +5,8 @@ import functools
 import datetime
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 from beancount.utils import test_utils
+sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import libtlh
 # python3 -m unittest discover . to run
 

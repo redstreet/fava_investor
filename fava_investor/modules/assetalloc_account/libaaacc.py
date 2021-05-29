@@ -1,7 +1,6 @@
 #!/bin/env python3
 
 import re
-from beancount.core.data import Open
 from beancount.core.number import Decimal
 
 

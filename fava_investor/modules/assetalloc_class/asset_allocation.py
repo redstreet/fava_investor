@@ -2,7 +2,6 @@
 # Description: CLI for asset allocation
 
 import libassetalloc
-import clicommon
 import beancountinvestorapi as api
 from beancount.core import realization
 from beancount.core import display_context
@@ -32,9 +31,9 @@ def formatted_tree(root):
                      '{:.1f}%'.format(n.percentage_children)))
 
     return tabulate.tabulate(rows,
-                            headers=['asset_type', 'amount', 'percentage'],
-                            colalign=('left', 'decimal', 'right'),
-                            tablefmt='simple')
+                             headers=['asset_type', 'amount', 'percentage'],
+                             colalign=('left', 'decimal', 'right'),
+                             tablefmt='simple')
 
 
 @argh.arg('--accounts_patterns', nargs='+')  # NOQA
