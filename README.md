@@ -29,6 +29,10 @@ pip3 install fava-investor
 Or to install the bleeding edge version from git:
 `pip3 install git+https://github.com/redstreet/fava_investor`
 
+See #55 for MacOS installation:
+`pip3 install beancount fava fava-investor` on a fresh Big Sur
+installation` is reported to work
+
 ### Running fava_investor
 Add this to your beancount source, and start up fava as usual:
 ```
