@@ -164,3 +164,38 @@ class TestScriptCheck(test_utils.TestCase):
         self.assertEqual(0, result)
         self.assertRegex(stdout.getvalue(), " bond *800 *100.0% *")
         self.assertRegex(stdout.getvalue(), "  bond_local *400 *50.0% *")
+
+    @test_utils.docfile
+    def test_multicurrency(self, filename):
+        """
+        option "operating_currency" "USD"
+        option "operating_currency" "GBP"
+
+        2010-01-01 open Assets:Investments:Taxable:XTrade
+        2010-01-01 open Assets:Bank
+
+        2010-01-01 commodity SPFIVE
+         asset_allocation_equity_domestic: 100
+
+        2010-01-01 commodity SPUK
+         asset_allocation_equity_international: 100
+
+        2011-01-10 * "Buy stock"
+         Assets:Investments:Taxable:XTrade 100 SPFIVE {5 USD}
+         Assets:Bank
+
+        2011-01-09 price GBP 1.5 USD
+        2011-01-10 * "Buy stock"
+         Assets:Investments:Taxable:XTrade 100 SPUK {5 GBP}
+         Assets:Bank
+
+        2011-03-02 price SPFIVE 5 USD
+        2011-03-02 price SPUK   5 GBP
+        2011-03-02 price GBP 1.5 USD
+        """
+        with test_utils.capture('stdout', 'stderr') as (stdout, _):
+            result = test_utils.run_with_args(asset_allocation.main, [filename,
+                                                                      '--accounts_patterns', 'Assets:Investments'])
+        self.assertEqual(0, result)
+        self.assertRegex(stdout.getvalue(), " equity_domestic *500 *40.0% *")
+        self.assertRegex(stdout.getvalue(), " equity_international *750 *60.0% *")

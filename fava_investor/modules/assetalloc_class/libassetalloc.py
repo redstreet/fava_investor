@@ -85,7 +85,8 @@ def treeify(asset_buckets, accapi):
 def bucketize(vbalance, accapi):
     price_map = accapi.build_price_map()
     commodities = accapi.get_commodity_directives()
-    base_currency = accapi.get_operating_currencies()[0]
+    operating_currencies = accapi.get_operating_currencies()
+    base_currency = operating_currencies[0]
     meta_prefix = 'asset_allocation_'
     meta_prefix_len = len(meta_prefix)
 
@@ -97,9 +98,14 @@ def bucketize(vbalance, accapi):
             # print("Warning: skipping negative balance:", pos) #TODO
             continue
         if amount.currency == pos.units.currency and amount.currency != base_currency:
-            sys.stderr.write(
-                "Error: unable to convert {} to base currency {} (Missing price directive?)\n".format(pos, base_currency))
-            sys.exit(1)
+            # Ideally, we would automatically figure out the currency to hop via, based on the cost currency
+            # of the position. However, with vbalance, cost currency info is not available. Hence, we hop via
+            # any available operating currency specified by the user
+            amount = convert.convert_amount(pos.units, base_currency, price_map, via=operating_currencies)
+            if amount.currency != base_currency:
+                sys.stderr.write(
+                    "Error: unable to convert {} to base currency {} (Missing price directive?)\n".format(pos, base_currency))
+                sys.exit(1)
         commodity = pos.units.currency
         metas = {} if commodities.get(commodity) is None else commodities[commodity].meta
         unallocated = Decimal('100')
