@@ -7,7 +7,7 @@
 {% set module = request.args.get('module') %}
 <div class="headerline">
   {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')) ] %}
-  <h3><b>{% if not (module == key) %}<a href="{{ url_for_current(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
+  <h3><b>{% if not (module == key) %}<a href="{{ url_for_source(module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
 </div>
 
