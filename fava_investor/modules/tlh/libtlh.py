@@ -1,10 +1,12 @@
 #!/bin/env python3
 
+import collections
+import locale
+from datetime import datetime
+from dateutil import relativedelta
 from fava_investor.common.libinvestor import val, build_table_footer
 from beancount.core.number import Decimal, D
 from beancount.core.inventory import Inventory
-import collections
-import locale
 
 
 def get_tables(accapi, options):
@@ -16,7 +18,7 @@ def get_tables(accapi, options):
     return harvestable_table, summary, recents, by_commodity
 
 
-def split_column(cols, col_name, ticker_label='ticker'):
+def split_column(cols, col_name, ticker_label='split'):
     retval = []
     for i in cols:
         if i[0] == col_name:
@@ -30,6 +32,13 @@ def split_column(cols, col_name, ticker_label='ticker'):
 def split_currency(value):
     units = value.get_only_position().units
     return units.number, units.currency
+
+def gain_term(bought, sold):
+    diff = relativedelta.relativedelta(sold, bought)
+    # relativedelta is used to account for leap years, since IRS defines 'long/short' as "> 1 year"
+    if diff.years > 1 or (diff.years == 1 and (diff.months >= 1 or diff.days >=1)):
+        return 'Long'
+    return 'Short'
 
 
 def find_harvestable_lots(accapi, options):
@@ -62,8 +71,8 @@ def find_harvestable_lots(accapi, options):
     loss_threshold = options.get('loss_threshold', 1)
 
     # our output table is slightly different from our query table:
-    retrow_types = rtypes[:-1] + [('loss', Decimal), ('wash', str)]
-    retrow_types = split_column(retrow_types, 'units')
+    retrow_types = rtypes[:-1] + [('loss', Decimal), ('term', str), ('wash', str)]
+    retrow_types = split_column(retrow_types, 'units', ticker_label='ticker')
     retrow_types = split_column(retrow_types, 'market_value', ticker_label='currency')
 
     # rtypes:
@@ -84,6 +93,8 @@ def find_harvestable_lots(accapi, options):
                 (val(row.market_value) - val(row.basis) < -loss_threshold):
             loss = D(val(row.basis) - val(row.market_value))
 
+            term = gain_term(row.acquisition_date, datetime.today().date())
+
             # find wash sales
             ticker = row.units.get_only_position().units.currency
             recent = recent_purchases.get(ticker, None)
@@ -93,7 +104,7 @@ def find_harvestable_lots(accapi, options):
             wash = '*' if len(recent[1]) else ''
 
             to_sell.append(RetRow(row.account, *split_currency(row.units), row.acquisition_date,
-                                  *split_currency(row.market_value), loss, wash))
+                                  *split_currency(row.market_value), loss, term, wash))
 
     return retrow_types, to_sell, recent_purchases
 
