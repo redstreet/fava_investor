@@ -40,6 +40,12 @@ def gain_term(bought, sold):
         return 'Long'
     return 'Short'
 
+def get_alternate(commodity, directives):
+    metas = {} if directives.get(commodity) is None else directives[commodity].meta
+    alt = metas.get('tlh_substitutes', None)
+    if alt:
+        return f' ({alt})'
+    return ''
 
 def find_harvestable_lots(accapi, options):
     """Find tax loss harvestable lots.
@@ -90,6 +96,7 @@ def find_harvestable_lots(accapi, options):
     # build our output table: calculate losses, find wash sales
     to_sell = []
     recent_purchases = {}
+    commodities = accapi.get_commodity_directives()
 
     for row in rrows:
         if row.market_value.get_only_position() and \
@@ -99,14 +106,15 @@ def find_harvestable_lots(accapi, options):
             term = gain_term(row.acquisition_date, datetime.today().date())
 
             # find wash sales
-            ticker = row.units.get_only_position().units.currency
+            units, ticker = split_currency(row.units)
             recent = recent_purchases.get(ticker, None)
             if not recent:
                 recent = query_recently_bought(ticker, accapi, options)
                 recent_purchases[ticker] = recent
             wash = '*' if len(recent[1]) else ''
 
-            to_sell.append(RetRow(row.account, *split_currency(row.units), row.acquisition_date,
+            ticker += get_alternate(ticker, commodities)
+            to_sell.append(RetRow(row.account, units, ticker, row.acquisition_date,
                                   *split_currency(row.market_value), loss, term, wash))
 
     return retrow_types, to_sell, recent_purchases
