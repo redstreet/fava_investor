@@ -47,6 +47,9 @@ def find_harvestable_lots(accapi, options):
     - This assumes SpecID (Specific Identification of Shares) is the method used for these accounts
     """
 
+    # account_field: get one-but-leaf account
+    # account_field=options.get('account_field', 'GREPN("(.*):([^:]*:[^:]*):", account, 2)')
+
     sql = """
     SELECT {account_field} as account,
         units(sum(position)) as units,
