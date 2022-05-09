@@ -12,7 +12,7 @@ from beancount.core.inventory import Inventory
 def get_tables(accapi, options):
     retrow_types, to_sell, recent_purchases = find_harvestable_lots(accapi, options)
     harvestable_table = retrow_types, to_sell
-    by_commodity = harvestable_by_commodity(*harvestable_table)
+    by_commodity = harvestable_by_commodity(accapi, *harvestable_table)
     summary = summarize_tlh(harvestable_table, by_commodity)
     recents = build_recents(recent_purchases)
     return harvestable_table, summary, recents, by_commodity
@@ -42,10 +42,7 @@ def gain_term(bought, sold):
 
 def get_alternate(commodity, directives):
     metas = {} if directives.get(commodity) is None else directives[commodity].meta
-    alt = metas.get('tlh_substitutes', None)
-    if alt:
-        return f' ({alt})'
-    return ''
+    return metas.get('tlh_substitutes', '')
 
 def find_harvestable_lots(accapi, options):
     """Find tax loss harvestable lots.
@@ -96,7 +93,6 @@ def find_harvestable_lots(accapi, options):
     # build our output table: calculate losses, find wash sales
     to_sell = []
     recent_purchases = {}
-    commodities = accapi.get_commodity_directives()
 
     for row in rrows:
         if row.market_value.get_only_position() and \
@@ -113,18 +109,17 @@ def find_harvestable_lots(accapi, options):
                 recent_purchases[ticker] = recent
             wash = '*' if len(recent[1]) else ''
 
-            ticker += get_alternate(ticker, commodities)
             to_sell.append(RetRow(row.account, units, ticker, row.acquisition_date,
                                   *split_currency(row.market_value), loss, term, wash))
 
     return retrow_types, to_sell, recent_purchases
 
 
-def harvestable_by_commodity(rtype, rrows):
+def harvestable_by_commodity(accapi, rtype, rrows):
     """Group input by sum(commodity)
     """
 
-    retrow_types = [('currency', str), ('total_loss', Decimal), ('market_value', Decimal)]
+    retrow_types = [('currency', str), ('total_loss', Decimal), ('market_value', Decimal), ('subst', str)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
 
     losses = collections.defaultdict(Decimal)
@@ -134,8 +129,10 @@ def harvestable_by_commodity(rtype, rrows):
         market_value[row.ticker] += row.market_value
 
     by_commodity = []
+    commodities = accapi.get_commodity_directives()
     for ticker in losses:
-        by_commodity.append(RetRow(ticker, losses[ticker], market_value[ticker]))
+        by_commodity.append(RetRow(ticker, losses[ticker], market_value[ticker],
+                get_alternate(ticker, commodities)))
 
     return retrow_types, by_commodity
 
