@@ -1,17 +1,17 @@
 # Fava/Beancount Tax Loss Harvester
 Tax loss harvester plugin for Fava (Beancount personal finance software).
 
-Reports the set of lots that can be tax loss harvested from your beancount input file.
-Also determines which of them would trigger wash sales. Example:
+Reports on lots that can be tax loss harvested from your Beancount input file. Also
+determines which of them would trigger wash sales. Example:
 
-![TLH screenshot](./readme-screenshot.png)
+![Screenshot: TLH](../../../screenshot.png)
 
-The example above shows that 350,100 USD of losses can be harvested by selling the rows
-listed. However, 1 BNCT of that would be considered a wash sale and will not be
-allowable. It also shows the account and quantities of each commodity to sell total sale
-proceeds (1,051,900 USD) if all the recommended lots were sold.
+The example above shows a summary of what can be tax-loss harvested currently. This
+includes the total harvestable loss, and the sale value required to harvest the loss.
+Detailed and summary views of losses by commodity and lots is shown. Losses that would
+not be allowable due to wash sales are marked.
 
-A Fava extension and a beancount command line client are both included.
+A Fava extension and a Beancount command line client are both included.
 
 ## Beancount Command Line Client
 
@@ -19,31 +19,34 @@ Requires python3, argcomplete, and tabulate:
 ```pip3 install argcomplete tabulate```
 
 Example invocation:
-```./tlh.py example.bc -a "Assets:Investments:Taxable" --wash-pattern "Assets:Investments"```
+```
+./tlh.py example.bc -a "Assets:Investments:Taxable" --wash-pattern "Assets:Investments"
+```
 
-```--brief``` displays just the summary. See ```./tlh.py --help``` for all options.
+`--brief` displays just the summary. See `./tlh.py --help` for all options.
 
 
 ## Fava Installation
-Clone the source to a directory (eg: extensions/fava/tlh relative to your beancount
-source).
 
-Include this in your beancount source:
-
-```2010-01-01 custom "fava-extension" "extensions.fava.tlh" ""```
+See [fava_investor](https://github.com/redstreet/fava_investor)
 
 ## Configuration
 
-Configure TLH through your beancount sources. Example:
+Configure TLH by including the following lines in yourbeancount source. Example:
 
 ```
-2010-01-01 custom "fava-extension" "extensions.fava.tlh" "{
-  'account_field': 'account',
-  'accounts_pattern': 'Assets:Investments:Taxable',
-  'loss_threshold': 50,
-  'wash_pattern': 'Assets:Investments',
+2010-01-01 custom "fava-extension" "fava_investor" "{
+  'tlh' : {
+    'account_field': 'account',
+    'accounts_pattern': 'Assets:Investments:Taxable',
+    'loss_threshold': 50,
+    'wash_pattern': 'Assets:Investments',
+   },
+   ...
 }"
 ```
+
+The full list of configuration options is below:
 
 ### `account_field`
 Default: LEAF(account)
@@ -77,6 +80,15 @@ include your tax advantaged and all investment accounts.
 
 ---
 
+Optionally, include the `tlh_substitutes` metadata in your commodity declarations. The
+string you provide simply gets summarized into the table above if available (not shown
+in the example), serving as an easy reminder for you. For example:
+
+```
+2010-01-01 commodity VTI
+  tlh_substitutes: "VOO"
+```
+
 ## Limitations
 
 - Partial wash sales, or cases where it is not obvious as to how to match the purchases
@@ -86,6 +98,5 @@ include your tax advantaged and all investment accounts.
 - Booking via specific identification of shares is assumed on all taxable accounts. This
   translates to "STRICT" booking in beancount.
 
-
-TODO:
-- show if a loss generated would be long term or short term
+#### Disclaimer
+None of the above is or should be construed as financial, tax, or other advice.
