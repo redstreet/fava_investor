@@ -138,8 +138,8 @@ def harvestable_by_commodity(accapi, rtype, rrows):
 
     by_commodity = []
     commodities = accapi.get_commodity_directives()
-    for ticker in losses:
-        by_commodity.append(RetRow(ticker, losses[ticker], market_value[ticker],
+    for ticker, loss in sorted(losses.items(), key=lambda x: x[1], reverse=True):
+        by_commodity.append(RetRow(ticker, loss, market_value[ticker],
                 get_alternate(ticker, commodities)))
 
     return retrow_types, by_commodity
