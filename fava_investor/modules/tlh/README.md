@@ -51,8 +51,12 @@ The full list of configuration options is below:
 ### `account_field`
 Default: LEAF(account)
 
-This string is a part of the beancount query. If you want to see the entire account
-name, set this to 'account'.
+BQL string that determines what is shown in the account column. If this is set to an
+integer, it is replaced with one of the following built-in values:
+- `0`: show the entire account name (same as setting it to `'account'`)
+- `1`: show only the leaf of the account
+- `2`: show only the last but one substring in the account hierarchy. Eg: if the account
+  is `Assets:Investments:Taxable:XTrade:AAPL`, show simply `XTrade`
 
 ---
 

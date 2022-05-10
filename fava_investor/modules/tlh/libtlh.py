@@ -44,16 +44,25 @@ def get_alternate(commodity, directives):
     metas = {} if directives.get(commodity) is None else directives[commodity].meta
     return metas.get('tlh_substitutes', '')
 
+def get_account_field(options):
+    account_field=options.get('account_field', 'LEAF(account)')
+    if isinstance(int(account_field), int):
+        account_field = ['account',
+                         'LEAF(account)',
+                         'GREPN("(.*):([^:]*:[^:]*):", account, 2)'  # get one-but-leaf account
+                         ][account_field]
+    return account_field
+
 def find_harvestable_lots(accapi, options):
     """Find tax loss harvestable lots.
     - This is intended for the US, but may be adaptable to other countries.
     - This assumes SpecID (Specific Identification of Shares) is the method used for these accounts
     """
 
-    # account_field: get one-but-leaf account
-    # account_field=options.get('account_field', 'GREPN("(.*):([^:]*:[^:]*):", account, 2)')
+    account_field = get_account_field(options)
+    accounts_pattern=options.get('accounts_pattern', '')
 
-    sql = """
+    sql = f"""
     SELECT {account_field} as account,
         units(sum(position)) as units,
         cost_date as acquisition_date,
@@ -63,8 +72,7 @@ def find_harvestable_lots(accapi, options):
         account ~ '{accounts_pattern}'
       GROUP BY {account_field}, cost_date, currency, cost_currency, cost_number, account_sortkey(account)
       ORDER BY account_sortkey(account), currency, cost_date
-    """.format(account_field=options.get('account_field', 'LEAF(account)'),
-               accounts_pattern=options.get('accounts_pattern', ''))
+    """
     rtypes, rrows = accapi.query_func(sql)
     if not rtypes:
         return [], {}, [[]]
@@ -151,7 +159,7 @@ def query_recently_bought(ticker, accapi, options):
     """Looking back 30 days for purchases that would cause wash sales"""
 
     wash_pattern = options.get('wash_pattern', '')
-    account_field = options.get('account_field', 'LEAF(account)')
+    account_field = get_account_field(options)
     wash_pattern_sql = 'AND account ~ "{}"'.format(wash_pattern) if wash_pattern else ''
     sql = '''
     SELECT
@@ -178,7 +186,7 @@ def recently_sold_at_loss(accapi, options):
 
     operating_currencies = accapi.get_operating_currencies_regex()
     wash_pattern = options.get('wash_pattern', '')
-    account_field = options.get('account_field', 'LEAF(account)')
+    account_field = get_account_field(options)
     wash_pattern_sql = 'AND account ~ "{}"'.format(wash_pattern) if wash_pattern else ''
     sql = '''
     SELECT
