@@ -33,28 +33,32 @@ def split_currency(value):
     units = value.get_only_position().units
     return units.number, units.currency
 
+
 def gain_term(bought, sold):
     diff = relativedelta.relativedelta(sold, bought)
     # relativedelta is used to account for leap years, since IRS defines 'long/short' as "> 1 year"
-    if diff.years > 1 or (diff.years == 1 and (diff.months >= 1 or diff.days >=1)):
+    if diff.years > 1 or (diff.years == 1 and (diff.months >= 1 or diff.days >= 1)):
         return 'Long'
     return 'Short'
+
 
 def get_alternate(commodity, directives):
     metas = {} if directives.get(commodity) is None else directives[commodity].meta
     return metas.get('tlh_alternates', '')
 
+
 def get_account_field(options):
-    account_field=options.get('account_field', 'LEAF(account)')
+    account_field = options.get('account_field', 'LEAF(account)')
     try:
         if isinstance(account_field, int):
             account_field = ['account',
                              'LEAF(account)',
                              'GREPN("(.*):([^:]*):", account, 2)'  # get one-but-leaf account
                              ][account_field]
-    except:
+    except ValueError:
         pass
     return account_field
+
 
 def find_harvestable_lots(accapi, options):
     """Find tax loss harvestable lots.
@@ -63,7 +67,7 @@ def find_harvestable_lots(accapi, options):
     """
 
     account_field = get_account_field(options)
-    accounts_pattern=options.get('accounts_pattern', '')
+    accounts_pattern = options.get('accounts_pattern', '')
 
     sql = f"""
     SELECT {account_field} as account,
@@ -143,7 +147,7 @@ def harvestable_by_commodity(accapi, rtype, rrows):
     commodities = accapi.get_commodity_directives()
     for ticker, loss in sorted(losses.items(), key=lambda x: x[1], reverse=True):
         by_commodity.append(RetRow(ticker, loss, market_value[ticker],
-                get_alternate(ticker, commodities)))
+                            get_alternate(ticker, commodities)))
 
     return retrow_types, by_commodity
 
