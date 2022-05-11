@@ -42,7 +42,7 @@ def gain_term(bought, sold):
 
 def get_alternate(commodity, directives):
     metas = {} if directives.get(commodity) is None else directives[commodity].meta
-    return metas.get('tlh_substitutes', '')
+    return metas.get('tlh_alternates', '')
 
 def get_account_field(options):
     account_field=options.get('account_field', 'LEAF(account)')
@@ -127,7 +127,7 @@ def harvestable_by_commodity(accapi, rtype, rrows):
     """Group input by sum(commodity)
     """
 
-    retrow_types = [('currency', str), ('total_loss', Decimal), ('market_value', Decimal), ('subst', str)]
+    retrow_types = [('currency', str), ('total_loss', Decimal), ('market_value', Decimal), ('alt', str)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
 
     losses = collections.defaultdict(Decimal)
@@ -165,7 +165,7 @@ def query_recently_bought(ticker, accapi, options):
     SELECT
         {account_field} as account,
         date as acquisition_date,
-        DATE_ADD(date, 31) as earliest_sale
+        DATE_ADD(date, 31) as earliest_sale,
         units(sum(position)) as units,
         cost(sum(position)) as basis
       WHERE

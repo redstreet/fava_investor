@@ -84,7 +84,7 @@ include your tax advantaged and all investment accounts.
 
 ---
 
-Optionally, include the `tlh_substitutes` metadata in your commodity declarations. The
+Optionally, include the `tlh_alternates` metadata in your commodity declarations. The
 string you provide simply gets summarized into the table above if available (not shown
 in the example), serving as an easy reminder for you. For example:
 
