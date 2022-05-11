@@ -2,7 +2,11 @@
 Tax loss harvester plugin for Fava (Beancount personal finance software).
 
 Reports on lots that can be tax loss harvested from your Beancount input file. Also
-determines which of them would trigger wash sales. Example:
+determines which of them would trigger wash sales.
+
+See this article **[Tax Loss Harvesting with Beancount](http://reds-rants.netlify.app/personal-finance/tax-loss-harvesting-with-beancount/)** for more.
+
+Example:
 
 ![Screenshot: TLH](../../../screenshot.png)
 
