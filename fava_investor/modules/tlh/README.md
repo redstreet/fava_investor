@@ -8,7 +8,7 @@ See this article **[Tax Loss Harvesting with Beancount](http://reds-rants.netlif
 
 Example:
 
-![Screenshot: TLH](../../../screenshot.png)
+![Screenshot: TLH](tlh.jpg)
 
 The example above shows a summary of what can be tax-loss harvested currently. This
 includes the total harvestable loss, and the sale value required to harvest the loss.
