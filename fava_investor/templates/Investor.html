@@ -87,9 +87,9 @@
   <br />
 
 
-  <h3>Potential Wash Sales: purchases within the past 30 days</h3>
-  Below, earliest_sale is the date on which a loss can be harvested without resulting in
-  a wash sale.
+  <h3>Potential wash sales: purchases within the past 30 days</h3>
+  <i>Below, earliest_sale is the date on which a loss can be harvested without resulting in
+    a wash sale.</i>
   {% set table_empty_msg = None %}
   {% if harvests[2][0]|length == 0 %}
     {% set table_empty_msg = 'No purchases of the candidates above found within the last 30 days!' %}
@@ -102,9 +102,9 @@
   <br />
 
   <h3>What not to buy</h3>
-  Note: the below is a list of recent sales with losses provided for your convenience
-  in making purchasing decisions around wash sales. (This is not meant to be financial
-  or tax advice).
+  <i>Below is a list of recent sales with losses. Assuming these losses were harvested,
+    purchasing these within 30 days of the sale could result in the loss becoming a wash
+    sale.</i>
   {% set lossy_sales = extension.recently_sold_at_loss() %}
   {% set table_empty_msg = None %}
   {% if lossy_sales[1]|length == 0 %}
@@ -115,6 +115,9 @@
   {% else %}
     {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
   {% endif %}
+
+  <br>
+  <i>None of the above is meant to be financial, legal, tax, or other advice.</i>
 
 
 {% endif %}

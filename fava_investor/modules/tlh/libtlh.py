@@ -46,11 +46,14 @@ def get_alternate(commodity, directives):
 
 def get_account_field(options):
     account_field=options.get('account_field', 'LEAF(account)')
-    if isinstance(int(account_field), int):
-        account_field = ['account',
-                         'LEAF(account)',
-                         'GREPN("(.*):([^:]*:[^:]*):", account, 2)'  # get one-but-leaf account
-                         ][account_field]
+    try:
+        if isinstance(account_field, int):
+            account_field = ['account',
+                             'LEAF(account)',
+                             'GREPN("(.*):([^:]*):", account, 2)'  # get one-but-leaf account
+                             ][account_field]
+    except:
+        pass
     return account_field
 
 def find_harvestable_lots(accapi, options):
