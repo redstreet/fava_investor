@@ -165,15 +165,15 @@ def query_recently_bought(ticker, accapi, options):
     SELECT
         {account_field} as account,
         date as acquisition_date,
-        DATE_ADD(date, 30) as until,
+        DATE_ADD(date, 31) as earliest_sale
         units(sum(position)) as units,
         cost(sum(position)) as basis
       WHERE
         number > 0 AND
-        date >= DATE_ADD(TODAY(), -30) AND
+        date >= DATE_ADD(TODAY(), -31) AND
         currency = "{ticker}"
         {wash_pattern_sql}
-      GROUP BY {account_field},date,until
+      GROUP BY {account_field},date,earliest_sale
       ORDER BY date DESC
       '''.format(**locals())
     rtypes, rrows = accapi.query_func(sql)
