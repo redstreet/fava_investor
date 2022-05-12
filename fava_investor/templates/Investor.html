@@ -88,8 +88,10 @@
 
 
   <h3>Potential wash sales: purchases within the past 30 days</h3>
-  <i>Below, earliest_sale is the date on which a loss can be harvested without resulting in
-    a wash sale.</i>
+
+  <i>Below is a list of purchases with the past 30 days. "earliest_sale" is the date on
+    which a loss of the ticker shown can be harvested without resulting in a wash sale.</i>
+
   {% set table_empty_msg = None %}
   {% if harvests[2][0]|length == 0 %}
     {% set table_empty_msg = 'No purchases of the candidates above found within the last 30 days!' %}
