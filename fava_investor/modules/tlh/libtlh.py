@@ -190,7 +190,7 @@ def query_recently_bought(ticker, accapi, options):
         cost(sum(position)) as basis
       WHERE
         number > 0 AND
-        date >= DATE_ADD(TODAY(), -31) AND
+        date >= DATE_ADD(TODAY(), -30) AND
         currency = "{ticker}"
         {wash_pattern_sql}
       GROUP BY {account_field},date,earliest_sale
