@@ -4,11 +4,8 @@ from beancount.core.data import Open
 
 
 class FavaInvestorAPI:
-    def __init__(self, ledger, begin=None, end=None):
-        # TODO: are begin/end needed?
+    def __init__(self, ledger):
         self.ledger = ledger
-        self.begin = begin
-        self.end = end
         self.entries = self.ledger.root_tree
 
     def build_price_map(self):
