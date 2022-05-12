@@ -179,6 +179,7 @@ def build_recents(recent_purchases):
 def query_recently_bought(ticker, accapi, options):
     """Looking back 30 days for purchases that would cause wash sales"""
 
+    end_date_iso = accapi.get_end_date().isoformat()
     wash_pattern = options.get('wash_pattern', '')
     account_field = get_account_field(options)
     wash_pattern_sql = 'AND account ~ "{}"'.format(wash_pattern) if wash_pattern else ''
@@ -191,7 +192,7 @@ def query_recently_bought(ticker, accapi, options):
         cost(sum(position)) as basis
       WHERE
         number > 0 AND
-        date >= DATE_ADD(TODAY(), -30) AND
+        date >= DATE_ADD({end_date_iso}, -30) AND
         currency = "{ticker}"
         {wash_pattern_sql}
       GROUP BY {account_field},date,earliest_sale
@@ -205,6 +206,7 @@ def recently_sold_at_loss(accapi, options):
     """Looking back 30 days for sales that caused losses. These were likely to have been TLH (but not
     necessarily so). This tells us what NOT to buy in order to avoid wash sales."""
 
+    end_date_iso = accapi.get_end_date().isoformat()
     operating_currencies = accapi.get_operating_currencies_regex()
     wash_pattern = options.get('wash_pattern', '')
     account_field = get_account_field(options)
@@ -217,7 +219,7 @@ def recently_sold_at_loss(accapi, options):
         NEG(SUM(COST(position))) as basis,
         NEG(SUM(CONVERT(position, cost_currency, date))) as proceeds
       WHERE
-        date >= DATE_ADD(TODAY(), -30)
+        date >= DATE_ADD({end_date_iso}, -30)
         AND number < 0
         AND not currency ~ "{operating_currencies}"
       GROUP BY sale_date,until,currency
