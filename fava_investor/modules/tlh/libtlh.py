@@ -15,7 +15,18 @@ def get_tables(accapi, options):
     by_commodity = harvestable_by_commodity(accapi, *harvestable_table)
     summary = summarize_tlh(harvestable_table, by_commodity)
     recents = build_recents(recent_purchases)
+
+    harvestable_table = sort_harvestable_table(harvestable_table, by_commodity)
     return harvestable_table, summary, recents, by_commodity
+
+def sort_harvestable_table(harvestable_table, by_commodity):
+    """Sort the main table (harvestable_table) in the order of highest to lowest losses."""
+    sort_order = [i.currency for i in by_commodity[1]]
+    def order(elem):
+        return sort_order.index(elem.ticker)
+
+    harvestable_table[1].sort(key=order)
+    return harvestable_table
 
 
 def split_column(cols, col_name, ticker_label='split'):

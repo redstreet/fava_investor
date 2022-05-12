@@ -11,7 +11,7 @@ import tabulate
 
 def tlh(beancount_file,
         accounts_pattern='',
-        loss_threshold=10,
+        loss_threshold=0,
         wash_pattern='',
         brief=False
         ):
