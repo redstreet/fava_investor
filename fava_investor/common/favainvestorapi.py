@@ -1,6 +1,7 @@
 from beancount.core import getters
 from fava.template_filters import cost_or_value
 from beancount.core.data import Open
+from datetime import datetime
 
 
 class FavaInvestorAPI:
@@ -10,6 +11,13 @@ class FavaInvestorAPI:
         self.begin = begin
         self.end = end
         self.entries = self.ledger.root_tree
+
+    def get_end_date(self):
+        try:
+            end_date = self.ledger.filters.time.end_date
+        except AttributeError:
+            end_date = datetime.today().date()
+        return end_date
 
     def build_price_map(self):
         return self.ledger.price_map

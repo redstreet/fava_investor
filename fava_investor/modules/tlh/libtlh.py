@@ -122,12 +122,13 @@ def find_harvestable_lots(accapi, options):
     to_sell = []
     recent_purchases = {}
 
+    end_date = accapi.get_end_date()
     for row in rrows:
         if row.market_value.get_only_position() and \
                 (val(row.market_value) - val(row.basis) < -loss_threshold):
             loss = D(val(row.basis) - val(row.market_value))
 
-            term = gain_term(row.acquisition_date, datetime.today().date())
+            term = gain_term(row.acquisition_date, end_date)
 
             # find wash sales
             units, ticker = split_currency(row.units)

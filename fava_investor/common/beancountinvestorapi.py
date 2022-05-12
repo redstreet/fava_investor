@@ -6,6 +6,7 @@ from beancount.core import prices
 from beancount.core import realization
 from beancount.query import query
 from beancount.core.data import Open
+from datetime import datetime
 
 
 class AccAPI:
@@ -13,6 +14,11 @@ class AccAPI:
         self.entries, _, self.options_map = loader.load_file(beancount_file)
         self.options = options
         self.begin = self.end = None  # Only used in fava
+
+    def get_end_date(self):
+        """Note that Fava provides a self.ledger that takes end_date into account (i.e., the ledger ends on
+        end_date), while this beancount api does not do so. Be careful when using get_end_date()"""
+        return self.options.get('end_date', datetime.today().date())
 
     def build_price_map(self):
         return prices.build_price_map(self.entries)

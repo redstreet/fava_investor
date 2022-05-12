@@ -7,20 +7,25 @@ import beancountinvestorapi as api
 import argh
 # import argcomplete
 import tabulate
-
+from datetime import datetime
 
 def tlh(beancount_file,
         accounts_pattern='',
         loss_threshold=0,
         wash_pattern='',
+        end_date=None,
         brief=False
         ):
     '''Finds opportunities for tax loss harvesting in a beancount file'''
+
+    if end_date:
+        end_date = datetime.fromisoformat(end_date).date()
+
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
 
     config = {'accounts_pattern': accounts_pattern, 'loss_threshold': loss_threshold,
-              'wash_pattern': wash_pattern}
+            'wash_pattern': wash_pattern}
     harvestable_table, summary, recents, by_commodity = libtlh.get_tables(accapi, config)
     dontbuy = libtlh.recently_sold_at_loss(accapi, config)
     to_sell_types, to_sell = harvestable_table
