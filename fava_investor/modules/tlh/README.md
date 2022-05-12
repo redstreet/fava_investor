@@ -99,6 +99,9 @@ in the example), serving as an easy reminder for you. For example:
 
 ## Limitations
 
+- Filters in Fava do not work with TLH. Selecting filters on the GUI (eg: a time filter)
+  will lead to unpredictable results
+
 - Partial wash sales, or cases where it is not obvious as to how to match the purchases
   and sales, are not displayed due to their
   [complexity.](https://fairmark.com/investment-taxation/capital-gain/wash/wash-sale-matching-rules/)

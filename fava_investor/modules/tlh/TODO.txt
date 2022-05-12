@@ -3,6 +3,7 @@ features:
 - top annoyances
 ----------------
   - export to csv
+  - wash sale is not accounted for in summary and in summary's harvestable losses
 
 - tables:
 ---------
