@@ -36,7 +36,7 @@ def summarizer(beancount_file,
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
 
-    rtypes, rrows, _, _ = libsuccession.build_table(accapi, argsmap)
+    rtypes, rrows, _, _ = libsummarizer.build_table(accapi, argsmap)
 
     # print('# vim:tw=0 number')
     pretty_print_table(rtypes, rrows)

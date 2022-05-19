@@ -50,7 +50,11 @@ def build_tables(accapi, configs):
     return tables
 
 def build_table(accapi, options):
-    rows = find_active_accounts(accapi, options)
+    if options['type'] == 'accounts':
+        rows = find_active_accounts(accapi, options)
+    elif options['type'] == 'commodities':
+        rows = commodities_metadata(accapi, options)
+
     all_keys = {j: type(i[j]) for i in rows for j in list(i)}
     header = partial_order(all_keys, options)
 
@@ -69,6 +73,19 @@ def build_table(accapi, options):
 
     return options['title'], (rtypes, rows, None, None)
     # last one is footer. Could summarize # of TBDs, oldest date, etc.
+
+def commodities_metadata(accapi, options):
+    """Build list of commodities"""
+
+    commodities = accapi.get_commodity_directives()
+    for co in commodities:
+        import pdb; pdb.set_trace()
+        row = {k:v for (k,v) in commodities[co][0].meta.items()}
+        row['ticker'] = co
+        retval.append(row)
+    # active_accounts.sort(key=lambda x: x['account'])
+    import pdb; pdb.set_trace()
+    return retval
 
 
 def find_active_accounts(accapi, options):
