@@ -16,18 +16,39 @@ from beancount.core import convert
 
 p_leaf = re.compile('^[A-Z0-9]*$')
 
+def get_active_commodities(accapi):
+    sql = """
+    SELECT
+    units(sum(position)) as units,
+    value(sum(position)) as market_value
+    WHERE account_sortkey(account) ~ "^[01]"
+    GROUP BY currency, cost_currency
+    ORDER BY currency, cost_currency
+    """
+    rtypes, rrows = accapi.query_func(sql)
+    retval = [r.units.get_only_position().units.currency for r in rrows if not r.units.is_empty()]
+    return retval
+
+
 def partial_order(header, options):
     """Order the header according to our preference, but don't lose unspecified keys"""
     # take advantage of python 3.7+'s insertion order preservation
 
+    def get_col_label(c):
+        if 'col_labels' in options:
+            index = options['col_order'].index(c)
+            return options['col_labels'][index]
+        return c
+
     retval = {}
     for c in options['col_order']:
         if c in header:
-            retval[c] = header[c]
+            retval[get_col_label(c)] = header[c]
+            # retval[c] = header[c]
 
-    for h in header:
-        if h not in retval:
-            retval[h] = header[h]
+    # for h in header:
+    #     if h not in retval:
+    #         retval[h] = header[h]
 
     return retval 
 
@@ -58,18 +79,23 @@ def build_table(accapi, options):
     all_keys = {j: type(i[j]) for i in rows for j in list(i)}
     header = partial_order(all_keys, options)
 
+    # so that tabulate builds the column in order
+    rows[0] = partial_order(rows[0], options)
+
+    # rename all rows' keys to col_labels
+    if 'col_labels' in options:
+        for i in range(len(rows)):
+            rows[i] = partial_order(rows[i], options)
+
     # add all keys to all rows
     for i in rows:
         for j in header:
             if j not in i:
                 i[j] = ''  # TODO: type could be incorrect
 
-    # so that tabulate builds the column in order
-    rows[0] = partial_order(rows[0], options)
-
     RowTuple = collections.namedtuple('RowTuple', header)
     rows = [RowTuple(**i) for i in rows]
-    rtypes = [(k, v) for k,v in header.items()]
+    rtypes = list(header.items())
 
     return options['title'], (rtypes, rows, None, None)
     # last one is footer. Could summarize # of TBDs, oldest date, etc.
@@ -78,13 +104,16 @@ def commodities_metadata(accapi, options):
     """Build list of commodities"""
 
     commodities = accapi.get_commodity_directives()
+    if 'active_only' in options and options['active_only']:
+        active_commodities = get_active_commodities(accapi)
+        commodities = {k:v for k, v in commodities.items() if k in active_commodities}
+
+    retval = []
     for co in commodities:
-        import pdb; pdb.set_trace()
-        row = {k:v for (k,v) in commodities[co][0].meta.items()}
+        row = {k:v for k, v in commodities[co].meta.items() if k in options['col_order']}
         row['ticker'] = co
         retval.append(row)
-    # active_accounts.sort(key=lambda x: x['account'])
-    import pdb; pdb.set_trace()
+    retval.sort(key=lambda x: x['ticker'])
     return retval
 
 
