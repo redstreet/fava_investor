@@ -18,10 +18,13 @@ def pretty_print_table(rtypes, rrows):
 
 
 def summarizer(beancount_file,
+              title = 'Beneficiaries Summary',
+              directive_type = 'accounts',
               acc_pattern = '^Assets:(Investments|Banks)',
               meta_prefix = 'beneficiary_',
               meta_skip = 'beneficiary_skip',
-              col_order = [
+              sort_by = 1,
+              columns = [
                 'account',
                 'balance',
                 'last_verified',
@@ -36,9 +39,10 @@ def summarizer(beancount_file,
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
 
-    rtypes, rrows, _, _ = libsummarizer.build_table(accapi, argsmap)
+    title, (rtypes, rrows, _, _) = libsummarizer.build_table(accapi, argsmap)
 
     # print('# vim:tw=0 number')
+    print(title)
     pretty_print_table(rtypes, rrows)
 
 # -----------------------------------------------------------------------------
