@@ -27,7 +27,7 @@ def get_active_commodities(accapi):
     ORDER BY currency, cost_currency
     """
     rtypes, rrows = accapi.query_func(sql)
-    retval = [r.units.get_only_position().units.currency for r in rrows if not r.units.is_empty()]
+    retval = {r.units.get_only_position().units.currency : r.market_value for r in rrows if not r.units.is_empty()}
     return retval
 
 
@@ -107,6 +107,8 @@ def commodities_metadata(accapi, options):
         row = {k:v for k, v in commodities[co].meta.items() if k in options['columns']}
         if 'ticker' in options['columns']:
             row['ticker'] = co
+        if 'market_value' in options['columns']:
+            row['market_value'] = active_commodities[co]
         retval.append(row)
 
     # sort by the requested. Default to first column
