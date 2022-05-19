@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# Description: CLI for succession
+# Description: CLI for summarizer
 
-import libsuccession
+import libsummarizer
 # from fava_investor.common.clicommon import *
 import fava_investor.common.beancountinvestorapi as api
 import argcomplete
@@ -17,7 +17,7 @@ def pretty_print_table(rtypes, rrows):
                             floatfmt=",.0f"))
 
 
-def successor(beancount_file,
+def summarizer(beancount_file,
               acc_pattern = '^Assets:(Investments|Banks)',
               meta_prefix = 'beneficiary_',
               meta_skip = 'beneficiary_skip',
@@ -38,13 +38,13 @@ def successor(beancount_file,
 
     rtypes, rrows, _, _ = libsuccession.build_table(accapi, argsmap)
 
-    print('# vim:tw=0 number')
+    # print('# vim:tw=0 number')
     pretty_print_table(rtypes, rrows)
 
 # -----------------------------------------------------------------------------
 def main():
-    parser = argh.ArghParser(description="Beancount Asset Cash Drag")
-    argh.set_default_command(parser, successor)
+    parser = argh.ArghParser(description="Beancount Metadata Summarizer")
+    argh.set_default_command(parser, summarizer)
     argh.completion.autocomplete(parser)
     parser.dispatch()
     return 0

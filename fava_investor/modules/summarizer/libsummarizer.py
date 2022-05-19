@@ -41,6 +41,14 @@ def is_commodity_leaf(acc, ocs):
         return parent in ocs
     return False
 
+
+def build_tables(accapi, configs):
+    tables = []
+    for config in configs:
+        table = build_table(accapi, config)
+        tables.append(table)
+    return tables
+
 def build_table(accapi, options):
     rows = find_active_accounts(accapi, options)
     all_keys = {j: type(i[j]) for i in rows for j in list(i)}
@@ -59,7 +67,7 @@ def build_table(accapi, options):
     rows = [RowTuple(**i) for i in rows]
     rtypes = [(k, v) for k,v in header.items()]
 
-    return rtypes, rows, None, None
+    return options['title'], (rtypes, rows, None, None)
     # last one is footer. Could summarize # of TBDs, oldest date, etc.
 
 
