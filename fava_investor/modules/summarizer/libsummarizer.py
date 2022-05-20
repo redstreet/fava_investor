@@ -114,7 +114,7 @@ def commodities_metadata(accapi, options):
 
     # sort by the requested. Default to first column
     sort_col = options.get('sort_by', 0)
-    reverse = options.get('sort_reverse', True)
+    reverse = options.get('sort_reverse', False)
     retval.sort(key=lambda x: x[options['columns'][sort_col]], reverse=reverse)
     return retval
 
@@ -160,7 +160,8 @@ def active_accounts_metadata(accapi, options):
                     retval.append(row)
     # sort by the requested. Default to first column
     sort_col = options.get('sort_by', 0)
-    retval.sort(key=lambda x: x[options['columns'][sort_col]])
+    reverse = options.get('sort_reverse', False)
+    retval.sort(key=lambda x: x[options['columns'][sort_col]], reverse=reverse)
     return retval
 
 
