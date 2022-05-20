@@ -90,6 +90,11 @@ def build_table(accapi, options):
     rows = [RowTuple(**i) for i in rows]
     rtypes = list(header.items())
 
+    # sort by the requested. Default to first column
+    sort_col = options.get('sort_by', 0)
+    reverse = options.get('sort_reverse', False)
+    rows.sort(key=lambda x: x[sort_col], reverse=reverse)
+
     footer = None if 'no_footer' in options else build_table_footer(rtypes, rows, accapi)
     return options['title'], (rtypes, rows, None, footer)
     # last one is footer
@@ -112,10 +117,6 @@ def commodities_metadata(accapi, options):
             row['market_value'] = active_commodities[co]
         retval.append(row)
 
-    # sort by the requested. Default to first column
-    sort_col = options.get('sort_by', 0)
-    reverse = options.get('sort_reverse', False)
-    retval.sort(key=lambda x: x[options['columns'][sort_col]], reverse=reverse)
     return retval
 
 
@@ -158,10 +159,6 @@ def active_accounts_metadata(accapi, options):
                     if add_balance:
                         row['balance'] = get_balance(realacc, acc, pm, currency)
                     retval.append(row)
-    # sort by the requested. Default to first column
-    sort_col = options.get('sort_by', 0)
-    reverse = options.get('sort_reverse', False)
-    retval.sort(key=lambda x: x[options['columns'][sort_col]], reverse=reverse)
     return retval
 
 
