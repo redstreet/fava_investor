@@ -4,10 +4,10 @@
 import libsummarizer
 # from fava_investor.common.clicommon import *
 import fava_investor.common.beancountinvestorapi as api
-import argcomplete
 import argh
 import tabulate
 tabulate.PRESERVE_WHITESPACE = True
+
 
 def pretty_print_table(rtypes, rrows):
     headers = [i[0] for i in rtypes]
@@ -18,13 +18,13 @@ def pretty_print_table(rtypes, rrows):
 
 
 def summarizer(beancount_file,
-              title = 'Beneficiaries Summary',
-              directive_type = 'accounts',
-              acc_pattern = '^Assets:(Investments|Banks)',
-              meta_prefix = 'beneficiary_',
-              meta_skip = 'beneficiary_skip',
-              sort_by = 1,
-              columns = [
+               title='Beneficiaries Summary',
+               directive_type='accounts',
+               acc_pattern='^Assets:(Investments|Banks)',
+               meta_prefix='beneficiary_',
+               meta_skip='beneficiary_skip',
+               sort_by=1,
+               columns=[
                 'account',
                 'balance',
                 'last_verified',
@@ -33,8 +33,8 @@ def summarizer(beancount_file,
                 'legal_points',
                 'primary',
                 'contingent'
-              ],
-             debug=False):
+               ],
+               debug=False):
 
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
@@ -45,7 +45,7 @@ def summarizer(beancount_file,
     print(title)
     pretty_print_table(rtypes, rrows)
 
-# -----------------------------------------------------------------------------
+
 def main():
     parser = argh.ArghParser(description="Beancount Metadata Summarizer")
     argh.set_default_command(parser, summarizer)

@@ -3,19 +3,18 @@
 import collections
 import re
 import fava_investor.common.libinvestor as libinvestor
-from beancount.core.inventory import Inventory
 from beancount.core.data import Close
 from beancount.core import realization
 from beancount.core import convert
-from fava_investor.common.libinvestor import val, build_table_footer
+from fava_investor.common.libinvestor import build_table_footer
 
 
 # TODO:
 # - print balances nicely, sort by them, show what percent is complete
 #   - for each commodity_leaf account, ensure there is a parent, else print
 
-
 p_leaf = re.compile('^[A-Z0-9]*$')
+
 
 def get_active_commodities(accapi):
     sql = """
@@ -27,7 +26,7 @@ def get_active_commodities(accapi):
     ORDER BY currency, cost_currency
     """
     rtypes, rrows = accapi.query_func(sql)
-    retval = {r.units.get_only_position().units.currency : r.market_value for r in rrows if not r.units.is_empty()}
+    retval = {r.units.get_only_position().units.currency: r.market_value for r in rrows if not r.units.is_empty()}
     return retval
 
 
@@ -46,7 +45,7 @@ def order_and_rename(header, options):
         if c in header:
             retval[get_col_label(c)] = header[c]
 
-    return retval 
+    return retval
 
 
 def is_commodity_leaf(acc, ocs):
@@ -65,6 +64,7 @@ def build_tables(accapi, configs):
         table = build_table(accapi, config)
         tables.append(table)
     return tables
+
 
 def build_table(accapi, options):
     if options['directive_type'] == 'accounts':
@@ -94,17 +94,18 @@ def build_table(accapi, options):
     return options['title'], (rtypes, rows, None, footer)
     # last one is footer
 
+
 def commodities_metadata(accapi, options):
     """Build list of commodities"""
 
     commodities = accapi.get_commodity_directives()
     if 'active_only' in options and options['active_only']:
         active_commodities = get_active_commodities(accapi)
-        commodities = {k:v for k, v in commodities.items() if k in active_commodities}
+        commodities = {k: v for k, v in commodities.items() if k in active_commodities}
 
     retval = []
     for co in commodities:
-        row = {k:v for k, v in commodities[co].meta.items() if k in options['columns']}
+        row = {k: v for k, v in commodities[co].meta.items() if k in options['columns']}
         if 'ticker' in options['columns']:
             row['ticker'] = co
         if 'market_value' in options['columns']:
@@ -113,17 +114,20 @@ def commodities_metadata(accapi, options):
 
     # sort by the requested. Default to first column
     sort_col = options.get('sort_by', 0)
-    retval.sort(key=lambda x: x[options['columns'][sort_col]])
+    reverse = options.get('sort_reverse', True)
+    retval.sort(key=lambda x: x[options['columns'][sort_col]], reverse=reverse)
     return retval
+
 
 def get_metadata(meta, meta_prefix, specified_cols):
     ml = len(meta_prefix)
     if not specified_cols:  # get all metadata that matches meta_prefix
-        row = {k[ml:]:v for (k,v) in meta.items() if meta_prefix in k}
+        row = {k[ml:]: v for (k, v) in meta.items() if meta_prefix in k}
     else:  # get metadata that begins with meta_prefix and is in specified_cols
         cols_to_get = [meta_prefix + col for col in specified_cols]
-        row = {k[ml:]:v for (k,v) in meta.items() if k in cols_to_get}
+        row = {k[ml:]: v for (k, v) in meta.items() if k in cols_to_get}
     return row
+
 
 def active_accounts_metadata(accapi, options):
     """Build metadata table for accounts that are open"""
@@ -132,7 +136,6 @@ def active_accounts_metadata(accapi, options):
     realacc = accapi.realize()
     pm = accapi.build_price_map()
     currency = accapi.get_operating_currencies()[0]
-
 
     p_acc_pattern = re.compile(options['acc_pattern'])
     meta_prefix = options.get('meta_prefix', '')
@@ -169,6 +172,7 @@ def get_balance(realacc, account, pm, currency):
     val = libinvestor.val(market_value)
     return val
     # return int(val)
+
 
 def get_balances(accapi):
     """Find all balances"""
