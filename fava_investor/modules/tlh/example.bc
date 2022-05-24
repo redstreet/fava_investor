@@ -48,9 +48,9 @@ option "render_commas" "True"
  Assets:Investments:Taxable:XTrade 1 BNCT {195 USD}
  Assets:Bank
 
-2022-04-21 * "Sell stock"
- Assets:Investments:Taxable:XTrade -2 BNCT {200 USD}
- Assets:Bank
+; 2022-04-21 * "Sell stock"
+;  Assets:Investments:Taxable:XTrade -2 BNCT {200 USD}
+;  Assets:Bank
 
 2022-03-08 price BNCT   150   USD
 2022-03-08 price COFE    95   USD

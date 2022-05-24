@@ -70,7 +70,7 @@ class TestScriptCheck(test_utils.TestCase):
         2010-01-01 open Assets:Investments:Taxable:Brokerage
         2010-01-01 open Assets:Bank
 
-        {m10} * "Buy stock"
+        {m100} * "Buy stock"
          Assets:Investments:Taxable:Brokerage 1 BNCT {{200 USD}}
          Assets:Bank
 
@@ -79,9 +79,10 @@ class TestScriptCheck(test_utils.TestCase):
         accapi = api.AccAPI(f, {})
 
         retrow_types, to_sell, recent_purchases = libtlh.find_harvestable_lots(accapi, self.options)
+        recents = libtlh.build_recents(recent_purchases)
 
         self.assertEqual(1, len(to_sell))
-        self.assertEqual(1, len(recent_purchases))
+        self.assertEqual(([], []), recents)
 
     # Test disabled: recently_sold_at_loss() has these lines, that don't work becaues val() expects Inventory
     # to have a single item. I'm guessing favainvestorapi and beancountinvestorapi differ in what gets added
@@ -114,3 +115,58 @@ class TestScriptCheck(test_utils.TestCase):
     #     rtypes, rrows = libtlh.recently_sold_at_loss(accapi, self.options)
 
     #     self.assertEqual(2, len(rrows))
+
+    @test_utils.docfile
+    @insert_dates
+    def test_wash(self, f):
+        """
+        2010-01-01 open Assets:Investments:Taxable:Brokerage
+        2010-01-01 open Assets:Bank
+
+        {m10} * "Buy stock"
+         Assets:Investments:Taxable:Brokerage 1 BNCT {{200 USD}}
+         Assets:Bank
+
+        {m1} price BNCT 100 USD
+        """
+        accapi = api.AccAPI(f, {})
+
+        retrow_types, to_sell, recent_purchases = libtlh.find_harvestable_lots(accapi, self.options)
+        recents = libtlh.build_recents(recent_purchases)
+
+        self.assertEqual(1, len(to_sell))
+        self.assertEqual(1, len(recent_purchases))
+        self.assertEqual(1, len(recents[1]))
+
+    @test_utils.docfile
+    @insert_dates
+    def test_wash_substantially_similar(self, f):
+        """
+        2010-01-01 open Assets:Investments:Taxable:Brokerage
+        2010-01-01 open Assets:Bank
+
+        2010-01-01 commodity BNCT
+          a__substsimilars: "ORNG"
+
+        {m100} * "Buy stock"
+         Assets:Investments:Taxable:Brokerage 1 BNCT {{200 USD}}
+         Assets:Bank
+
+        {m10} * "Buy stock"
+         Assets:Investments:Taxable:Brokerage 1 ORNG {{1 USD}}
+         Assets:Bank
+
+        {m1} price BNCT 100 USD
+        """
+        accapi = api.AccAPI(f, {})
+
+        retrow_types, to_sell, recent_purchases = libtlh.find_harvestable_lots(accapi, self.options)
+        recents = libtlh.build_recents(recent_purchases)
+
+        self.assertEqual(1, len(to_sell))
+        print(to_sell)
+        self.assertEqual(1, len(recent_purchases))
+        self.assertEqual('ORNG', recent_purchases['BNCT'][1][0].units.get_only_position().units.currency)
+        self.assertEqual(1, len(recents[1]))
+        self.assertEqual('ORNG', recents[1][0].units.get_only_position().units.currency)
+

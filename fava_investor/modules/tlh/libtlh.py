@@ -55,9 +55,12 @@ def gain_term(bought, sold):
     return 'Short'
 
 
-def get_partner(commodity, directives, mlabel):
-    metas = {} if directives.get(commodity) is None else directives[commodity].meta
-    return metas.get(mlabel, '')
+def get_metavalue(ticker, directives, mlabel):
+    metadata = {} if directives.get(ticker) is None else directives[ticker].meta
+    return metadata.get(mlabel, '')  # Why a string?
+    # for multiple values
+    # values = [metadata[mlabel] for mlabel in mlabels if mlabel in metadata]
+    # return ','.join(values)
 
 
 def get_account_field(options):
@@ -121,6 +124,8 @@ def find_harvestable_lots(accapi, options):
     # build our output table: calculate losses, find wash sales
     to_sell = []
     recent_purchases = {}
+    mlabel = options.get('tlh_meta_label', 'tlh_alternates')
+    commodities = accapi.get_commodity_directives()
 
     for row in rrows:
         if row.market_value.get_only_position() and \
@@ -132,8 +137,10 @@ def find_harvestable_lots(accapi, options):
             # find wash sales
             units, ticker = split_currency(row.units)
             recent = recent_purchases.get(ticker, None)
+            partners = get_metavalue(ticker, commodities, 'a__substsimilars')
+            tps = [ticker] + partners.split(',') if partners else ticker
             if not recent:
-                recent = query_recently_bought(ticker, accapi, options)
+                recent = query_recently_bought(tps, accapi, options)
                 recent_purchases[ticker] = recent
             wash = '*' if len(recent[1]) else ''
 
@@ -161,7 +168,7 @@ def harvestable_by_commodity(accapi, options, rtype, rrows):
     mlabel = options.get('tlh_meta_label', 'tlh_alternates')
     for ticker, loss in sorted(losses.items(), key=lambda x: x[1], reverse=True):
         by_commodity.append(RetRow(ticker, loss, market_value[ticker],
-                            get_partner(ticker, commodities, mlabel)))
+                            get_metavalue(ticker, commodities, mlabel)))
 
     return retrow_types, by_commodity
 
@@ -176,12 +183,22 @@ def build_recents(recent_purchases):
     return types, recents
 
 
-def query_recently_bought(ticker, accapi, options):
+def gen_ticker_expression(tickers):
+    """tickers is either a list, or a comma separated string of one or more tickers"""
+    if isinstance(tickers, str):
+        tickers = tickers.split(',')
+    expr = [f'CURRENCY = "{t}" OR' for t in tickers]
+    expr = ' '.join(expr)
+    expr = expr[:-3]
+    return f"({expr})"
+
+def query_recently_bought(tickers, accapi, options):
     """Looking back 30 days for purchases that would cause wash sales"""
 
     wash_pattern = options.get('wash_pattern', '')
     account_field = get_account_field(options)
     wash_pattern_sql = 'AND account ~ "{}"'.format(wash_pattern) if wash_pattern else ''
+    ticker_expr = gen_ticker_expression(tickers)
     sql = '''
     SELECT
         {account_field} as account,
@@ -192,7 +209,7 @@ def query_recently_bought(ticker, accapi, options):
       WHERE
         number > 0 AND
         date >= DATE_ADD(TODAY(), -30) AND
-        currency = "{ticker}"
+        {ticker_expr}
         {wash_pattern_sql}
       GROUP BY {account_field},date,earliest_sale
       ORDER BY date DESC
