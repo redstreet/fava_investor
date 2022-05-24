@@ -20,7 +20,9 @@ A Fava extension and a Beancount command line client are both included.
 ## Beancount Command Line Client
 
 Requires python3, argcomplete, and tabulate:
-```pip3 install argcomplete tabulate```
+```
+pip3 install argcomplete tabulate
+```
 
 Example invocation:
 ```
@@ -96,6 +98,33 @@ in the example), serving as an easy reminder for you. For example:
 2010-01-01 commodity VTI
   tlh_substitutes: "VOO"
 ```
+---
+
+### `tlh_meta_label`
+Default: `tlh_alternates`
+
+Specify the metadata _label_ used in your config to list "partner" funds for each fund
+in its commodity declaration. Eg:
+
+```
+2000-01-01 commodity VTI
+   tlh_partners: ITOT,VTHR
+   
+```
+and
+
+```
+2000-01-01 custom "fava-extension" "fava_investor" "{
+  'tlh' : {
+      'accounts_pattern': 'Assets:Investments:Taxable',
+      'wash_pattern': 'Assets:Investments',
+      'tlh_meta_label': 'tlh_partners',
+   },
+   ...
+}
+```
+2000-01-01 custom "fava-extension" "fava_investor" "{
+
 
 ## Limitations
 

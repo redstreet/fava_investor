@@ -12,7 +12,7 @@ from beancount.core.inventory import Inventory
 def get_tables(accapi, options):
     retrow_types, to_sell, recent_purchases = find_harvestable_lots(accapi, options)
     harvestable_table = retrow_types, to_sell
-    by_commodity = harvestable_by_commodity(accapi, *harvestable_table)
+    by_commodity = harvestable_by_commodity(accapi, options, *harvestable_table)
     summary = summarize_tlh(harvestable_table, by_commodity)
     recents = build_recents(recent_purchases)
 
@@ -55,9 +55,9 @@ def gain_term(bought, sold):
     return 'Short'
 
 
-def get_alternate(commodity, directives):
+def get_partner(commodity, directives, mlabel):
     metas = {} if directives.get(commodity) is None else directives[commodity].meta
-    return metas.get('tlh_alternates', '')
+    return metas.get(mlabel, '')
 
 
 def get_account_field(options):
@@ -143,7 +143,7 @@ def find_harvestable_lots(accapi, options):
     return retrow_types, to_sell, recent_purchases
 
 
-def harvestable_by_commodity(accapi, rtype, rrows):
+def harvestable_by_commodity(accapi, options, rtype, rrows):
     """Group input by sum(commodity)
     """
 
@@ -158,9 +158,10 @@ def harvestable_by_commodity(accapi, rtype, rrows):
 
     by_commodity = []
     commodities = accapi.get_commodity_directives()
+    mlabel = options.get('tlh_meta_label', 'tlh_alternates')
     for ticker, loss in sorted(losses.items(), key=lambda x: x[1], reverse=True):
         by_commodity.append(RetRow(ticker, loss, market_value[ticker],
-                            get_alternate(ticker, commodities)))
+                            get_partner(ticker, commodities, mlabel)))
 
     return retrow_types, by_commodity
 
