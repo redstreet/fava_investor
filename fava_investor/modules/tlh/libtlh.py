@@ -1,4 +1,6 @@
 #!/bin/env python3
+"""Tax loss harvesting library for Beancount. Determines tax loss harvestable commodities, and potential wash
+sales, after account for substantially similar funds."""
 
 import collections
 import locale
@@ -8,7 +10,6 @@ from dateutil import relativedelta
 from fava_investor.common.libinvestor import val, build_table_footer
 from beancount.core.number import Decimal, D
 from beancount.core.inventory import Inventory
-
 
 
 def get_tables(accapi, options):
@@ -127,7 +128,8 @@ def find_harvestable_lots(accapi, options):
     to_sell = []
     recent_purchases = {}
     commodities = accapi.get_commodity_directives()
-    wash_buy_counter = itertools.count() 
+    wash_buy_counter = itertools.count()
+    mlabel = options.get('substantially_similars_meta_label', 'substantially_similars')
 
     for row in rrows:
         if row.market_value.get_only_position() and \
@@ -140,8 +142,8 @@ def find_harvestable_lots(accapi, options):
             units, ticker = split_currency(row.units)
             recent, wash_id = recent_purchases.get(ticker, (None, None))
             if not recent:
-                partners = get_metavalue(ticker, commodities, 'a__substsimilars')
-                tps = [ticker] + partners.split(',') if partners else ticker
+                partners = get_metavalue(ticker, commodities, mlabel)
+                tps = [ticker] + partners.split(',') if partners else [ticker]
                 recent = query_recently_bought(tps, accapi, options)
                 wash_id = ''
                 if len(recent[1]):
@@ -171,7 +173,7 @@ def harvestable_by_commodity(accapi, options, rtype, rrows):
 
     by_commodity = []
     commodities = accapi.get_commodity_directives()
-    mlabel = options.get('tlh_meta_label', 'tlh_alternates')
+    mlabel = options.get('tlh_partners_meta_label', 'tlh_alternates')
     for ticker, loss in sorted(losses.items(), key=lambda x: x[1], reverse=True):
         by_commodity.append(RetRow(ticker, loss, market_value[ticker],
                             get_metavalue(ticker, commodities, mlabel)))
@@ -188,7 +190,11 @@ def build_recents(recent_purchases):
             RetRow = collections.namedtuple('RetRow', [i[0] for i in types])
             rows = [RetRow(*row, wash_id) for row in rows]
             recents += rows
-    return types, recents
+
+    # dedupe recents
+    recents_dd = []
+    [recents_dd.append(r) for r in recents if r not in recents_dd]
+    return types, recents_dd
 
 
 def gen_ticker_expression(tickers):
@@ -199,6 +205,7 @@ def gen_ticker_expression(tickers):
     expr = ' '.join(expr)
     expr = expr[:-3]
     return f"({expr})"
+
 
 def query_recently_bought(tickers, accapi, options):
     """Looking back 30 days for purchases that would cause wash sales"""

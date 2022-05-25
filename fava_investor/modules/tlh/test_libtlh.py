@@ -8,7 +8,7 @@ import os
 from beancount.utils import test_utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import libtlh
-# python3 -m unittest discover . to run
+# To run: pytest
 
 
 @functools.lru_cache(maxsize=1)
@@ -146,7 +146,7 @@ class TestScriptCheck(test_utils.TestCase):
         2010-01-01 open Assets:Bank
 
         2010-01-01 commodity BNCT
-          a__substsimilars: "ORNG"
+          substantially_similars: "ORNG"
 
         {m100} * "Buy stock"
          Assets:Investments:Taxable:Brokerage 1 BNCT {{200 USD}}
@@ -164,9 +164,7 @@ class TestScriptCheck(test_utils.TestCase):
         recents = libtlh.build_recents(recent_purchases)
 
         self.assertEqual(1, len(to_sell))
-        print(to_sell)
-        self.assertEqual(1, len(recent_purchases))
-        self.assertEqual('ORNG', recent_purchases['BNCT'][1][0].units.get_only_position().units.currency)
+        self.assertEqual(2, len(recent_purchases))
+        self.assertEqual('ORNG', recent_purchases['BNCT'][0][1][0].units.get_only_position().units.currency)
         self.assertEqual(1, len(recents[1]))
         self.assertEqual('ORNG', recents[1][0].units.get_only_position().units.currency)
-

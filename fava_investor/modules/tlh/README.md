@@ -100,7 +100,7 @@ in the example), serving as an easy reminder for you. For example:
 ```
 ---
 
-### `tlh_meta_label`
+### `tlh_partners_meta_label`
 Default: `tlh_alternates`
 
 Specify the metadata _label_ used in your config to list "partner" funds for each fund
@@ -118,13 +118,38 @@ and
   'tlh' : {
       'accounts_pattern': 'Assets:Investments:Taxable',
       'wash_pattern': 'Assets:Investments',
-      'tlh_meta_label': 'tlh_partners',
+      'tlh_partners_meta_label': 'tlh_partners',
    },
    ...
 }
 ```
-2000-01-01 custom "fava-extension" "fava_investor" "{
 
+---
+
+### `substantially_similars_meta_label`
+Default: `substantially_similars`
+
+Specify the metadata _label_ used in your config to list substantially similar funds for
+each fund in its commodity declaration. Eg:
+
+```
+2000-01-01 commodity VOO
+   subst_similars: VFINX,VFIAX,FXAIX
+   
+```
+and
+
+```
+2000-01-01 custom "fava-extension" "fava_investor" "{
+  'tlh' : {
+      'accounts_pattern': 'Assets:Investments:Taxable',
+      'wash_pattern': 'Assets:Investments',
+      'tlh_partners_meta_label': 'tlh_partners',
+      'substantially_similars_meta_label': 'subst_similars`,
+   },
+   ...
+}
+```
 
 ## Limitations
 
