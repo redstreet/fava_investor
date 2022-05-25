@@ -2,11 +2,13 @@
 
 import collections
 import locale
+import itertools
 from datetime import datetime
 from dateutil import relativedelta
 from fava_investor.common.libinvestor import val, build_table_footer
 from beancount.core.number import Decimal, D
 from beancount.core.inventory import Inventory
+
 
 
 def get_tables(accapi, options):
@@ -124,8 +126,8 @@ def find_harvestable_lots(accapi, options):
     # build our output table: calculate losses, find wash sales
     to_sell = []
     recent_purchases = {}
-    mlabel = options.get('tlh_meta_label', 'tlh_alternates')
     commodities = accapi.get_commodity_directives()
+    wash_buy_counter = itertools.count() 
 
     for row in rrows:
         if row.market_value.get_only_position() and \
@@ -136,13 +138,17 @@ def find_harvestable_lots(accapi, options):
 
             # find wash sales
             units, ticker = split_currency(row.units)
-            recent = recent_purchases.get(ticker, None)
-            partners = get_metavalue(ticker, commodities, 'a__substsimilars')
-            tps = [ticker] + partners.split(',') if partners else ticker
+            recent, wash_id = recent_purchases.get(ticker, (None, None))
             if not recent:
+                partners = get_metavalue(ticker, commodities, 'a__substsimilars')
+                tps = [ticker] + partners.split(',') if partners else ticker
                 recent = query_recently_bought(tps, accapi, options)
-                recent_purchases[ticker] = recent
-            wash = '*' if len(recent[1]) else ''
+                wash_id = ''
+                if len(recent[1]):
+                    wash_id = next(wash_buy_counter)
+                for p in tps:
+                    recent_purchases[p] = (recent, wash_id)
+            wash = wash_id if len(recent[1]) else ''
 
             to_sell.append(RetRow(row.account, units, ticker, row.acquisition_date,
                                   *split_currency(row.market_value), loss, term, wash))
@@ -176,10 +182,12 @@ def harvestable_by_commodity(accapi, options, rtype, rrows):
 def build_recents(recent_purchases):
     recents = []
     types = []
-    for t in recent_purchases:
-        if len(recent_purchases[t][1]):
-            recents += recent_purchases[t][1]
-            types = recent_purchases[t][0]
+    for t, ((header, rows), wash_id) in recent_purchases.items():
+        if len(rows):
+            types = header + [('wash', str)]
+            RetRow = collections.namedtuple('RetRow', [i[0] for i in types])
+            rows = [RetRow(*row, wash_id) for row in rows]
+            recents += rows
     return types, recents
 
 
