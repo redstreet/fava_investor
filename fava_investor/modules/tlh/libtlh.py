@@ -34,14 +34,18 @@ def sort_harvestable_table(harvestable_table, by_commodity):
     return harvestable_table
 
 
-def split_column(cols, col_name, ticker_label='split'):
+def insert_column(cols, col_name, col_type, new_col_name, new_col_type=str):
+    """Inserts a column right after col_name. If col_type is specified (is not None), changes the type fo
+    col_name to col_type"""
     retval = []
-    for i in cols:
-        if i[0] == col_name:
-            retval.append((col_name, Decimal))
-            retval.append((ticker_label, str))
+    for col, ctype in cols:
+        if col == col_name:
+            if col_type is None:
+                col_type = ctype
+            retval.append((col_name, col_type))
+            retval.append((new_col_name, new_col_type))
         else:
-            retval.append(i)
+            retval.append((col, ctype))
     return retval
 
 
@@ -112,8 +116,8 @@ def find_harvestable_lots(accapi, options):
 
     # our output table is slightly different from our query table:
     retrow_types = rtypes[:-1] + [('loss', Decimal), ('term', str), ('wash', str)]
-    retrow_types = split_column(retrow_types, 'units', ticker_label='ticker')
-    retrow_types = split_column(retrow_types, 'market_value', ticker_label='currency')
+    retrow_types = insert_column(retrow_types, 'units', Decimal, 'ticker', str)
+    retrow_types = insert_column(retrow_types, 'market_value', Decimal, 'currency', str)
 
     # rtypes:
     # [('account', <class 'str'>),
@@ -142,14 +146,14 @@ def find_harvestable_lots(accapi, options):
             units, ticker = split_currency(row.units)
             recent, wash_id = recent_purchases.get(ticker, (None, None))
             if not recent:
-                partners = get_metavalue(ticker, commodities, mlabel)
-                tps = [ticker] + partners.split(',') if partners else [ticker]
-                recent = query_recently_bought(tps, accapi, options)
+                similars = get_metavalue(ticker, commodities, mlabel)
+                ticksims = [ticker] + similars.split(',') if similars else [ticker]
+                recent = query_recently_bought(ticksims, accapi, options)
                 wash_id = ''
                 if len(recent[1]):
                     wash_id = next(wash_buy_counter)
-                for p in tps:
-                    recent_purchases[p] = (recent, wash_id)
+                for t in ticksims:
+                    recent_purchases[t] = (recent, wash_id)
             wash = wash_id if len(recent[1]) else ''
 
             to_sell.append(RetRow(row.account, units, ticker, row.acquisition_date,
@@ -259,17 +263,23 @@ def recently_sold_at_loss(accapi, options):
         return [], []
 
     # filter out losses
-    retrow_types = rtypes + [('loss', Inventory)]
-    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+    rtypes = insert_column(rtypes, 'currency', None, 'similars', str)
+    rtypes = rtypes + [('loss', Inventory)]
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in rtypes])
     return_rows = []
+
+    commodities = accapi.get_commodity_directives()
+    mlabel = options.get('substantially_similars_meta_label', 'substantially_similars')
     for row in rrows:
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))
         if loss != Inventory() and val(loss) < 0:
-            return_rows.append(RetRow(*row, loss))
+            similars = get_metavalue(row.currency, commodities, mlabel)
+            return_rows.append(RetRow(row.sale_date, row.until, row.currency, similars, row.basis,
+                                      row.proceeds, loss))
 
-    footer = build_table_footer(retrow_types, return_rows, accapi)
-    return retrow_types, return_rows, None, footer
+    footer = build_table_footer(rtypes, return_rows, accapi)
+    return rtypes, return_rows, None, footer
 
 
 def summarize_tlh(harvestable_table, by_commodity):
