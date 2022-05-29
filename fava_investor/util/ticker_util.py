@@ -2,84 +2,20 @@
 """Download and cache basic info about current beancount commodities"""
 # PYTHON_ARGCOMPLETE_OK
 
-import argh
 import argcomplete
-import os
-import sys
-import pickle
+import argh
 import datetime
+import os
 import pydoc
-import yfinance as yf
-from beancount.core import getters
-from beancount.parser import printer
-import asyncio
-import fava_investor.util.ticker_relate
-from fava_investor.util.common import *
+import sys
 
-# cusip info: https://www.quantumonline.com/search.cfm
+from beancount.parser import printer
+from fava_investor.util.relatetickers import RelateTickers
+from fava_investor.util.cachedtickerinfo import CachedTickerInfo
+
+commodities_file = os.getenv('COMMODITIES_FILE')
 bean_root = os.getenv('BEAN_ROOT', '~/')
 yf_cache = os.sep.join([bean_root, '.ticker_info.yahoo.cache'])
-
-
-def get_commodity_directives(cf=commodities_file):
-    entries, _, _ = load_file(cf)
-    return getters.get_commodity_directives(entries)
-
-def background(f):
-    def wrapped(*args, **kwargs):
-        return asyncio.get_event_loop().run_in_executor(None, f, *args, **kwargs)
-
-    return wrapped
-
-
-class CachedTickerInfo:
-    def __init__(self):
-        self.cache_file = yf_cache
-        if not os.path.exists(self.cache_file):
-            with open(self.cache_file, 'wb') as f:
-                pickle.dump({}, f)
-        with open(self.cache_file, 'rb') as f:
-            data = pickle.load(f)
-        # print(self.get_cache_last_updated())
-        self.data = data
-
-    def get_cache_last_updated(self):
-        cache_file_updated = os.path.getmtime(self.cache_file)
-        tz = datetime.datetime.now().astimezone().tzinfo
-        self.cache_last_updated = datetime.datetime.fromtimestamp(cache_file_updated, tz).isoformat()
-        return self.cache_last_updated
-
-    @background
-    def lookup_yahoo(self, ticker):
-        t_obj = yf.Ticker(ticker)
-
-        print("Downloading info for", ticker)
-        self.data[ticker] = t_obj.info
-        self.data[ticker]['isin'] = t_obj.isin
-        if self.data[ticker]['isin'] == '-':
-            self.data[ticker].pop('isin')
-        if 'annualReportExpenseRatio' in self.data[ticker]:
-            er = self.data[ticker]['annualReportExpenseRatio']
-            if er:
-                self.data[ticker]['annualReportExpenseRatio'] = round(er*100, 2)
-
-    def write_cache(self):
-        with open(self.cache_file, 'wb') as f:
-            pickle.dump(self.data, f)
-
-    def remove(self, ticker):
-        self.data.pop(ticker, None)
-        self.write_cache()
-
-    def batch_lookup(self, tickers):
-        tickers_to_lookup = [t for t in tickers if t not in self.data]
-        waiting = []
-        for ticker in tickers_to_lookup:
-            waiting.append(self.lookup_yahoo(ticker))
-        if waiting:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(asyncio.wait(waiting))
-        self.write_cache()
 
 
 @argh.aliases('add')
@@ -92,7 +28,7 @@ def add_tickers(tickers):
 
     """
     tickers = tickers.split(',')
-    ctdata = CachedTickerInfo()
+    ctdata = CachedTickerInfo(yf_cache)
     ctdata.batch_lookup(tickers)
     ctdata.write_cache()
 
@@ -101,7 +37,7 @@ def add_tickers(tickers):
 def remove_tickers(tickers):
     """Remove tickers from the database. Accepts a list of comma separated tickers."""
     tickers = tickers.split(',')
-    ctdata = CachedTickerInfo()
+    ctdata = CachedTickerInfo(yf_cache)
     for t in tickers:
         ctdata.remove(t)
 
@@ -109,7 +45,7 @@ def remove_tickers(tickers):
 @argh.aliases('list')
 def list_tickers(info=False, explore=False):
     """List tickers (and optionally, basic info) from the database."""
-    ctdata = CachedTickerInfo()
+    ctdata = CachedTickerInfo(yf_cache)
 
     if info:
         interesting = [('Ticker',  'symbol',                   '{:<6}',   6),
@@ -162,17 +98,17 @@ def gen_commodities_file(
     auto_metadata = ['quoteType', 'longName', 'isin', 'annualReportExpenseRatio']
     metadata_label_map = {'longName': 'name'}  # fava recognizes and displays 'name'
 
-    commodities = get_commodity_directives()
-    comms = ticker_relate.Commodities(cf)
-    full_tlh_db = comms.compute_tlh_groups()
+    tickerrel = RelateTickers(cf)
+    commodities = tickerrel.db
+    full_tlh_db = tickerrel.compute_tlh_groups()
 
     # update a_* metadata
-    ctdata = CachedTickerInfo()
+    ctdata = CachedTickerInfo(yf_cache)
     for c, metadata in commodities.items():
         if c in ctdata.data:
             if c in full_tlh_db:
                 metadata.meta[prefix + 'tlh_partners'] = ','.join(full_tlh_db[c])
-            metadata.meta[prefix + 'substsimilars'] = ','.join(comms.substsimilars(c))
+            metadata.meta[prefix + 'substsimilars'] = ','.join(tickerrel.substsimilars(c))
             for m in auto_metadata:
                 if m in ctdata.data[c] and ctdata.data[c][m]:
                     if m == 'isin':
@@ -202,7 +138,7 @@ def gen_commodities_file(
         print(f"Not overwriting {cf} because --confirm_overwrite was not specified")
 
 # def rewrite_er():
-#     ctdata = CachedTickerInfo()
+#     ctdata = CachedTickerInfo(yf_cache)
 #     for ticker in ctdata.data:
 #         if 'annualReportExpenseRatio' in ctdata.data[ticker] and ctdata.data[ticker]['annualReportExpenseRatio']:
 #             er = ctdata.data[ticker]['annualReportExpenseRatio']
@@ -215,7 +151,8 @@ def generate_fund_info(
         cf: "Beancount commodity declarations file" = commodities_file,
         prefix: "Metadata label prefix for generated metadata" = 'a__'):
     """Generate fund info for importers (from commodity directives in the beancount input file)"""
-    commodities = get_commodity_directives(cf)
+    tickerrel = RelateTickers(cf)
+    commodities = tickerrel.db
 
     fund_data = []
     for c in commodities:
@@ -237,6 +174,50 @@ def show_fund_info():
                 str(fund_info['money_market'])]))
 
 
+@argh.aliases('eq')
+def find_equivalents(cf: "Beancount commodity declarations file" = commodities_file):
+    """Determine equivalent groups of commodities, from an incomplete specification."""
+
+    tickerrel = RelateTickers(cf)
+    retval = tickerrel.build_commodity_groups(['equivalent'])
+    for r in retval:
+        print(r)
+
+
+@argh.aliases('sim')
+def find_similars(cf: "Beancount commodity declarations file" = commodities_file):
+    """Determine substantially similar groups of commodities from an incomplete specification. Includes
+    equivalents."""
+
+    tickerrel = RelateTickers(cf)
+    retval = tickerrel.build_commodity_groups(['equivalent', 'substsimilar'])
+    for r in retval:
+        print(r)
+
+
+def archived(cf: "Beancount commodity declarations file" = commodities_file):
+    """List archived commodities."""
+
+    tickerrel = RelateTickers(cf)
+    archived = tickerrel.archived
+    for r in archived:
+        print(r)
+
+
+def printd(d):
+    for k in d:
+        print(k, d[k])
+    print()
+
+
+@argh.aliases('tlh')
+def find_tlh_groups(cf: "Beancount commodity declarations file" = commodities_file):
+    tickerrel = RelateTickers(cf)
+    full_tlh_db = tickerrel.compute_tlh_groups()
+    for t, partners in sorted(full_tlh_db.items()):
+        print("{:<5}".format(t), partners)
+
+
 def main():
     """In all subcommands, the following environment variables are used:
         $BEAN_ROOT: root directory for beancount source(s). Downloaded info is cached in this directory
@@ -246,6 +227,8 @@ def main():
     parser = argh.ArghParser(description=main.__doc__)
     argcomplete.autocomplete(parser)
     parser.add_commands([list_tickers, add_tickers, remove_tickers, gen_commodities_file, show_fund_info])
+    parser.add_commands([find_equivalents, find_similars, find_tlh_groups, archived], namespace='relate',
+                        title='Discover relationships between tickers')
     argh.completion.autocomplete(parser)
     parser.dispatch()
 
@@ -256,3 +239,4 @@ if __name__ == '__main__':
 
 # TODOs
 # - create new commodity entries as needed, when requested
+# - cusip info: https://www.quantumonline.com/search.cfm

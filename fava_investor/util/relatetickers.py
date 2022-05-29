@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Download and cache basic info about current beancount commodities"""
-# PYTHON_ARGCOMPLETE_OK
-import argh
-import argcomplete
+
+import os
+import sys
 from collections import defaultdict
 import itertools
-import sys
-from beancount.core import getters
-from fava_investor.util.common import *
 
-class Commodities:
-    def __init__(self, cf=commodities_file):
-        entries, _, _ = load_file(cf)
+from beancount import loader
+from beancount.core import getters
+
+
+class RelateTickers:
+    def __init__(self, cf):
+        entries, _, _ = self.load_file(cf)
 
         # basic databases
         self.db = getters.get_commodity_directives(entries)
@@ -21,6 +21,16 @@ class Commodities:
         self.ssims = self.build_commodity_groups(['equivalent', 'substsimilar'])
         ssimscopy = [i.copy() for i in self.ssims]
         self.ssims_preferred = {i.pop(): i for i in ssimscopy}
+
+    def load_file(self, cf):
+        if cf is None:
+            print(f"Commodities file not specified. Set the environment variable COMMODITIES_FILE or use --cf",
+                  file=sys.stderr)
+            sys.exit(1)
+        if not os.path.exists(cf):
+            print(f"File not found: {cf}", file=sys.stderr)
+            sys.exit(1)
+        return loader.load_file(cf)
 
     def non_archived_set(self, s):
         removes = [c for c in s if c in self.archived]
@@ -178,59 +188,3 @@ class Commodities:
         tlh = {k: self.pretty_sort(v) for k, v in tlh.items()}
 
         return tlh
-
-
-@argh.aliases('eq')
-def find_equivalents(cf: "Beancount commodity declarations file" = commodities_file):
-    """Determine equivalent groups of commodities, from an incomplete specification."""
-
-    comms = Commodities(cf)
-    retval = comms.build_commodity_groups(['equivalent'])
-    for r in retval:
-        print(r)
-
-
-@argh.aliases('sim')
-def find_similars(cf: "Beancount commodity declarations file" = commodities_file):
-    """Determine substantially similar groups of commodities from an incomplete specification. Includes
-    equivalents."""
-
-    comms = Commodities(cf)
-    retval = comms.build_commodity_groups(['equivalent', 'substsimilar'])
-    for r in retval:
-        print(r)
-
-
-def archived(cf: "Beancount commodity declarations file" = commodities_file):
-    """List archived commodities."""
-
-    comms = Commodities(cf)
-    archived = comms.archived
-    for r in archived:
-        print(r)
-
-
-def printd(d):
-    for k in d:
-        print(k, d[k])
-    print()
-
-
-@argh.aliases('tlh')
-def show_tlh_groups(cf: "Beancount commodity declarations file" = commodities_file):
-    comms = Commodities(cf)
-    full_tlh_db = comms.compute_tlh_groups()
-    for t, partners in sorted(full_tlh_db.items()):
-        print("{:<5}".format(t), partners)
-
-
-def main():
-    parser = argh.ArghParser()
-    argcomplete.autocomplete(parser)
-    parser.add_commands([find_equivalents, find_similars, show_tlh_groups, archived])
-    argh.completion.autocomplete(parser)
-    parser.dispatch()
-
-
-if __name__ == '__main__':
-    main()
