@@ -25,14 +25,20 @@ setup(
         'argcomplete>=1.11.1',
         'tabulate>=0.8.3'
     ],
+    entry_points = {
+        'console_scripts': [
+            'ticker-util = fava_investor.util.ticker_util:main',
+            'ticker-relate = fava_investor.util.ticker_relate:main',
+        ]
+    },
     zip_safe=False,
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Financial and Insurance Industry',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Office/Business :: Financial :: Accounting',
         'Topic :: Office/Business :: Financial :: Investment',
