@@ -1,6 +1,6 @@
-# fava_investor
+# Fava Investor
 
-fava_investor aims to be a comprehensive set of reports, analyses, and tools for
+Fava Investor aims to be a comprehensive set of reports, analyses, and tools for
 investments, for [Beancount](https://beancount.github.io/) and
 [Fava](https://github.com/beancount/fava) (software for
 [plain text, double entry bookkeeping](https://plaintextaccounting.org/)). It is developed as a
@@ -10,16 +10,31 @@ a Beancount based CLI (command line interface).
 Interactivity and visualization are key for investing reports and tools, and hence the
 primary focus is on Fava, even though all modules will aim to have all three interfaces.
 
-#### Current modules:
+### Current modules:
 - [Visual, tree structured asset allocation by class](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/assetalloc_class#readme)
 - Asset allocation by account
 - [Tax loss harvestor](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/tlh#readme)
 - Cash drag analysis
 
-More modules including investment performance are in development.
-
 ![Screenshot: TLH](./screenshot.png)
 ![Screenshot: Asset Allocation](./screenshot-assetalloc.png)
+
+### Utilities
+
+Fava Investor ships with `ticker-util`, which is a collection of utilities for:
+- downloading information from Yahoo for commodities (tickers), and annotating your
+  commodity declarations with metadata
+- discovering relationships between tickers in your Beancount file, such as equivalent
+  and substantially similar tickers, and tax loss harvesting partner groups, from a
+  minimal and incomplete specification
+- providing ISIN an other ticker identifying information to your importers
+
+For more, install fava_investor via pip, and then see:
+```
+ticker-util --help
+ticker-util relate --help
+```
+
 
 ## Installation via pip
 ```bash

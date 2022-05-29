@@ -25,7 +25,7 @@ setup(
         'argcomplete>=1.11.1',
         'tabulate>=0.8.3'
     ],
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'ticker-util = fava_investor.util.ticker_util:main',
             'ticker-relate = fava_investor.util.ticker_relate:main',

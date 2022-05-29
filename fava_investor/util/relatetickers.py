@@ -24,7 +24,7 @@ class RelateTickers:
 
     def load_file(self, cf):
         if cf is None:
-            print(f"Commodities file not specified. Set the environment variable COMMODITIES_FILE or use --cf",
+            print("Commodities file not specified. Set the environment variable COMMODITIES_FILE or use --cf",
                   file=sys.stderr)
             sys.exit(1)
         if not os.path.exists(cf):
