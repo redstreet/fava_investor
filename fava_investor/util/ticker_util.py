@@ -112,18 +112,24 @@ def list_tickers(info=False, explore=False):
     ctdata = CachedTickerInfo()
 
     if info:
-        interesting = [('symbol',                   '{:<5}',   5),
-                       ('quoteType',                '{:<11}', 10),
-                       ('isin',                     '{:>12}', 12),
-                       ('annualReportExpenseRatio', '{:4.2f}', 4),
-                       ('longName',                 '{}',      0),
+        interesting = [('Ticker',  'symbol',                   '{:<6}',   6),
+                       ('Type',    'quoteType',                '{:<11}', 11),
+                       ('ISIN',    'isin',                     '{:>12}', 12),
+                       ('ER',      'annualReportExpenseRatio', '{:4.2f}', 4),
+                       ('Name',    'longName',                 '{}',      0),
                        ]
 
         lines = []
+
+        # print header line
+        header_line = ' '.join([f'{{:<{width}}}' for _, _, _, width in interesting])
+        lines.append(header_line.format(*[h for h, _, _, _ in interesting]))
+        lines.append(header_line.format(*['_'*(width if width else 40) for _, _, _, width in interesting]))
+
         for ticker in sorted(ctdata.data):
             info = ctdata.data[ticker]
             line = ''
-            for k, fmt, width in interesting:
+            for _, k, fmt, width in interesting:
                 try:
                     s = fmt.format(info.get(k, ''))
                 except (TypeError, ValueError):
