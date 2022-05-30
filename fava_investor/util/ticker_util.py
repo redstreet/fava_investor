@@ -88,6 +88,10 @@ def gen_commodities_file(
 
         prefix: "Metadata label prefix for generated metadata" = 'a__',
 
+        metadata: "Metadata to include" = "quoteType,longName,isin,annualReportExpenseRatio",
+
+        appends: "Metadata to append to" = "isin",
+
         include_undeclared: "Write new commodity entries for tickers the cached database, but not in the \
                              existing Beancount commodity declarations file" = False,
 
@@ -99,7 +103,8 @@ def gen_commodities_file(
 
     """Generate Beancount commodity declarations with metadata from database, and existing declarations."""
 
-    auto_metadata = ['quoteType', 'longName', 'isin', 'annualReportExpenseRatio']
+    auto_metadata = metadata.split(',')
+    auto_metadata_appends = appends.split(',')
     metadata_label_map = {'longName': 'name'}  # fava recognizes and displays 'name'
 
     tickerrel = RelateTickers(cf)
@@ -121,16 +126,17 @@ def gen_commodities_file(
     # update a_* metadata
     for c, metadata in commodities.items():
         if c in ctdata.data:
+            if tickerrel.substsimilars(c):
+                metadata.meta[prefix + 'substsimilars'] = ','.join(tickerrel.substsimilars(c))
             if c in full_tlh_db:
                 metadata.meta[prefix + 'tlh_partners'] = ','.join(full_tlh_db[c])
-            metadata.meta[prefix + 'substsimilars'] = ','.join(tickerrel.substsimilars(c))
             for m in auto_metadata:
                 if m in ctdata.data[c] and ctdata.data[c][m]:
-                    if m == 'isin':
-                        isins = set(metadata.meta.get(prefix + m, '').split(','))
-                        isins = set() if isins == set(['']) else isins
-                        isins.add(str(ctdata.data[c][m]))
-                        metadata.meta[prefix + m] = ','.join(list(isins))
+                    if m in auto_metadata_appends:
+                        mdval = set(metadata.meta.get(prefix + m, '').split(','))
+                        mdval = set() if mdval == set(['']) else mdval
+                        mdval.add(str(ctdata.data[c][m]))
+                        metadata.meta[prefix + m] = ','.join(sorted(list(mdval)))
                     else:
                         label = metadata_label_map.get(m, prefix + m)
                         metadata.meta[label] = str(ctdata.data[c][m])
