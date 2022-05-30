@@ -20,15 +20,26 @@ yf_cache = os.sep.join([bean_root, '.ticker_info.yahoo.cache'])
 
 
 @argh.aliases('add')
-def add_tickers(tickers):
-    """Download and add new tickers to database. Accepts a list of comma separated tickers.
-    To get a list of tickers from your beancount sources for the
-    very first time you run this utility, the following will help generate a list of tickers that are used in
-    your beancount source file (named accounts.beacount below):
-    bean-price -a -n accounts.beacount | sed 's/ .*//' | sed -z 's/\\n/,/g;s/,$/\\n/'
+def add_tickers(tickers='',
 
-    """
-    tickers = tickers.split(',')
+                from_file: "Add tickers declared in beancount commodity declarations file (specify the file \
+                        separately)" = False,
+
+                cf: "Beancount commodity declarations file" = commodities_file):
+
+    """Download and add new tickers to database. Accepts a list of comma separated tickers, or alternatively,
+    adds all tickers declared in the specified beancount file. The latter is useful for the very first time
+    you run this utility."""
+
+    if from_file:
+        tickerrel = RelateTickers(cf)
+        tickers = tickerrel.db
+    elif tickers:
+        tickers = tickers.split(',')
+    else:
+        print("Tickers to add not specified.", file=sys.stderr)
+        return
+
     ctdata = CachedTickerInfo(yf_cache)
     ctdata.batch_lookup(tickers)
     ctdata.write_cache()
@@ -61,7 +72,7 @@ def list_tickers(info=False, explore=False):
         # print header line
         header_line = ' '.join([f'{{:<{width}}}' for _, _, _, width in interesting])
         lines.append(header_line.format(*[h for h, _, _, _ in interesting]))
-        lines.append(header_line.format(*['_'*(width if width else 40) for _, _, _, width in interesting]))
+        lines.append(header_line.format(*['_' * (width if width else 40) for _, _, _, width in interesting]))
 
         for ticker in sorted(ctdata.data):
             info = ctdata.data[ticker]
