@@ -13,7 +13,7 @@ pip). Install beancount and fava:
 
 In the folder of your beancount journal file
 ```bash
-pip3 install fava argh argcomplete
+pip3 install fava
 git clone https://github.com/redstreet/fava_investor.git
 
 # Assuming you did this in the same directory of your beancount source, invoke the fava

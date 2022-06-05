@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # Description: CLI for asset allocation
 
-import libassetalloc
+import fava_investor.modules.assetalloc_class.libassetalloc as libassetalloc
 import beancountinvestorapi as api
 from beancount.core import realization
 from beancount.core import display_context
-import argh
-# import argcomplete
+import click
 import os
 import sys
 import tabulate
@@ -27,7 +26,7 @@ def print_balances_tree(realacc, accapi):
 def formatted_tree(root):
     rows = []
     for n, level in root.pre_order(0):
-        rows.append((' '*level+n.name, '{:,.0f}'.format(n.balance_children),
+        rows.append((' ' * level + n.name, '{:,.0f}'.format(n.balance_children),
                      '{:.1f}%'.format(n.percentage_children)))
 
     return tabulate.tabulate(rows,
@@ -36,13 +35,20 @@ def formatted_tree(root):
                              tablefmt='simple')
 
 
-@argh.arg('--accounts_patterns', nargs='+')  # NOQA
-def asset_allocation(beancount_file,  # NOQA
-                     accounts_patterns: 'Regex patterns of accounts to include in asset allocation.' = '',
-                     dump_balances_tree=False,
-                     skip_tax_adjustment=False,
-                     debug=False):
+# TODO
+# @click.option('--accounts_patterns', nargs='+')  # NOQA
 
+@click.command()
+@click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
+@click.option('--accounts-patterns', help='Regex patterns of accounts to consider', default=[], multiple=True)
+@click.option('-d', '--dump-balances-tree', help='Show tree', is_flag=True)
+@click.option('-s', '--skip-tax-adjustment', help='Skip tax adjustment', is_flag=True)
+@click.option('--debug', help='Debug', is_flag=True)
+def asset_allocation(beancount_file, accounts_patterns, dump_balances_tree, skip_tax_adjustment, debug):
+    """Beancount Asset Allocation Analyzer.
+       The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
+       command line.
+    """
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
     if not accounts_patterns:
@@ -54,16 +60,6 @@ def asset_allocation(beancount_file,  # NOQA
     if dump_balances_tree:
         print_balances_tree(realacc, accapi)
 
-# -----------------------------------------------------------------------------
-
-
-def main():
-    parser = argh.ArghParser(description="Beancount Asset Allocation Analyzer")
-    argh.set_default_command(parser, asset_allocation)
-    argh.completion.autocomplete(parser)
-    parser.dispatch()
-    return 0
-
 
 if __name__ == '__main__':
-    main()
+    asset_allocation()

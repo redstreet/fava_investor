@@ -27,7 +27,10 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'ticker-util = fava_investor.util.ticker_util:cli',
+            'fava-investor-ticker-util = fava_investor.util.ticker_util:cli',
+            'fava-investor-aa = fava_investor.modules.assetalloc_class.asset_allocation:asset_allocation',
+            'fava-investor-cashdrag = fava_investor.modules.cashdrag.cashdrag:cashdrag',
+            'fava-investor-tlh = fava_investor.modules.tlh.tlh:tlh',
         ]
     },
     zip_safe=False,

@@ -5,7 +5,7 @@ investments, for [Beancount](https://beancount.github.io/) and
 [Fava](https://github.com/beancount/fava) (software for
 [plain text, double entry bookkeeping](https://plaintextaccounting.org/)). It is developed as a
 collection of modules, with each module offering a Fava plugin, a Beancount library, and
-a Beancount based CLI (command line interface).
+a shell command.
 
 Interactivity and visualization are key for investing reports and tools, and hence the
 primary focus is on Fava, even though all modules will aim to have all three interfaces.
@@ -21,7 +21,7 @@ primary focus is on Fava, even though all modules will aim to have all three int
 
 ### Utilities
 
-Fava Investor ships with `ticker-util`, which is a collection of utilities for:
+Fava Investor ships with `fava-investor-ticker-util`, which is a collection of utilities for:
 - downloading information from Yahoo for commodities (tickers), and annotating your
   commodity declarations with metadata
 - discovering relationships between tickers in your Beancount file, such as equivalent
@@ -31,13 +31,10 @@ Fava Investor ships with `ticker-util`, which is a collection of utilities for:
 
 For more, install fava_investor via pip, and then see:
 ```
-ticker-util --help
-ticker-util relate --help
+fava-investor-ticker-util --help
+fava-investor-ticker-util relate --help
 ```
 
-`ticker-util` uses [click](https://click.palletsprojects.com/en/8.1.x/).
-[See here](https://click.palletsprojects.com/en/8.1.x/shell-completion/#enabling-completion)
-to enable shell completion in zsh, bash, or fish.
 
 ## Installation via pip
 ```bash
@@ -55,7 +52,8 @@ pip3 install beancount fava fava-investor
 ```
 on a fresh Big Sur installation is reported to work.
 
-### Running fava_investor
+## Running Fava Investor
+### Running in Fava:
 Add this to your beancount source, and start up fava as usual:
 ```
 2000-01-01 custom "fava-extension" "fava_investor" "{}"
@@ -64,7 +62,16 @@ Add this to your beancount source, and start up fava as usual:
 You should now see an 'Investor' link in the sidebar in fava. For more on how to
 configure the extension, see the included `huge-example.beancount`.
 
-#### Problems?
+### Running on the Command-Line:
+Shell command include a command for each module, and the utilities.
+
+All shell commands start with the prefix `fava-investor-`.
+ 
+All module commands and utilities (`fava-investor-ticker-util`) use [click](https://click.palletsprojects.com/en/8.1.x/).
+[See here](https://click.palletsprojects.com/en/8.1.x/shell-completion/#enabling-completion)
+to enable shell completion in zsh, bash, or fish.
+
+## Problems?
 - monitor the terminal you are running fava from to look for error output from
   fava_investor
 - Include the error messages you see above when opening bug reports or asking for help

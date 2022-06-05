@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-# PYTHON_ARGCOMPLETE_OK
-# Description: Beancount Tax Loss Harvester
+"""Beancount Tax Loss Harvester"""
 
-import libtlh
+import fava_investor.modules.tlh.libtlh as libtlh
 import beancountinvestorapi as api
-import argh
-# import argcomplete
+import click
 import tabulate
 
 
-def tlh(beancount_file,
-        accounts_pattern='',
-        loss_threshold=0,
-        wash_pattern='',
-        brief=False
-        ):
-    '''Finds opportunities for tax loss harvesting in a beancount file'''
+@click.command()
+@click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
+@click.option('--accounts-pattern', help='Regex pattern of accounts to consider', default='')
+@click.option('--loss-threshold', help='Loss threshold', default=0)
+@click.option('--wash-pattern', help='Regex patterns of accounts to consider for wash sales. '
+              'Include retirement accounts', default='')
+@click.option('--brief', help='Summary output', is_flag=True)
+def tlh(beancount_file, accounts_pattern, loss_threshold, wash_pattern, brief):
+    """Finds opportunities for tax loss harvesting in a beancount file.
+       The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
+       command line.
+    """
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
 
@@ -50,15 +53,6 @@ def tlh(beancount_file,
         print(warning)
         print("See fava plugin for better formatted and sortable output.")
 
-# -----------------------------------------------------------------------------
-
-
-def main():
-    parser = argh.ArghParser(description="Beancount Tax Loss Harvester")
-    argh.set_default_command(parser, tlh)
-    argh.completion.autocomplete(parser)
-    parser.dispatch()
-
 
 if __name__ == '__main__':
-    main()
+    tlh()

@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
-# Description: CLI for cash drag
+"""Beancount cash drag tool."""
 
-import libcashdrag
+import click
+import fava_investor.modules.cashdrag.libcashdrag as libcashdrag
 from fava_investor.common.clicommon import pretty_print_table
 import fava_investor.common.beancountinvestorapi as api
-# import argcomplete
-import argh
 
 
-def cashdrag(beancount_file,  # NOQA
-             accounts_pattern: 'Regex pattern of accounts to include in hunting cash drag.' = '',
-             accounts_exclude_pattern: 'Regex pattern of accounts to exclude in hunting cash drag.' = '',
-             debug=False):
+@click.command()
+@click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
+@click.option('--accounts-pattern', help='Regex pattern of accounts to consider', default='')
+@click.option('--accounts-exclude-pattern', help='Regex pattern of accounts to exclude in hunting cash drag.',
+              default='')
+@click.option('--debug', help='Debug', is_flag=True)
+def cashdrag(beancount_file, accounts_pattern, accounts_exclude_pattern, debug):
+    """Beancount: Identify cash across all accounts
+       The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
+       command line.
+    """
 
     argsmap = locals()
     accapi = api.AccAPI(beancount_file, argsmap)
@@ -24,14 +30,5 @@ def cashdrag(beancount_file,  # NOQA
     pretty_print_table(rtypes, rrows)
 
 
-# -----------------------------------------------------------------------------
-def main():
-    parser = argh.ArghParser(description="Beancount Asset Cash Drag")
-    argh.set_default_command(parser, cashdrag)
-    argh.completion.autocomplete(parser)
-    parser.dispatch()
-    return 0
-
-
 if __name__ == '__main__':
-    main()
+    cashdrag()
