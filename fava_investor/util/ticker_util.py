@@ -158,7 +158,7 @@ def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, writ
                 commodities[c] = data.Commodity(
                     {}, datetime.datetime.today().date(), c)
         else:
-            print("Warning: not in ", commodities_file, file=sys.stderr)
+            print("Warning: not in ", cf, file=sys.stderr)
             print(not_in_commodities_file, file=sys.stderr)
             print("Simply declare them in your commodities file, and re-rerun this util to fill in their metadata",
                   file=sys.stderr)
