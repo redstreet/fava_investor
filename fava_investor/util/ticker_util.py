@@ -35,6 +35,12 @@ will overwrite this file when requested
     pass
 
 
+@cli.group(cls=ClickAliasedGroup)
+def relate():
+    """Subcommands that find relationships between tickers."""
+    pass
+
+
 @cli.command(aliases=['add'])
 @click.option('--tickers', default='', help='Comma-separated list of tickers to add')
 @click.option('--from_file', is_flag=True, help="Add tickers declared in beancount commodity declarations "
@@ -226,7 +232,7 @@ def show_fund_info(cf, prefix):
                 str(fund_info['money_market'])]))
 
 
-@cli.command(aliases=['eq'])
+@relate.command(aliases=['eq'])
 @cf_option
 def find_equivalents(cf):
     """Determine equivalent groups of commodities, from an incomplete specification."""
@@ -237,7 +243,7 @@ def find_equivalents(cf):
         print(r)
 
 
-@cli.command(aliases=['sim'])
+@relate.command(aliases=['sim'])
 @cf_option
 def find_similars(cf):
     """Determine substantially similar groups of commodities from an incomplete specification. Includes
@@ -249,9 +255,9 @@ def find_similars(cf):
         print(r)
 
 
-@cli.command(aliases=['comm'])
+@relate.command(aliases=['archives'])
 @cf_option
-def ticker_show_archived(cf):
+def list_archived(cf):
     """List archived commodities."""
 
     tickerrel = RelateTickers(cf)
@@ -260,9 +266,10 @@ def ticker_show_archived(cf):
         print(r)
 
 
-@cli.command(aliases=['tlh'])
+@relate.command(aliases=['tlh'])
 @cf_option
 def find_tlh_groups(cf):
+    """Determine Tax Loss Harvest partner groups."""
     tickerrel = RelateTickers(cf)
     full_tlh_db = tickerrel.compute_tlh_groups()
     for t, partners in sorted(full_tlh_db.items()):
