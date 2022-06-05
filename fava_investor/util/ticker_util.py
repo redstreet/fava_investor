@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Download and cache basic info about current beancount commodities"""
-# PYTHON_ARGCOMPLETE_OK
 
-import argcomplete
-import argh
+import click
+from click_aliases import ClickAliasedGroup
 import datetime
 import os
 import pydoc
@@ -14,19 +13,34 @@ from beancount.parser import printer
 from fava_investor.util.relatetickers import RelateTickers
 from fava_investor.util.cachedtickerinfo import CachedTickerInfo
 
-commodities_file = os.getenv('COMMODITIES_FILE')
+cf_option = click.option('--cf', help="Beancount commodity declarations file", envvar='COMMODITIES_FILE',
+                         type=click.Path(exists=True))
 bean_root = os.getenv('BEAN_ROOT', '~/')
 yf_cache = os.sep.join([bean_root, '.ticker_info.yahoo.cache'])
 
 
-@argh.aliases('add')
-def add_tickers(tickers='',
+def printd(d):
+    for k in d:
+        print(k, d[k])
+    print()
 
-                from_file: "Add tickers declared in beancount commodity declarations file (specify the file \
-                        separately)" = False,
 
-                cf: "Beancount commodity declarations file" = commodities_file):
+@click.group(cls=ClickAliasedGroup)
+def cli():
+    """In all subcommands, the following environment variables are used:
+\n$BEAN_ROOT: root directory for beancount source(s). Downloaded info is cached in this directory
+\n$COMMODITIES_FILE: file with beancount commodities declarations. WARNING: the 'comm' subcommand
+will overwrite this file when requested
+    """
+    pass
 
+
+@cli.command(aliases=['add'])
+@click.option('--tickers', default='', help='Comma-separated list of tickers to add')
+@click.option('--from_file', is_flag=True, help="Add tickers declared in beancount commodity declarations "
+              "file (specify the file separately)")
+@cf_option
+def ticker_add(tickers, from_file, cf):
     """Download and add new tickers to database. Accepts a list of comma separated tickers, or alternatively,
     adds all tickers declared in the specified beancount file. The latter is useful for the very first time
     you run this utility."""
@@ -45,8 +59,9 @@ def add_tickers(tickers='',
     ctdata.write_cache()
 
 
-@argh.aliases('remove')
-def remove_tickers(tickers):
+@cli.command(aliases=['remove'])
+@click.option('--tickers', default='', help='Comma-separated list of tickers to remove')
+def ticker_remove(tickers):
     """Remove tickers from the database. Accepts a list of comma separated tickers."""
     tickers = tickers.split(',')
     ctdata = CachedTickerInfo(yf_cache)
@@ -54,8 +69,11 @@ def remove_tickers(tickers):
         ctdata.remove(t)
 
 
-@argh.aliases('list')
-def list_tickers(info=False, available_keys=False, explore=False):
+@cli.command(aliases=['list'])
+@click.option('-i', '--info', is_flag=True, help='Show extended information')
+@click.option('--available-keys', is_flag=True, help='Show all available keys')
+@click.option('-e', '--explore', is_flag=True, help='Open a Python debugger shell to explore tickers interactively')
+def ticker_list(info, available_keys, explore):
     """List tickers (and optionally, basic info) from the database."""
     ctdata = CachedTickerInfo(yf_cache)
 
@@ -70,9 +88,11 @@ def list_tickers(info=False, available_keys=False, explore=False):
         lines = []
 
         # print header line
-        header_line = ' '.join([f'{{:<{width}}}' for _, _, _, width in interesting])
+        header_line = ' '.join(
+            [f'{{:<{width}}}' for _, _, _, width in interesting])
         lines.append(header_line.format(*[h for h, _, _, _ in interesting]))
-        lines.append(header_line.format(*['_' * (width if width else 40) for _, _, _, width in interesting]))
+        lines.append(header_line.format(
+            *['_' * (width if width else 40) for _, _, _, width in interesting]))
 
         for ticker in sorted(ctdata.data):
             info = ctdata.data[ticker]
@@ -100,30 +120,25 @@ def list_tickers(info=False, available_keys=False, explore=False):
         pdb.set_trace()
 
 
-@argh.aliases('comm')
-def gen_commodities_file(
-        cf: "Beancount commodity declarations file" = commodities_file,
-
-        prefix: "Metadata label prefix for generated metadata" = 'a__',
-
-        metadata: "Metadata to include" = "quoteType,longName,isin,annualReportExpenseRatio",
-
-        appends: "Metadata to append to" = "isin",
-
-        include_undeclared: "Write new commodity entries for tickers the cached database, but not in the \
-                             existing Beancount commodity declarations file" = False,
-
-        write_file: "Overwrite the commodities file. WARNING! This does exactly what it states: it \
-                overwrites your file, assuming your commodity declarations source is a separate file (from \
-                your beancount sources) that you auto-generate with this utility." = False,
-
-        confirm_overwrite: "Specify in conjunction with --write_file to actually overwrite" = False):
-
+@cli.command(aliases=['comm'])
+@cf_option
+@click.option('--prefix', help="Metadata label prefix for generated metadata", default='a__')
+@click.option('--metadata', help="Metadata to include", default="quoteType,longName,isin,annualReportExpenseRatio")
+@click.option('--appends', help="Metadata to append to", default="isin")
+@click.option('--include_undeclared', is_flag=True, help="Write new commodity entries for tickers in the "
+              "cached database, but not in the existing Beancount commodity declarations file")
+@click.option('--write_file', is_flag=True, help="Overwrite the commodities file. WARNING! This does exactly "
+              "what it states: it overwrites your file, assuming your commodity declarations source is a "
+              "separate file (from your beancount sources) that you auto-generate with this utility.")
+@click.option('--confirm_overwrite', is_flag=True, help="Specify in conjunction with --write_file to "
+              "actually overwrite")
+def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, write_file, confirm_overwrite):
     """Generate Beancount commodity declarations with metadata from database, and existing declarations."""
 
     auto_metadata = metadata.split(',')
     auto_metadata_appends = appends.split(',')
-    metadata_label_map = {'longName': 'name'}  # fava recognizes and displays 'name'
+    # fava recognizes and displays 'name'
+    metadata_label_map = {'longName': 'name'}
 
     tickerrel = RelateTickers(cf)
     commodities = tickerrel.db
@@ -134,7 +149,8 @@ def gen_commodities_file(
     if not_in_commodities_file:
         if include_undeclared:
             for c in not_in_commodities_file:
-                commodities[c] = data.Commodity({}, datetime.datetime.today().date(), c)
+                commodities[c] = data.Commodity(
+                    {}, datetime.datetime.today().date(), c)
         else:
             print("Warning: not in ", commodities_file, file=sys.stderr)
             print(not_in_commodities_file, file=sys.stderr)
@@ -162,12 +178,14 @@ def gen_commodities_file(
     cv.sort(key=lambda x: x.currency)
 
     fout = open(cf, "w") if write_file and confirm_overwrite else sys.stdout
-    print(f"; Generated by: {os.path.basename(__file__)}, at {datetime.datetime.today().isoformat()}", file=fout)
+    print(
+        f"; Generated by: {os.path.basename(__file__)}, at {datetime.datetime.today().isoformat()}", file=fout)
     fout.flush()
     printer.print_entries(cv, file=fout)
 
     if write_file and not confirm_overwrite:
-        print(f"Not overwriting {cf} because --confirm_overwrite was not specified")
+        print(
+            f"Not overwriting {cf} because --confirm_overwrite was not specified")
 
 # def rewrite_er():
 #     ctdata = CachedTickerInfo(yf_cache)
@@ -179,9 +197,7 @@ def gen_commodities_file(
 #     # ctdata.write_cache()
 
 
-def generate_fund_info(
-        cf: "Beancount commodity declarations file" = commodities_file,
-        prefix: "Metadata label prefix for generated metadata" = 'a__'):
+def generate_fund_info(cf, prefix='a__'):
     """Generate fund info for importers (from commodity directives in the beancount input file)"""
     tickerrel = RelateTickers(cf)
     commodities = tickerrel.db
@@ -191,23 +207,28 @@ def generate_fund_info(
         cd = commodities[c]
         isins = cd.meta.get(prefix + 'isin', '').split(',')
         for i in isins:
-            fund_data.append((c, i, cd.meta.get(prefix + 'longName', 'Ticker long name unavailable')))
+            fund_data.append(
+                (c, i, cd.meta.get('name', 'Ticker long name unavailable')))
 
-    money_market = [c for c in commodities if commodities[c].meta.get(prefix + 'quoteType', '') == 'MONEYMARKET']
+    money_market = [c for c in commodities if commodities[c].meta.get(
+        prefix + 'quoteType', '') == 'MONEYMARKET']
     fund_info = {'fund_data': fund_data, 'money_market': money_market}
     return fund_info
 
 
-@argh.aliases('show')
-def show_fund_info():
+@cli.command(aliases=['show'])
+@cf_option
+@click.option('--prefix', help="Metadata label prefix for generated metadata", default='a__')
+def show_fund_info(cf, prefix):
     """Show info that is generated for importers (from commodity directives in the beancount input file)"""
-    fund_info = generate_fund_info()
+    fund_info = generate_fund_info(cf, prefix)
     pydoc.pager('\n'.join(str(i) for i in fund_info['fund_data'] + ['\nMoney Market:',
                 str(fund_info['money_market'])]))
 
 
-@argh.aliases('eq')
-def find_equivalents(cf: "Beancount commodity declarations file" = commodities_file):
+@cli.command(aliases=['eq'])
+@cf_option
+def find_equivalents(cf):
     """Determine equivalent groups of commodities, from an incomplete specification."""
 
     tickerrel = RelateTickers(cf)
@@ -216,8 +237,9 @@ def find_equivalents(cf: "Beancount commodity declarations file" = commodities_f
         print(r)
 
 
-@argh.aliases('sim')
-def find_similars(cf: "Beancount commodity declarations file" = commodities_file):
+@cli.command(aliases=['sim'])
+@cf_option
+def find_similars(cf):
     """Determine substantially similar groups of commodities from an incomplete specification. Includes
     equivalents."""
 
@@ -227,7 +249,9 @@ def find_similars(cf: "Beancount commodity declarations file" = commodities_file
         print(r)
 
 
-def archived(cf: "Beancount commodity declarations file" = commodities_file):
+@cli.command(aliases=['comm'])
+@cf_option
+def ticker_show_archived(cf):
     """List archived commodities."""
 
     tickerrel = RelateTickers(cf)
@@ -236,38 +260,17 @@ def archived(cf: "Beancount commodity declarations file" = commodities_file):
         print(r)
 
 
-def printd(d):
-    for k in d:
-        print(k, d[k])
-    print()
-
-
-@argh.aliases('tlh')
-def find_tlh_groups(cf: "Beancount commodity declarations file" = commodities_file):
+@cli.command(aliases=['tlh'])
+@cf_option
+def find_tlh_groups(cf):
     tickerrel = RelateTickers(cf)
     full_tlh_db = tickerrel.compute_tlh_groups()
     for t, partners in sorted(full_tlh_db.items()):
         print("{:<5}".format(t), partners)
 
 
-def main():
-    """In all subcommands, the following environment variables are used:
-        $BEAN_ROOT: root directory for beancount source(s). Downloaded info is cached in this directory
-        $COMMODITIES_FILE: file with beancount commodities declarations. WARNING: the 'comm' subcommand
-                           will overwrite this file when requested
-    """
-    parser = argh.ArghParser(description=main.__doc__)
-    argcomplete.autocomplete(parser)
-    parser.add_commands([list_tickers, add_tickers, remove_tickers, gen_commodities_file, show_fund_info])
-    parser.add_commands([find_equivalents, find_similars, find_tlh_groups, archived], namespace='relate',
-                        title='Discover relationships between tickers')
-    argh.completion.autocomplete(parser)
-    parser.dispatch()
-
-
 if __name__ == '__main__':
-    main()
-
+    cli()
 
 # TODOs
 # - create new commodity entries as needed, when requested

@@ -35,6 +35,9 @@ ticker-util --help
 ticker-util relate --help
 ```
 
+`ticker-util` uses [click](https://click.palletsprojects.com/en/8.1.x/).
+[See here](https://click.palletsprojects.com/en/8.1.x/shell-completion/#enabling-completion)
+to enable shell completion in zsh, bash, or fish.
 
 ## Installation via pip
 ```bash

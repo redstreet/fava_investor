@@ -21,14 +21,12 @@ setup(
     install_requires=[
         'beancount>=2.3.2',
         'fava>=1.15',
-        'argh>=0.23.3',
-        'argcomplete>=1.11.1',
-        'tabulate>=0.8.3'
+        'Click',
+        'tabulate>=0.8.3',
     ],
     entry_points={
         'console_scripts': [
             'ticker-util = fava_investor.util.ticker_util:main',
-            'ticker-relate = fava_investor.util.ticker_relate:main',
         ]
     },
     zip_safe=False,
