@@ -13,7 +13,7 @@ from beancount.parser import printer
 from fava_investor.util.relatetickers import RelateTickers
 from fava_investor.util.cachedtickerinfo import CachedTickerInfo
 
-cf_option = click.option('--cf', help="Beancount commodity declarations file", envvar='COMMODITIES_FILE',
+cf_option = click.option('--cf', help="Beancount commodity declarations file", envvar='BEAN_COMMODITIES_FILE',
                          type=click.Path(exists=True))
 bean_root = os.getenv('BEAN_ROOT', '~/')
 yf_cache = os.sep.join([bean_root, '.ticker_info.yahoo.cache'])
@@ -28,8 +28,8 @@ def printd(d):
 @click.group(cls=ClickAliasedGroup)
 def cli():
     """In all subcommands, the following environment variables are used:
-\n$BEAN_ROOT: root directory for beancount source(s). Downloaded info is cached in this directory
-\n$COMMODITIES_FILE: file with beancount commodities declarations. WARNING: the 'comm' subcommand
+\n$BEAN_ROOT: root directory for beancount source(s). Downloaded info is cached in this directory. Default: ~
+\n$BEAN_COMMODITIES_FILE: file with beancount commodities declarations. WARNING: the 'comm' subcommand
 will overwrite this file when requested
     """
     pass
