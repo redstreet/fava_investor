@@ -42,7 +42,7 @@ class CachedTickerInfo:
         if 'annualReportExpenseRatio' in self.data[ticker]:
             er = self.data[ticker]['annualReportExpenseRatio']
             if er:
-                self.data[ticker]['annualReportExpenseRatio'] = round(er*100, 2)
+                self.data[ticker]['annualReportExpenseRatio'] = round(er * 100, 2)
 
     def write_cache(self):
         with open(self.cache_file, 'wb') as f:
