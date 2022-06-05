@@ -22,11 +22,12 @@ setup(
         'beancount>=2.3.2',
         'fava>=1.15',
         'Click',
+        'click_aliases',
         'tabulate>=0.8.3',
     ],
     entry_points={
         'console_scripts': [
-            'ticker-util = fava_investor.util.ticker_util:main',
+            'ticker-util = fava_investor.util.ticker_util:cli',
         ]
     },
     zip_safe=False,
