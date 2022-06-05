@@ -35,9 +35,6 @@ def formatted_tree(root):
                              tablefmt='simple')
 
 
-# TODO
-# @click.option('--accounts_patterns', nargs='+')  # NOQA
-
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
 @click.option('--accounts-patterns', help='Regex patterns of accounts to consider', default=[], multiple=True)

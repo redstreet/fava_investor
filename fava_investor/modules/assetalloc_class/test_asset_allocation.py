@@ -3,11 +3,22 @@
 import sys
 import os
 from beancount.utils import test_utils
+import click.testing
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import asset_allocation
 
 
-class TestScriptCheck(test_utils.TestCase):
+class ClickTestCase(test_utils.TestCase):
+    """Base class for command-line program test cases."""
+
+    def run_with_args(self, function, *args):
+        runner = click.testing.CliRunner()
+        result = runner.invoke(function, args, catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+        return result
+
+
+class TestScriptCheck(ClickTestCase):
 
     @test_utils.docfile
     def test_basic_unspecified(self, filename):
@@ -22,11 +33,15 @@ class TestScriptCheck(test_utils.TestCase):
 
         2011-03-02 price BNCT 200 USD
         """
-        with test_utils.capture('stdout', 'stderr') as (stdout, _):
-            result = test_utils.run_with_args(asset_allocation.main, [filename])
-        self.assertEqual(0, result)
-        self.assertRegex(stdout.getvalue(), "unknown *200 *100.0%")
-        # self.assertLines("", stdout.getvalue())
+        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        expected_output = """
+        Warning: BNCT asset_allocation_* metadata does not add up to 100%. Padding with 'unknown'.
+        asset_type      amount    percentage
+        ------------  --------  ------------
+        Total              200        100.0%
+         unknown           200        100.0%
+        """
+        self.assertLines(expected_output, result.stdout)
 
     @test_utils.docfile
     def test_basic_specified(self, filename):
@@ -44,11 +59,15 @@ class TestScriptCheck(test_utils.TestCase):
 
         2011-03-02 price BNCT 200 USD
         """
-        with test_utils.capture('stdout', 'stderr') as (stdout, _):
-            result = test_utils.run_with_args(asset_allocation.main, [filename])
-        self.assertEqual(0, result)
-        self.assertRegex(stdout.getvalue(), "equity *120 *60.0% *")
-        self.assertRegex(stdout.getvalue(), "bond *80 *40.0% *")
+        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        expected_output = """
+        asset_type      amount    percentage
+        ------------  --------  ------------
+        Total              200        100.0%
+         equity            120         60.0%
+         bond               80         40.0%
+        """
+        self.assertLines(expected_output, result.stdout)
 
     @test_utils.docfile
     def test_basic_account_filter(self, filename):
@@ -71,12 +90,16 @@ class TestScriptCheck(test_utils.TestCase):
 
         2011-03-02 price BNCT 200 USD
         """
-        with test_utils.capture('stdout', 'stderr') as (stdout, _):
-            result = test_utils.run_with_args(asset_allocation.main, [filename,
-                                                                      '--accounts_patterns', 'Assets:Investments:Brokerage'])
-        self.assertEqual(0, result)
-        self.assertRegex(stdout.getvalue(), "equity *120 *60.0% *")
-        self.assertRegex(stdout.getvalue(), "bond *80 *40.0% *")
+        result = self.run_with_args(asset_allocation.asset_allocation, filename,
+                                    '--accounts-patterns', 'Assets:Investments:Brokerage')
+        expected_output = """
+        asset_type      amount    percentage
+        ------------  --------  ------------
+        Total              200        100.0%
+         equity            120         60.0%
+         bond               80         40.0%
+        """
+        self.assertLines(expected_output, result.stdout)
 
     @test_utils.docfile
     def test_basic_filter_exclude_parent(self, filename):
@@ -103,12 +126,16 @@ class TestScriptCheck(test_utils.TestCase):
 
         2011-03-02 price BNCT 200 USD
         """
-        with test_utils.capture('stdout', 'stderr') as (stdout, _):
-            result = test_utils.run_with_args(asset_allocation.main, [filename,
-                                                                      '--accounts_patterns', 'Assets:Investments:Brokerage'])
-        self.assertEqual(0, result)
-        self.assertRegex(stdout.getvalue(), "equity *120 *60.0% *")
-        self.assertRegex(stdout.getvalue(), "bond *80 *40.0% *")
+        result = self.run_with_args(asset_allocation.asset_allocation, filename,
+                                    '--accounts-patterns', 'Assets:Investments:Brokerage')
+        expected_output = """
+        asset_type      amount    percentage
+        ------------  --------  ------------
+        Total              200        100.0%
+         equity            120         60.0%
+         bond               80         40.0%
+        """
+        self.assertLines(expected_output, result.stdout)
 
     @test_utils.docfile
     def test_tree_empty_parent(self, filename):
@@ -127,12 +154,17 @@ class TestScriptCheck(test_utils.TestCase):
 
         2011-03-02 price BNCT 200 USD
         """
-        with test_utils.capture('stdout', 'stderr') as (stdout, _):
-            result = test_utils.run_with_args(asset_allocation.main, [filename,
-                                                                      '--accounts_patterns', 'Assets:Investments'])
-        self.assertEqual(0, result)
-        self.assertRegex(stdout.getvalue(), "equity.*100.0%")
-        self.assertRegex(stdout.getvalue(), " equity_international.*100.0%")
+        result = self.run_with_args(asset_allocation.asset_allocation, filename,
+                                    '--accounts-patterns', 'Assets:Investments')
+
+        expected_output = """
+        asset_type                amount    percentage
+        ----------------------  --------  ------------
+        Total                    140,000        100.0%
+         equity                  140,000        100.0%
+          equity_international   140,000        100.0%
+        """
+        self.assertLines(expected_output, result.stdout)
 
     @test_utils.docfile
     def test_parent_with_assets(self, filename):
@@ -158,12 +190,16 @@ class TestScriptCheck(test_utils.TestCase):
         2011-03-02 price BNDLOCAL 200 USD
         2011-03-02 price BONDS 200 USD
         """
-        with test_utils.capture('stdout', 'stderr') as (stdout, _):
-            result = test_utils.run_with_args(asset_allocation.main, [filename,
-                                                                      '--accounts_patterns', 'Assets:Investments'])
-        self.assertEqual(0, result)
-        self.assertRegex(stdout.getvalue(), " bond *800 *100.0% *")
-        self.assertRegex(stdout.getvalue(), "  bond_local *400 *50.0% *")
+        result = self.run_with_args(asset_allocation.asset_allocation, filename,
+                                    '--accounts-patterns', 'Assets:Investments')
+        expected_output = """
+        asset_type      amount    percentage
+        ------------  --------  ------------
+        Total              800        100.0%
+         bond              800        100.0%
+          bond_local       400         50.0%
+        """
+        self.assertLines(expected_output, result.stdout)
 
     @test_utils.docfile
     def test_multicurrency(self, filename):
@@ -193,9 +229,14 @@ class TestScriptCheck(test_utils.TestCase):
         2011-03-02 price SPUK   5 GBP
         2011-03-02 price GBP 1.5 USD
         """
-        with test_utils.capture('stdout', 'stderr') as (stdout, _):
-            result = test_utils.run_with_args(asset_allocation.main, [filename,
-                                                                      '--accounts_patterns', 'Assets:Investments'])
-        self.assertEqual(0, result)
-        self.assertRegex(stdout.getvalue(), " equity_domestic *500 *40.0% *")
-        self.assertRegex(stdout.getvalue(), " equity_international *750 *60.0% *")
+        result = self.run_with_args(asset_allocation.asset_allocation, filename,
+                                    '--accounts-patterns', 'Assets:Investments')
+        expected_output = """
+        asset_type                amount    percentage
+        ----------------------  --------  ------------
+        Total                      1,250        100.0%
+         equity                    1,250        100.0%
+          equity_domestic            500         40.0%
+          equity_international       750         60.0%
+        """
+        self.assertLines(expected_output, result.stdout)
