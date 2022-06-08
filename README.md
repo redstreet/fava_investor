@@ -45,12 +45,7 @@ Or to install the bleeding edge version from git:
 ```bash
 pip3 install git+https://github.com/redstreet/fava_investor
 ```
-
-See [#55](https://github.com/redstreet/fava_investor/issues/55) for MacOS installation:
-```
-pip3 install beancount fava fava-investor
-```
-on a fresh Big Sur installation is reported to work.
+See [#55](https://github.com/redstreet/fava_investor/issues/55) for MacOS installation.
 
 ## Running Fava Investor
 ### Running in Fava:
@@ -72,6 +67,6 @@ All module commands and utilities (`fava-investor-ticker-util`) use [click](http
 to enable shell completion in zsh, bash, or fish.
 
 ## Problems?
-- monitor the terminal you are running fava from to look for error output from
+- Monitor the terminal you are running fava from to look for error output from
   fava_investor
 - Include the error messages you see above when opening bug reports or asking for help

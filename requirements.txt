@@ -18,7 +18,7 @@ Click >= 7.0
 # fava_investor/fava_investor/modules/tlh/test_libtlh.py: 8
 # fava_investor/fava_investor/util/relatetickers.py: 8,9
 # fava_investor/fava_investor/util/ticker_util.py: 11,12
-beancount == 2.3.5
+beancount >= 2.3.5
 
 # fava_investor/fava_investor/util/ticker_util.py: 5
 click_aliases >= 1.0.1
@@ -26,18 +26,18 @@ click_aliases >= 1.0.1
 # fava_investor/fava_investor/__init__.py: 3,4
 # fava_investor/fava_investor/common/beancountinvestorapi.py: 27
 # fava_investor/fava_investor/common/favainvestorapi.py: 2
-fava == 1.21
+fava >= 1.21
 
 # fava_investor/fava_investor/modules/tlh/libtlh.py: 9
-python_dateutil == 2.8.1
+python_dateutil >= 2.8.1
 
 # fava_investor/setup.py: 2
-setuptools == 45.2.0
+setuptools >= 45.2.0
 
 # fava_investor/fava_investor/common/clicommon.py: 4
 # fava_investor/fava_investor/modules/assetalloc_class/asset_allocation.py: 11
 # fava_investor/fava_investor/modules/tlh/tlh.py: 7
-tabulate == 0.8.9
+tabulate >= 0.8.9
 
 # fava_investor/fava_investor/util/cachedtickerinfo.py: 6
-yfinance == 0.1.70
+yfinance >= 0.1.70
