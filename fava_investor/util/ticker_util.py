@@ -203,7 +203,7 @@ def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, writ
 #     # ctdata.write_cache()
 
 
-def generate_fund_info(cf, prefix='a__'):
+def generate_fund_info(cf=os.getenv('BEAN_COMMODITIES_FILE'), prefix='a__'):
     """Generate fund info for importers (from commodity directives in the beancount input file)"""
     tickerrel = RelateTickers(cf)
     commodities = tickerrel.db
