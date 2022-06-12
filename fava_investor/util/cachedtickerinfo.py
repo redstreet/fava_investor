@@ -6,13 +6,6 @@ import datetime
 import yfinance as yf
 
 
-def background(f):
-    def wrapped(*args, **kwargs):
-        return asyncio.get_event_loop().run_in_executor(None, f, *args, **kwargs)
-
-    return wrapped
-
-
 class CachedTickerInfo:
     def __init__(self, cache_file):
         self.cache_file = cache_file
@@ -30,7 +23,6 @@ class CachedTickerInfo:
         self.cache_last_updated = datetime.datetime.fromtimestamp(cache_file_updated, tz).isoformat()
         return self.cache_last_updated
 
-    @background
     def lookup_yahoo(self, ticker):
         t_obj = yf.Ticker(ticker)
 
@@ -53,11 +45,11 @@ class CachedTickerInfo:
         self.write_cache()
 
     def batch_lookup(self, tickers):
-        tickers_to_lookup = [t for t in tickers if t not in self.data]
-        waiting = []
-        for ticker in tickers_to_lookup:
-            waiting.append(self.lookup_yahoo(ticker))
-        if waiting:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(asyncio.wait(waiting))
+        async def download():
+            loop = asyncio.get_running_loop()
+            tickers_to_lookup = [t for t in tickers if t not in self.data]
+            tasks = [loop.run_in_executor(None, self.lookup_yahoo, ticker) for ticker in tickers_to_lookup]
+            await asyncio.gather(*tasks)
+
+        asyncio.run(download())
         self.write_cache()
