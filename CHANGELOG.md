@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.2.5 (2022-06-12)
+### New
+- ticker-util. See [here](https://groups.google.com/g/beancount/c/eewOW4HQKOI)
+
+### Improvements
+- tlh: allow specifying tlh_partner meta label. [Red S]
+- tlh: also consider substantially similar tickers in wash sale computations. [Red S]
+- tlh docs. [Red S]
+- tlh new feature: wash_ids. [Red S]
+- tlh wash_id: configurable metadata label, bugfixes. [Red S]
+- tlh: what not to buy now includes similars. [Red S]
+- rename env var to BEAN_COMMODITIES_FILE. [Red S]
+
+
+### Other
+
+- build: requirements via pigar. [Red S]
+- doc: create changelog + gitchangelog config. [Red S]
+- doc: examples. [Red S]
+- doc: README upate. Relaxed requirements. [Red S]
+- refactor: favainvestorapi cleanup. [Red S]
+- refactor: upgrade deprecated asyncio code. [Red S]
+- ticker-util: and ticker-relate: major refactor into a single utility. [Red S]
+- ticker-util: available keys. [Red S]
+- ticker-util: click: relate subcommand group. [Red S]
+- ticker_util: feature: add from commodities file. [Red S]
+- ticker-util: feature add: include undeclared. [Red S]
+- ticker-util: features: specify metadata, appends as cli args. [Red S] also: empty substsimilar metadata is excluded
+- ticker-util: header. [Red S]
+- ticker-util: moved to click. [Red S]
+
+
 ## 0.2.4 (2022-05-12)
 
 
