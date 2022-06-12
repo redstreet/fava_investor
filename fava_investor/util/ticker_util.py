@@ -5,7 +5,6 @@ import click
 from click_aliases import ClickAliasedGroup
 import datetime
 import os
-import pydoc
 import sys
 
 from beancount.core import data
@@ -110,13 +109,13 @@ def ticker_list(info, available_keys, explore):
                     s = ' ' * width
                 line += s + ' '
             lines.append(line)
-        pydoc.pager('\n'.join(lines))
+        click.echo_via_pager('\n'.join(lines))
     elif available_keys:
         lines = []
         for k, v in ctdata.data.items():
             lines.append(k)
             lines.append('\n '.join([i for i in v]))
-        pydoc.pager('\n'.join(lines))
+        click.echo_via_pager('\n'.join(lines))
     else:
         print(','.join(ctdata.data.keys()))
 
@@ -228,8 +227,8 @@ def generate_fund_info(cf=os.getenv('BEAN_COMMODITIES_FILE'), prefix='a__'):
 def show_fund_info(cf, prefix):
     """Show info that is generated for importers (from commodity directives in the beancount input file)"""
     fund_info = generate_fund_info(cf, prefix)
-    pydoc.pager('\n'.join(str(i) for i in fund_info['fund_data'] + ['\nMoney Market:',
-                str(fund_info['money_market'])]))
+    click.echo_via_pager('\n'.join(str(i) for i in fund_info['fund_data'] + ['\nMoney Market:',
+                         str(fund_info['money_market'])]))
 
 
 @relate.command(aliases=['eq'])

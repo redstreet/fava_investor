@@ -19,11 +19,14 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'beancount>=2.3.2',
-        'fava>=1.15',
-        'Click',
-        'click_aliases',
-        'tabulate>=0.8.3',
+        'Click >= 7.0',
+        'beancount >= 2.3.2',
+        'click_aliases >= 1.0.1',
+        'fava >= 1.15',
+        'packaging >= 20.3',
+        'python_dateutil >= 2.8.1',
+        'tabulate >= 0.8.9',
+        'yfinance >= 0.1.70',
     ],
     entry_points={
         'console_scripts': [
