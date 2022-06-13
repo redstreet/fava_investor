@@ -18,6 +18,8 @@ def tlh(beancount_file, brief):
 
        The configuration for this module is expected to be supplied as a custom directive like so in your
        beancount file:
+
+       \b
         2010-01-01 custom "fava-extension" "fava_investor" "{
           'tlh' : { 'accounts_pattern': 'Assets:Investments:Taxable',
                     'loss_threshold': 0,
