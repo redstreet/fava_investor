@@ -34,6 +34,7 @@ setup(
             'fava-investor-aa = fava_investor.modules.assetalloc_class.asset_allocation:asset_allocation',
             'fava-investor-cashdrag = fava_investor.modules.cashdrag.cashdrag:cashdrag',
             'fava-investor-tlh = fava_investor.modules.tlh.tlh:tlh',
+            'fava-investor-summarizer = fava_investor.modules.summarizer.summarizer:summarizer',
         ]
     },
     zip_safe=False,
