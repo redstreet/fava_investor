@@ -6,6 +6,8 @@ from beancount.core import prices
 from beancount.core import realization
 from beancount.query import query
 from beancount.core.data import Open
+from beancount.core.data import Custom
+import ast
 
 
 class AccAPI:
@@ -55,3 +57,18 @@ class AccAPI:
     #     if include_children:
     #         return cost_or_value(node.balance_children, date)
     #     return cost_or_value(node.balance, date)
+
+    def get_custom_config(self, module_name):
+        _extension_entries = [e for e in self.entries
+                          if isinstance(e, Custom) and e.type == 'fava-extension']
+        config_meta = {entry.values[0].value:
+                  (entry.values[1].value if (len(entry.values) == 2) else None)
+                  for entry in _extension_entries}
+
+        all_configs = {k: ast.literal_eval(v) for k, v in config_meta.items() if 'fava_investor' in k}
+
+        # extract conig for just this module:
+        module_config = [v[module_name] for k, v in all_configs.items() if module_name in v]
+        if module_config:
+            return module_config[0]
+        return module_config
