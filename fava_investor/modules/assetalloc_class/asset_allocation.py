@@ -37,20 +37,26 @@ def formatted_tree(root):
 
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
-@click.option('--accounts-patterns', help='Regex patterns of accounts to consider', default=[], multiple=True)
 @click.option('-d', '--dump-balances-tree', help='Show tree', is_flag=True)
-@click.option('-s', '--skip-tax-adjustment', help='Skip tax adjustment', is_flag=True)
-@click.option('--debug', help='Debug', is_flag=True)
-def asset_allocation(beancount_file, accounts_patterns, dump_balances_tree, skip_tax_adjustment, debug):
+def asset_allocation(beancount_file, dump_balances_tree):
     """Beancount Asset Allocation Analyzer.
+
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
        command line.
+
+       The configuration for this module is expected to be supplied as a custom directive like so in your
+       beancount file:
+
+       \b
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'asset_alloc_by_class' : {
+              'accounts_patterns': ['Assets:(Investments|Banks)'],
+              'skip-tax-adjustment': True,
+          }}"
     """
-    argsmap = locals()
-    accapi = api.AccAPI(beancount_file, argsmap)
-    if not accounts_patterns:
-        del argsmap['accounts_patterns']
-    asset_buckets_tree, realacc = libassetalloc.assetalloc(accapi, argsmap)
+    accapi = api.AccAPI(beancount_file, {})
+    config = accapi.get_custom_config('asset_alloc_by_class')
+    asset_buckets_tree, realacc = libassetalloc.assetalloc(accapi, config)
 
     print(formatted_tree(asset_buckets_tree))
 
