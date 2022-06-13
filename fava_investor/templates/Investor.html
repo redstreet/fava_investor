@@ -11,6 +11,11 @@
   {% endfor %}
 </div>
 
+{% if (module == None) %}
+Welcome! Fava Investor is implemented as a collection of modules. Use the tabs on the
+top to view each module.
+{% endif %}
+
 
 {% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
