@@ -9,24 +9,26 @@ import fava_investor.common.beancountinvestorapi as api
 
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
-@click.option('--accounts-pattern', help='Regex pattern of accounts to consider', default='')
-@click.option('--accounts-exclude-pattern', help='Regex pattern of accounts to exclude in hunting cash drag.',
-              default='')
-@click.option('--debug', help='Debug', is_flag=True)
-def cashdrag(beancount_file, accounts_pattern, accounts_exclude_pattern, debug):
-    """Beancount: Identify cash across all accounts
+def cashdrag(beancount_file):
+    """Cashdrag: Identify cash across all accounts.
+
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
        command line.
-    """
 
-    argsmap = locals()
-    accapi = api.AccAPI(beancount_file, argsmap)
-    if not accounts_pattern:
-        del argsmap['accounts_pattern']
-    if not accounts_exclude_pattern:
-        del argsmap['accounts_exclude_pattern']
-    rtypes, rrows, _, total = libcashdrag.find_loose_cash(accapi, argsmap)
-    print("Total: {}".format(total))
+       The configuration for this module is expected to be supplied as a custom directive like so in your
+       beancount file:
+
+       \b
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'cashdrag': {
+              'accounts_pattern':         '^Assets:.*',
+              'accounts_exclude_pattern': '^Assets:(Cash-In-Wallet.*|Zero-Sum)',
+              'metadata_label_cash'     : 'asset_allocation_Bond_Cash'
+        }}"
+    """
+    accapi = api.AccAPI(beancount_file, {})
+    config = accapi.get_custom_config('cashdrag')
+    rtypes, rrows, _, footer = libcashdrag.find_loose_cash(accapi, config)
     pretty_print_table(rtypes, rrows)
 
 
