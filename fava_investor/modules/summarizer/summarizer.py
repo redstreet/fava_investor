@@ -3,7 +3,7 @@
 
 import click
 import fava_investor.common.beancountinvestorapi as api
-import libsummarizer
+import fava_investor.modules.summarizer.libsummarizer as libsummarizer
 import tabulate
 tabulate.PRESERVE_WHITESPACE = True
 
