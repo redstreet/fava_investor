@@ -9,21 +9,27 @@ import tabulate
 
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
-@click.option('--accounts-pattern', help='Regex pattern of accounts to consider', default='')
-@click.option('--loss-threshold', help='Loss threshold', default=0)
-@click.option('--wash-pattern', help='Regex patterns of accounts to consider for wash sales. '
-              'Include retirement accounts', default='')
 @click.option('--brief', help='Summary output', is_flag=True)
-def tlh(beancount_file, accounts_pattern, loss_threshold, wash_pattern, brief):
+def tlh(beancount_file, brief):
     """Finds opportunities for tax loss harvesting in a beancount file.
+
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
        command line.
-    """
-    argsmap = locals()
-    accapi = api.AccAPI(beancount_file, argsmap)
 
-    config = {'accounts_pattern': accounts_pattern, 'loss_threshold': loss_threshold,
-              'wash_pattern': wash_pattern}
+       The configuration for this module is expected to be supplied as a custom directive like so in your
+       beancount file:
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'tlh' : { 'accounts_pattern': 'Assets:Investments:Taxable',
+                    'loss_threshold': 0,
+                    'wash_pattern': 'Assets:Investments',
+                    'account_field': 2,
+                    'tlh_partners_meta_label': 'a__tlh_partners',
+                    'substantially_similars_meta_label': 'a__substsimilars',
+           }}"
+
+    """
+    accapi = api.AccAPI(beancount_file, {})
+    config = accapi.get_custom_config('tlh')
     harvestable_table, summary, recents, by_commodity = libtlh.get_tables(accapi, config)
     dontbuy = libtlh.recently_sold_at_loss(accapi, config)
     to_sell_types, to_sell = harvestable_table
