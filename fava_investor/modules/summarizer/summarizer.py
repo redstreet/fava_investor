@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI for Metadata Summarizer for Beancount. See libsummarizer for more info."""
+"""CLI for Metadata Summarizer for Beancount."""
 
 import click
 import fava_investor.common.beancountinvestorapi as api
@@ -11,7 +11,8 @@ import tabulate
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
 def summarizer(beancount_file):
-    """Displays metadata summaries from a config, as tables.
+    """Displays metadata summaries from a config, as tables. See accompanying README for configuring and
+       options.
 
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
        command line.

@@ -1,4 +1,5 @@
 #!/bin/env python3
+"""Metadata summarizer library for Beancount. See accompanying README.md for documentation."""
 
 import collections
 import re
