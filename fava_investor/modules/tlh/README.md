@@ -17,28 +17,25 @@ not be allowable due to wash sales are marked.
 
 A Fava extension and a Beancount command line client are both included.
 
-## Beancount Command Line Client
-
-Requires python3, argcomplete, and tabulate:
-```
-pip3 install argcomplete tabulate
-```
-
-Example invocation:
-```
-./tlh.py example.bc -a "Assets:Investments:Taxable" --wash-pattern "Assets:Investments"
-```
-
-`--brief` displays just the summary. See `./tlh.py --help` for all options.
-
-
 ## Fava Installation
 
 See [fava_investor](https://github.com/redstreet/fava_investor)
 
+## Beancount Command Line Client
+
+Example invocation:
+```
+fava-investor-tlh example.bc
+```
+
+`--brief` displays just the summary. See `fava-investor-tlh --help` for all options.
+
+The command line client also uses the same Fava configuration shown below.
+
+
 ## Configuration
 
-Configure TLH by including the following lines in yourbeancount source. Example:
+Configure TLH by including the following lines in your Beancount source. Example:
 
 ```
 2010-01-01 custom "fava-extension" "fava_investor" "{

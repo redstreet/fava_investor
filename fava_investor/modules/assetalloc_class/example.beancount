@@ -36,3 +36,8 @@ option "operating_currency" "USD"
 2011-03-02 price BNCT 200 USD
 2011-03-02 price COFE  75 USD
 
+2010-01-01 custom "fava-extension" "fava_investor" "{
+ 'asset_alloc_by_class' : {
+     'accounts_patterns': ['Assets:Investments'],
+ }
+}"
