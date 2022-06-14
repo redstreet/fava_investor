@@ -2,9 +2,9 @@
 """Beancount Tax Loss Harvester"""
 
 import fava_investor.modules.tlh.libtlh as libtlh
-import beancountinvestorapi as api
+import fava_investor.common.beancountinvestorapi as api
+from fava_investor.common.clicommon import pretty_print_table
 import click
-import tabulate
 
 
 @click.command()
@@ -34,17 +34,14 @@ def tlh(beancount_file, brief):
     config = accapi.get_custom_config('tlh')
     harvestable_table, summary, recents, by_commodity = libtlh.get_tables(accapi, config)
     dontbuy = libtlh.recently_sold_at_loss(accapi, config)
-    to_sell_types, to_sell = harvestable_table
 
-    def pretty_print(title, types, rows):
+    def pretty_print(title, rtypes, rrows, **kwargs):
         if title:
             print(title)
-        headers = [ts[0] for ts in types]
-        if rows:
-            print(tabulate.tabulate(rows, headers=headers))
+        if rrows:
+            pretty_print_table(rtypes, rrows, **kwargs)
         else:
             print('(empty table)')
-        print()
 
     for k, v in summary.items():
         print("{:30}: {:>}".format(k, v))

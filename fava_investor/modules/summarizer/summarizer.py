@@ -4,17 +4,8 @@
 import click
 import fava_investor.common.beancountinvestorapi as api
 import fava_investor.modules.summarizer.libsummarizer as libsummarizer
+from fava_investor.common.clicommon import pretty_print_table
 import tabulate
-tabulate.PRESERVE_WHITESPACE = True
-
-
-def pretty_print_table(rtypes, rrows):
-    # TODO: Use the one in common
-    headers = [i[0] for i in rtypes]
-    print(tabulate.tabulate(rrows,
-                            headers=headers[1:],
-                            tablefmt='simple',
-                            floatfmt=",.0f"))
 
 
 @click.command()
@@ -45,7 +36,7 @@ def summarizer(beancount_file):
     tables = libsummarizer.build_tables(accapi, configs)
     for title, (rtypes, rrows, _, _) in tables:
         print("# " + title)
-        pretty_print_table(rtypes, rrows)
+        pretty_print_table(rtypes, rrows, floatfmt=",.0f")
         print()
         print()
 

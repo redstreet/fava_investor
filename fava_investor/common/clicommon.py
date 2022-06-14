@@ -5,11 +5,11 @@ import tabulate
 tabulate.PRESERVE_WHITESPACE = True
 
 
-def pretty_print_table(rtypes, rrows):
+def pretty_print_table(rtypes, rrows, **kwargs):
     headers = [i[0] for i in rtypes]
-    print(tabulate.tabulate(rrows,
-                            headers=headers[1:],
-                            tablefmt='simple'))
+    options = {'tablefmt': 'simple'}
+    options.update(kwargs)
+    print(tabulate.tabulate(rrows, headers=headers, **options))
 
 
 def pretty_print_table_bare(rrows):
