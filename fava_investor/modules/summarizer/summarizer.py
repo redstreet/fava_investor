@@ -5,7 +5,6 @@ import click
 import fava_investor.common.beancountinvestorapi as api
 import fava_investor.modules.summarizer.libsummarizer as libsummarizer
 from fava_investor.common.clicommon import pretty_print_table
-import tabulate
 
 
 @click.command()

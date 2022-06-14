@@ -26,7 +26,8 @@ class Node(object):
     def pre_order(self, level=0):
         yield self, level
         for c in self.children:
-            yield from c.pre_order(level+1)
+            yield from c.pre_order(level + 1)
+
 
 def val(inv):
     if inv is not None:
@@ -36,7 +37,6 @@ def val(inv):
     if inv.is_empty():
         return 0
     return None
-
 
 
 def build_table_footer(types, rows, accapi):

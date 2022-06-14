@@ -59,11 +59,12 @@ class AccAPI:
     #     return cost_or_value(node.balance, date)
 
     def get_custom_config(self, module_name):
+        """Get fava config for the given plugin that can then be used on the command line"""
         _extension_entries = [e for e in self.entries
-                          if isinstance(e, Custom) and e.type == 'fava-extension']
+                              if isinstance(e, Custom) and e.type == 'fava-extension']
         config_meta = {entry.values[0].value:
-                  (entry.values[1].value if (len(entry.values) == 2) else None)
-                  for entry in _extension_entries}
+                       (entry.values[1].value if (len(entry.values) == 2) else None)
+                       for entry in _extension_entries}
 
         all_configs = {k: ast.literal_eval(v) for k, v in config_meta.items() if 'fava_investor' in k}
 
