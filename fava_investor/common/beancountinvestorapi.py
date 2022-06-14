@@ -72,4 +72,4 @@ class AccAPI:
         module_config = [v[module_name] for k, v in all_configs.items() if module_name in v]
         if module_config:
             return module_config[0]
-        return module_config
+        return {}

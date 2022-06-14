@@ -89,9 +89,13 @@ class TestScriptCheck(ClickTestCase):
          Assets:Bank
 
         2011-03-02 price BNCT 200 USD
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'asset_alloc_by_class' : {
+              'accounts_patterns': ['Assets:Investments:Brokerage'],
+          }
+        }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename,
-                                    '--accounts-patterns', 'Assets:Investments:Brokerage')
+        result = self.run_with_args(asset_allocation.asset_allocation, filename)
         expected_output = """
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -125,9 +129,13 @@ class TestScriptCheck(ClickTestCase):
          Assets:Bank
 
         2011-03-02 price BNCT 200 USD
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'asset_alloc_by_class' : {
+              'accounts_patterns': ['Assets:Investments:Brokerage'],
+          }
+        }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename,
-                                    '--accounts-patterns', 'Assets:Investments:Brokerage')
+        result = self.run_with_args(asset_allocation.asset_allocation, filename)
         expected_output = """
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -153,10 +161,13 @@ class TestScriptCheck(ClickTestCase):
           Assets:Bank
 
         2011-03-02 price BNCT 200 USD
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'asset_alloc_by_class' : {
+              'accounts_patterns': ['Assets:Investments'],
+          }
+        }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename,
-                                    '--accounts-patterns', 'Assets:Investments')
-
+        result = self.run_with_args(asset_allocation.asset_allocation, filename)
         expected_output = """
         asset_type                amount    percentage
         ----------------------  --------  ------------
@@ -189,9 +200,13 @@ class TestScriptCheck(ClickTestCase):
 
         2011-03-02 price BNDLOCAL 200 USD
         2011-03-02 price BONDS 200 USD
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'asset_alloc_by_class' : {
+              'accounts_patterns': ['Assets:Investments'],
+          }
+        }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename,
-                                    '--accounts-patterns', 'Assets:Investments')
+        result = self.run_with_args(asset_allocation.asset_allocation, filename)
         expected_output = """
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -228,9 +243,13 @@ class TestScriptCheck(ClickTestCase):
         2011-03-02 price SPFIVE 5 USD
         2011-03-02 price SPUK   5 GBP
         2011-03-02 price GBP 1.5 USD
+        2010-01-01 custom "fava-extension" "fava_investor" "{
+          'asset_alloc_by_class' : {
+              'accounts_patterns': ['Assets:Investments'],
+          }
+        }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename,
-                                    '--accounts-patterns', 'Assets:Investments')
+        result = self.run_with_args(asset_allocation.asset_allocation, filename)
         expected_output = """
         asset_type                amount    percentage
         ----------------------  --------  ------------
