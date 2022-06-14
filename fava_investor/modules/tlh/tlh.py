@@ -35,28 +35,21 @@ def tlh(beancount_file, brief):
     harvestable_table, summary, recents, by_commodity = libtlh.get_tables(accapi, config)
     dontbuy = libtlh.recently_sold_at_loss(accapi, config)
 
-    def pretty_print(title, rtypes, rrows, **kwargs):
-        if title:
-            print(title)
-        if rrows:
-            pretty_print_table(rtypes, rrows, **kwargs)
-        else:
-            print('(empty table)')
+    def _gen_output():
+        yield click.style("Summary" + '\n', bg='green', fg='white')
+        for k, v in summary.items():
+            yield "{:30}: {:>}\n".format(k, v)
+        yield '\n'
+        yield pretty_print_table("By commodity", *by_commodity)
 
-    for k, v in summary.items():
-        print("{:30}: {:>}".format(k, v))
-    print()
-    pretty_print("By commodity", *by_commodity)
+        if not brief:
+            yield pretty_print_table("Lot detail", *harvestable_table)
+            yield pretty_print_table("Wash sale purchases:", *recents)
+            yield pretty_print_table("What not to buy", dontbuy[0], dontbuy[1])
 
-    if not brief:
-        pretty_print("Lot detail", *harvestable_table)
-        pretty_print("Wash sale purchases:", *recents)
-        print()
-        pretty_print("What not to buy", dontbuy[0], dontbuy[1])
-
-        warning = '''Note: Turn OFF dividend reinvestment for all these tickers across ALL accounts'''
-        print(warning)
-        print("See fava plugin for better formatted and sortable output.")
+            yield "Note: Turn OFF dividend reinvestment for all these tickers across ALL accounts.\n"
+            yield "See fava plugin for better formatted and sortable output.\n"
+    click.echo_via_pager(_gen_output())
 
 
 if __name__ == '__main__':

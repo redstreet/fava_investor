@@ -11,8 +11,7 @@ import tabulate
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
 def summarizer(beancount_file):
-    """Displays metadata summaries from a config, as tables. See accompanying README for configuring and
-       options.
+    """Displays metadata summaries from a config, as tables.
 
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
        command line.
@@ -35,11 +34,12 @@ def summarizer(beancount_file):
     accapi = api.AccAPI(beancount_file, {})
     configs = accapi.get_custom_config('summarizer')
     tables = libsummarizer.build_tables(accapi, configs)
-    for title, (rtypes, rrows, _, _) in tables:
-        print("# " + title)
-        pretty_print_table(rtypes, rrows, floatfmt=",.0f")
-        print()
-        print()
+
+    def _gen_output():
+        for title, (rtypes, rrows, _, _) in tables:
+            yield pretty_print_table(title, rtypes, rrows, floatfmt=",.0f")
+
+    click.echo_via_pager(_gen_output())
 
 
 if __name__ == '__main__':

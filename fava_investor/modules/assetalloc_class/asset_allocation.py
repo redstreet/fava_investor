@@ -58,7 +58,7 @@ def asset_allocation(beancount_file, dump_balances_tree):
     config = accapi.get_custom_config('asset_alloc_by_class')
     asset_buckets_tree, realacc = libassetalloc.assetalloc(accapi, config)
 
-    print(formatted_tree(asset_buckets_tree))
+    click.echo_via_pager(formatted_tree(asset_buckets_tree))
 
     if dump_balances_tree:
         print_balances_tree(realacc, accapi)
