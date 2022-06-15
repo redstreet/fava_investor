@@ -38,9 +38,8 @@ class FavaInvestorAPI:
         return getters.get_account_open_close(self.ledger.entries)
 
     def get_account_open(self):
-        oc = getters.get_account_open_close(self.entries)
-        opens = [e for e in oc if isinstance(e, Open)]
-        return opens
+        # TODO: below is probably fava only, and needs to be made beancount friendly
+        return self.ledger.all_entries_by_type.Open
 
     def cost_or_value(self, node, date, include_children):
         if include_children:
