@@ -179,8 +179,8 @@ def harvestable_by_commodity(accapi, options, rtype, rrows):
     commodities = accapi.get_commodity_directives()
     mlabel = options.get('tlh_partners_meta_label', 'tlh_alternates')
     for ticker, loss in sorted(losses.items(), key=lambda x: x[1], reverse=True):
-        by_commodity.append(RetRow(ticker, loss, market_value[ticker],
-                            get_metavalue(ticker, commodities, mlabel)))
+        alts = get_metavalue(ticker, commodities, mlabel).replace(',', ', ')
+        by_commodity.append(RetRow(ticker, loss, market_value[ticker], alts))
 
     return retrow_types, by_commodity
 
@@ -188,7 +188,7 @@ def harvestable_by_commodity(accapi, options, rtype, rrows):
 def build_recents(recent_purchases):
     recents = []
     types = []
-    for t, ((header, rows), wash_id) in recent_purchases.items():
+    for _, ((header, rows), wash_id) in recent_purchases.items():
         if len(rows):
             types = header + [('wash', str)]
             RetRow = collections.namedtuple('RetRow', [i[0] for i in types])
@@ -274,7 +274,7 @@ def recently_sold_at_loss(accapi, options):
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))
         if loss != Inventory() and val(loss) < 0:
-            similars = get_metavalue(row.currency, commodities, mlabel)
+            similars = get_metavalue(row.currency, commodities, mlabel).replace(',', ', ')
             return_rows.append(RetRow(row.sale_date, row.until, row.currency, similars, row.basis,
                                       row.proceeds, loss))
 
