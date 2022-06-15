@@ -10,7 +10,7 @@ To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fav
 
 Command line client:
 ```
-fava-investor-aa example.beancount
+investor assetalloc-class example.beancount
 ```
 The command line client also uses the same Fava configuration shown below.
 

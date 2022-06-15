@@ -5,7 +5,7 @@ import os
 from beancount.utils import test_utils
 import click.testing
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
-import asset_allocation
+import assetalloc_class
 
 
 class ClickTestCase(test_utils.TestCase):
@@ -33,7 +33,7 @@ class TestScriptCheck(ClickTestCase):
 
         2011-03-02 price BNCT 200 USD
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
         Warning: BNCT asset_allocation_* metadata does not add up to 100%. Padding with 'unknown'.
         asset_type      amount    percentage
@@ -59,7 +59,7 @@ class TestScriptCheck(ClickTestCase):
 
         2011-03-02 price BNCT 200 USD
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -95,7 +95,7 @@ class TestScriptCheck(ClickTestCase):
           }
         }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -135,7 +135,7 @@ class TestScriptCheck(ClickTestCase):
           }
         }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -167,7 +167,7 @@ class TestScriptCheck(ClickTestCase):
           }
         }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
         asset_type                amount    percentage
         ----------------------  --------  ------------
@@ -206,7 +206,7 @@ class TestScriptCheck(ClickTestCase):
           }
         }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -249,7 +249,7 @@ class TestScriptCheck(ClickTestCase):
           }
         }"
         """
-        result = self.run_with_args(asset_allocation.asset_allocation, filename)
+        result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
         asset_type                amount    percentage
         ----------------------  --------  ------------

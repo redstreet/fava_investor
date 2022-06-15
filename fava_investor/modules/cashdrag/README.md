@@ -9,8 +9,8 @@ To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fav
 
 Command line client:
 ```
-fava-investor-cashdrag example.bc
-fava-investor-cashdrag --help
+investor cashdrag example.bc
+investor cashdrag --help
 ```
 The command line client also uses the same Fava configuration shown below.
 

@@ -22,7 +22,7 @@ primary focus is on Fava, even though all modules will aim to have all three int
 
 ### Utilities
 
-Fava Investor ships with `fava-investor-ticker-util`, which is a collection of utilities for:
+Fava Investor ships with `ticker-util`, which is a collection of utilities for:
 - downloading information from Yahoo for commodities (tickers), and annotating your
   commodity declarations with metadata
 - discovering relationships between tickers in your Beancount file, such as equivalent
@@ -32,8 +32,8 @@ Fava Investor ships with `fava-investor-ticker-util`, which is a collection of u
 
 For more, install fava_investor via pip, and then see:
 ```
-fava-investor-ticker-util --help
-fava-investor-ticker-util relate --help
+ticker-util --help
+ticker-util relate --help
 ```
 
 
@@ -59,13 +59,18 @@ You should now see an 'Investor' link in the sidebar in fava. For more on how to
 configure the extension, see the included `huge-example.beancount`.
 
 ### Running on the Command-Line:
-Shell command include a command for each module, and the utilities.
+The command line interface (CLI) is accessed using the `investor` command, which has
+subcommands for each module. Eg:
 
-All shell commands start with the prefix `fava-investor-`.
- 
-All module commands and utilities (`fava-investor-ticker-util`) use [click](https://click.palletsprojects.com/en/8.1.x/).
+```
+investor assetalloc-class
+investor tlh
+investor --help
+```
+
+Both the CLI and the utility (`ticker-util`) use [click](https://click.palletsprojects.com/en/8.1.x/).
 [See here](https://click.palletsprojects.com/en/8.1.x/shell-completion/#enabling-completion)
-to enable shell completion in zsh, bash, or fish.
+to enable shell completion in zsh, bash, or fish, which is highly recommended.
 
 ## Problems?
 - Monitor the terminal you are running fava from to look for error output from

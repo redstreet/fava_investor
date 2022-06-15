@@ -23,8 +23,8 @@ To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fav
 
 Command line client:
 ```
-fava-investor-tlh example.bc
-fava-investor-tlh --brief example.bc
+investor tlh example.bc
+investor tlh --brief example.bc
 ```
 The command line client also uses the same Fava configuration shown below.
 

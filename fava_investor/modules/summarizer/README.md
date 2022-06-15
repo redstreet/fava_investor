@@ -33,23 +33,11 @@ To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fav
 
 Command line client:
 ```
-fava-investor-summarizer example.beancount
-fava-investor-summarizer --help              # for all options
+investor summarizer example.beancount
+investor summarizer --help              # for all options
 ```
 
 The command line client also uses the same Fava configuration shown below.
-
-
-## Installation
-A Fava extension, a Beancount command line client, and a library are all included.
-To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fava_investor).
-
-Beancount Command Line Client: Example invocation:
-```
-fava-investor-tlh example.beancount
-```
-The command line client also uses the same Fava configuration shown below.
-
 
 ## Configuration
 The full list of configuration options is below:
@@ -119,7 +107,7 @@ The following are special values for 'columns', when 'directive_type' is 'commod
 - `market_value`: replace with current market value of the commodity held
 
 Here are two examples of handy commodity summaries to have, to be used in conjunction
-with `fava-investor-ticker-util`, which ships with Fava Investor:
+with `ticker-util`, which ships with Fava Investor:
 
 ```
 2010-01-01 custom "fava-extension" "fava_investor" "{
