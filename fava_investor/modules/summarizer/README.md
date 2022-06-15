@@ -1,9 +1,9 @@
-## Metadata summarizer library for Beancount.
+# Metadata Summarizer
 
-This module allows you to define arbitrary tables to view account metadata, and commodity metadata. Other
-metadata (eg: transactions or postings) are not supported. For example, say you want to view the customer
-service phone numbers for each of your investment and banking accounts, which you have stored in the account
-metadata like so in your beancount file:
+Define arbitrary tables to summarize and view account metadata, and commodity metadata.
+For example, say you want to view the customer service phone numbers for each of your
+investment and banking accounts, which you have stored in the account metadata like so
+in your beancount file:
 
   ```
   2015-01-01 open Assets:Banks:Checking USD
@@ -24,18 +24,96 @@ command line by including these lines:
         'sort_by' : 0,
       }]}"
   ```
+  
+Other metadata (eg: transactions or postings) are not supported.
 
-In addition to the self-explanatory options above, the following are available:
-- `meta_prefix`:  specifying `meta_prefix` (instead of `columns`) for account metadata
-  will display all metadata beginning with the prefix
-- `meta_skip`:    skip displaying accounts that contain specified metadata keys
-- `no_footer`:    do not display footer
-- `sort_reverse`: self explanatory
+## Installation
+A Fava extension, a Beancount command line client, and a library are all included.
+To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fava_investor).
 
+Command line client:
+```
+fava-investor-summarizer example.beancount
+fava-investor-summarizer --help              # for all options
+```
+
+The command line client also uses the same Fava configuration shown below.
+
+
+## Installation
+A Fava extension, a Beancount command line client, and a library are all included.
+To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fava_investor).
+
+Beancount Command Line Client: Example invocation:
+```
+fava-investor-tlh example.beancount
+```
+The command line client also uses the same Fava configuration shown below.
+
+
+## Configuration
+The full list of configuration options is below:
+
+#### `title`
+
+Table title.
+
+---
+#### `directive_type`
+
+For each table, this can be `accounts` or `commodities`. Each table can summarize
+metadata of either accounts or commodities.
+
+---
+#### `acc_pattern`
+
+When the `accounts` directive_type is chosen, the set of accounts to include in the
+table, specified as a regex.
+
+---
+#### `col_labels`
+
+Column titles. No spaces allowed. This is optional. If not specified, the metadata keys
+are used instead.
+
+---
+#### `columns`
+
+Metadata keys for each column.
+
+
+---
+#### `sort_by`
+
+Column number to sort table by.
+
+---
+#### `meta_prefix`
+
+Specifying `meta_prefix` (instead of `columns`) for account metadata will display all
+metadata beginning with the prefix.
+
+---
+#### `meta_skip`
+
+Skip displaying accounts that contain specified metadata keys
+
+---
+#### `no_footer`
+
+Do not display footer
+
+---
+#### `sort_reverse`
+
+Self explanatory
+
+---
 The following are special values for 'columns', when 'directive_type' is 'accounts':
 - `account`: replace with account name
 - `balance`: replace with current balance of the account
 
+---
 The following are special values for 'columns', when 'directive_type' is 'commodities':
 - `ticker`:       replace with ticker
 - `market_value`: replace with current market value of the commodity held

@@ -1,10 +1,18 @@
-## Intro
-Asset allocation analysis tool for Beancount.
+# Asset Allocation
 
 Understanding the asset allocation of a portfolio is important. This module reports your
 current portfolio's asset allocation, to an arbitrary asset class hierarchy and depth of
 your choice.
 
+## Installation
+A Fava extension, a Beancount command line client, and a library are all included.
+To install the Fava plugin, see [fava_investor](https://github.com/redstreet/fava_investor).
+
+Command line client:
+```
+fava-investor-aa example.beancount
+```
+The command line client also uses the same Fava configuration shown below.
 
 ## Configuration
 
@@ -20,12 +28,17 @@ the Fava plugin and the CLI, like so:
           }}"
 ```
 
-`accounts_pattern`: regex specifying a set of accounts to consider
+The full list of configuration options is below:
 
-`skip_tax_adjustment`: when set to False, ignore the `asset_allocation_tax_adjustment`
-declarations
+#### `accounts_pattern`
 
-### Metadata Declarations
+Regex specifying a set of accounts to consider.
+
+#### `skip_tax_adjustment`
+
+When set to False, ignore the `asset_allocation_tax_adjustment` metadata declarations.
+
+### Metadata Declarations for Commodities
 
 The percentage of each asset class for each commodity is specified in the commodity
 metadata, like so:
@@ -70,6 +83,8 @@ More examples:
  asset_allocation_bond_cash: 100
 ```
 
+### Metadata Declarations for Accounts
+
 Optionally, the percentage by which an entire account should be scaled for tax purposes
 is specified by the `asset_allocation_tax_adjustment` metadata in an account's `open`
 directive like so:
@@ -78,8 +93,6 @@ directive like so:
 2010-01-01 open Assets:Investments:Tax-Deferred:Retirement
   asset_allocation_tax_adjustment: 55
 ```
-
-
 
 ## Example Output
 ```

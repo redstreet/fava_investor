@@ -14,7 +14,7 @@ primary focus is on Fava, even though all modules will aim to have all three int
 - [Visual, tree structured asset allocation by class](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/assetalloc_class#readme)
 - Asset allocation by account
 - [Tax loss harvestor](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/tlh#readme)
-- Cash drag analysis
+- [Cash drag analysis](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/cashdrag#readme)
 - [Summarizer](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/summarizer#readme)
 
 ![Screenshot: TLH](./screenshot.png)
