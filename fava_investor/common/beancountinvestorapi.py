@@ -52,11 +52,11 @@ class AccAPI:
         opens = [e for e in oc if isinstance(e, Open)]
         return opens
 
-    # def cost_or_value(self, node, date, include_children):
-    #     invent inventory.reduce(get_market_value, g.ledger.price_map, date)
-    #     if include_children:
-    #         return cost_or_value(node.balance_children, date)
-    #     return cost_or_value(node.balance, date)
+    def cost_or_value(self, node, date, include_children):
+        # invent inventory.reduce(get_market_value, g.ledger.price_map, date)
+        if include_children:
+            return cost_or_value(node.balance_children, date)
+        return cost_or_value(node.balance, date)
 
     def get_custom_config(self, module_name):
         """Get fava config for the given plugin that can then be used on the command line"""

@@ -5,7 +5,7 @@ from fava import __version__ as fava_version
 
 from .modules.tlh import libtlh
 from .modules.assetalloc_class import libassetalloc
-from .modules.assetalloc_account import libaaacc
+from .modules.assetalloc_account import libassetalloc_account
 from .modules.cashdrag import libcashdrag
 from .modules.summarizer import libsummarizer
 from .common.favainvestorapi import FavaInvestorAPI
@@ -29,7 +29,7 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         # else:
         #     tree = self.ledger.root_tree
 
-        return libaaacc.portfolio_accounts(accapi, self.config.get('asset_alloc_by_account', []))
+        return libassetalloc_account.get_tables(accapi, self.config.get('asset_alloc_by_account', []))
 
     # Cash Drag
     # -----------------------------------------------------------------------------------------------------------

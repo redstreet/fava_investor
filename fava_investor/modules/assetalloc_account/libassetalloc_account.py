@@ -4,17 +4,17 @@ import re
 from beancount.core.number import Decimal
 
 
-def portfolio_accounts(accapi, configs):
+def get_tables(accapi, configs):
     """An account tree based on matching regex patterns."""
 
-    portfolios = []
+    tables = []
     for config in configs:
         pattern_type = config['pattern_type']
         func = globals()['by_' + pattern_type]
         portfolio = func(accapi, config)
-        portfolios.append(portfolio)
+        tables.append(portfolio)
 
-    return portfolios
+    return tables
 
 
 def by_account_name(accapi, config):
@@ -68,6 +68,7 @@ def asset_allocation(nodes, accapi, include_children):
     rows = []
     for node in nodes:
         row = {'account': node.name}
+        print(row, node, date, include_children)
         balance = accapi.cost_or_value(node, date, include_children)
         if operating_currency in balance:
             row["balance"] = balance[operating_currency]

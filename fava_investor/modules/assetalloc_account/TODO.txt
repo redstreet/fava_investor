@@ -1,4 +1,3 @@
-- remove fava dependency from libaaacc.py
 - create a cli to use libaaacc.py
 - add unit tests
 
