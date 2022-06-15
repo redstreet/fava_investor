@@ -6,8 +6,10 @@ import tabulate
 tabulate.PRESERVE_WHITESPACE = True
 
 
-def pretty_print_table(title, rtypes, rrows, **kwargs):
+def pretty_print_table(title, rtypes, rrows, footer=None, **kwargs):
     title_out = click.style(title + '\n', bg='green', fg='white')
+    if footer:
+        rrows += [(i[1] for i in footer)]
 
     if rrows:
         headers = [i[0] for i in rtypes]
