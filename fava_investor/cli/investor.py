@@ -8,9 +8,11 @@ import fava_investor.modules.cashdrag.cashdrag as cashdrag
 import fava_investor.modules.summarizer.summarizer as summarizer
 import fava_investor.modules.tlh.tlh as tlh
 
+
 @click.group()
 def cli():
     pass
+
 
 # cli.add_command(assetalloc_account.assetalloc_account)
 cli.add_command(assetalloc_class.assetalloc_class)

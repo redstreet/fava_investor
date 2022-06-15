@@ -1,6 +1,5 @@
 from beancount.core import getters
 from fava.template_filters import cost_or_value
-from beancount.core.data import Open
 
 
 class FavaInvestorAPI:
