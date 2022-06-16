@@ -40,12 +40,12 @@ def tlh(beancount_file, brief):
         for k, v in summary.items():
             yield "{:30}: {:>}\n".format(k, v)
         yield '\n'
-        yield pretty_print_table("By commodity", *by_commodity)
+        yield pretty_print_table("Losses by commodity", *by_commodity)
 
         if not brief:
-            yield pretty_print_table("Lot detail", *harvestable_table)
-            yield pretty_print_table("Wash sale purchases:", *recents)
-            yield pretty_print_table("What not to buy", dontbuy[0], dontbuy[1])
+            yield pretty_print_table("Candidates for tax loss harvesting", *harvestable_table)
+            yield pretty_print_table("What not to sell: recent purchases that would cause wash sales", *recents)
+            yield pretty_print_table("What not to buy (sales within the last 30 days with losses)", dontbuy[0], dontbuy[1])
 
             yield "Note: Turn OFF dividend reinvestment for all these tickers across ALL accounts.\n"
             yield "See fava plugin for better formatted and sortable output.\n"
