@@ -99,6 +99,7 @@ class ScaledNAV(RelateTickers):
 
         mf_to_etfs = self.mf_to_etf_map()
         scaled_mf = {}
+        unavailable_etfs = set()
         for mf, etf in mf_to_etfs.items():
             ratios = []
             for p in self.price_entries:
@@ -111,9 +112,15 @@ class ScaledNAV(RelateTickers):
                         # print("  ", p.date, mf_price, etf_price, ratio)
                         ratios.append(ratio)
             if ratios:
-                median_ratio = statistics.median(ratios)
-                scaled_number = round(self.latest_prices[etf].number * median_ratio, 2)
-                scaled_mf[mf] = (etf, median_ratio, Amount(scaled_number, self.latest_prices[etf].currency))
+                if etf in self.latest_prices:
+                    median_ratio = statistics.median(ratios)
+                    scaled_number = round(self.latest_prices[etf].number * median_ratio, 2)
+                    scaled_mf[mf] = (etf, median_ratio, Amount(scaled_number, self.latest_prices[etf].currency))
+                else:
+                    unavailable_etfs.add(etf)
+
+        if unavailable_etfs:
+            print("Today's prices for these ETFs were not found:", ", ".join(sorted(unavailable_etfs)))
 
         self.estimated_price_entries = [Price({}, datetime.datetime.today().date(), mf, amt)
                                         for mf, (_, _, amt) in scaled_mf.items()]
