@@ -31,6 +31,7 @@ setup(
     entry_points={
         'console_scripts': [
             'ticker-util = fava_investor.util.ticker_util:cli',
+            'scaled-navs = fava_investor.util.experimental.scaled_navs:scaled_navs',
             'investor = fava_investor.cli.investor:cli',
         ]
     },

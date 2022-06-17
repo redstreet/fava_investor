@@ -5,14 +5,13 @@ WARNING: it may be dangerous to use this tool financially. You bear all liabilit
 usage of this tool.
 
 Problem: Mutual fund NAVs are updated only once a day, at the end of the day. When needing to make financial
-decisions (eg: tax loss harvesting), it is sometimes useful to estimate that NAV, especially on days when
+decisions (eg: when tax loss harvesting), it is sometimes useful to estimate that NAV, especially on days when
 there are huge swings in the market.
 
 Idea: NAV estimations can be made based on the ETF share class of the mutual fund, if one exists.
 
-Note that on volatile days, this can be dangerous, since the estimate can
-be way off. However, there is some value to using such scaled estimates even with those caveats.
-
+Note that on volatile days, this can be dangerous, since the estimate can be way off. However, there might be
+value to using such scaled estimates even that caveat.
 
 Solution: Scan a beancount price database, and build a list of mf:etf equivalents. Then, determine the typical
 price ratio between these. This is done by building a list of mf:etf price pairs on the same days across time,
@@ -46,14 +45,16 @@ from fava_investor.util.relatetickers import RelateTickers
 from beancount.core.amount import Amount
 from beancount.core.data import Price
 
-cf_option = click.option('--cf', help="Beancount commodity declarations file", envvar='BEAN_COMMODITIES_FILE',
-                         type=click.Path(exists=True))
-bean_root = os.getenv('BEAN_ROOT', '~/')
-prices_file = os.sep.join([bean_root, 'prices', 'prices.bc'])
+cf_option = click.option('--cf', '--commodities-file', help="Beancount commodity declarations file",
+                         envvar='BEAN_COMMODITIES_FILE', type=click.Path(exists=True))
+prices_option = click.option('--pf', '--prices-file', help="Beancount prices declarations file",
+                             envvar='BEAN_PRICES_FILE', type=click.Path(exists=True))
 
 
 class ScaledNAV(RelateTickers):
-    def __init__(self, cf, prices_file):
+    def __init__(self, cf, prices_file, date=None):
+        self.cf = cf
+        self.prices_file = prices_file
         commodity_entries, _, _ = self.load_file(cf)
 
         # basic databases
@@ -65,8 +66,10 @@ class ScaledNAV(RelateTickers):
         # prices database
         self.price_entries, _, _ = self.load_file(prices_file)
         self.price_entries = sorted(self.price_entries, key=lambda x: x.date)
-        today = datetime.datetime.today().date()
-        self.latest_prices = {p.currency: p.amount for p in self.price_entries if p.date == today}
+        if not date:
+            date = datetime.datetime.today().date()
+        self.latest_prices = {p.currency: p.amount for p in self.price_entries if p.date == date}
+        self.estimate_mf_navs()
         # for k, v in self.latest_prices.items():
         #     print(k, v)
 
@@ -79,11 +82,8 @@ class ScaledNAV(RelateTickers):
             sys.exit(1)
         return loader.load_file(f)
 
-    def estimate_mf_navs(self):
-        """Estimate what mutual fund NAVs would be at the end of the day *if* the current prices of the
-        equivalent ETF held through the end of the day. Don't use this unless you know what you are doing!"""
-
-        # map MFs to ETFs
+    def mf_to_etf_map(self):
+        """Map MFs to ETFs. Assume MFs are 5-char tickers, and ETFs are 3-char tickers."""
         mf_to_etfs = {}
         for equis in self.equivalents:
             etfs = [c for c in equis if len(c) == 3]
@@ -91,7 +91,13 @@ class ScaledNAV(RelateTickers):
                 mfs = [c for c in equis if len(c) == 5]
                 for m in mfs:
                     mf_to_etfs[m] = etf
+        return mf_to_etfs
 
+    def estimate_mf_navs(self):
+        """Estimate what mutual fund NAVs would be at the end of the day *if* the current prices of the
+        equivalent ETF held through the end of the day. Don't use this unless you know what you are doing!"""
+
+        mf_to_etfs = self.mf_to_etf_map()
         scaled_mf = {}
         for mf, etf in mf_to_etfs.items():
             ratios = []
@@ -104,34 +110,46 @@ class ScaledNAV(RelateTickers):
                         ratio = mf_price / etf_price
                         # print("  ", p.date, mf_price, etf_price, ratio)
                         ratios.append(ratio)
-            ratios.sort()
             if ratios:
-                median = statistics.median(ratios)
-                # print(f"{mf}: {etf} * {median}, {ratios}")
-                scaled_mf[mf] = (etf, median)
+                median_ratio = statistics.median(ratios)
+                scaled_number = round(self.latest_prices[etf].number * median_ratio, 2)
+                scaled_mf[mf] = (etf, median_ratio, Amount(scaled_number, self.latest_prices[etf].currency))
 
-        self.scaled_prices = {}
-        for mf, (etf, ratio) in scaled_mf.items():
-            # rratio = round(ratio, 2)
-            # print(f"{mf}: {etf} * {rratio}")
-            self.scaled_prices[mf] = Amount(self.latest_prices[etf].number * ratio,
-                                            self.latest_prices[etf].currency)
+        self.estimated_price_entries = [Price({}, datetime.datetime.today().date(), mf, amt)
+                                        for mf, (_, _, amt) in scaled_mf.items()]
 
-        for mf, amt in self.scaled_prices.items():
-            price = Price({}, datetime.datetime.today().date(), mf, amt)
-            printer.print_entries([price])
+    def show_estimates(self):
+        printer.print_entries(self.estimated_price_entries)
+
+    def update_prices_file(self):
+        with open(self.prices_file, "a") as fout:
+            print("\n; Estimated prices below. ", end='', file=fout)
+            print(f"; Generated by: {os.path.basename(__file__)}, at {datetime.datetime.today().isoformat()}",
+                  file=fout)
+            fout.flush()
+            printer.print_entries(self.estimated_price_entries, file=fout)
 
 
 @click.command()
 @cf_option
-def scaled_navs(cf):
-    """The following environment variables are used:
-\n$BEAN_ROOT: root directory for beancount source(s). $BEAN_ROOT/prices/prices.bc is the price file used. Default: ~
-\n$BEAN_COMMODITIES_FILE: file with beancount commodities declarations. WARNING: the 'comm' subcommand
-will overwrite this file when requested
+@prices_option
+@click.option('--date', help="Date", default=datetime.datetime.today().date())
+@click.option('-w', '--write-to-prices-file', is_flag=True, help='Append estimates to prices file.')
+def scaled_navs(cf, pf, date, write_to_prices_file):
+    """Provide scaled price estimates for mutual funds based on their ETF prices. Experimental.
+
+\nWARNING: it may be dangerous to use this tool financially. You bear all liability for all losses stemming
+from usage of this tool.
+
+\nThe following environment variables are used:
+\n$BEAN_COMMODITIES_FILE: file with beancount commodities declarations.
+\n$BEAN_PRICES_FILE: file with beancount prices declarations.
     """
-    s = ScaledNAV(cf, prices_file)
-    s.estimate_mf_navs()
+    s = ScaledNAV(cf, pf)
+    s.show_estimates()
+    if write_to_prices_file:
+        s.update_prices_file()
+        print("Above was append to", pf)
 
 
 if __name__ == '__main__':
