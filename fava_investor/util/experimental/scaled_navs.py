@@ -32,11 +32,9 @@ Misc notes:
 
 import click
 import os
-import sys
 import statistics
 import datetime
 
-from beancount import loader
 from beancount.core import getters
 from beancount.parser import printer
 from fava_investor.util.relatetickers import RelateTickers
@@ -73,29 +71,34 @@ class ScaledNAV(RelateTickers):
         # for k, v in self.latest_prices.items():
         #     print(k, v)
 
-    def load_file(self, f):
-        if f is None:
-            print("File not specified. See help.", file=sys.stderr)
-            sys.exit(1)
-        if not os.path.exists(f):
-            print(f"File not found: {f}", file=sys.stderr)
-            sys.exit(1)
-        return loader.load_file(f)
+    def is_etf(self, ticker):
+        try:
+            return self.db[ticker].meta['a__quoteType'] == 'ETF'
+        except KeyError:
+            return False
+
+    def is_mf(self, ticker):
+        try:
+            return self.db[ticker].meta['a__quoteType'] == 'MUTUALFUND'
+        except KeyError:
+            return False
 
     def mf_to_etf_map(self):
-        """Map MFs to ETFs. Assume MFs are 5-char tickers, and ETFs are 3-char tickers."""
+        """Map MFs to equivalent ETFs. Assume commodity declarations have 'a__quoteType' set to either
+        MUTUALFUND or ETF. See ticker-util to do this automatically."""
+
         mf_to_etfs = {}
         for equis in self.equivalents:
-            etfs = [c for c in equis if len(c) == 3]
+            etfs = [c for c in equis if self.is_etf(c)]
             for etf in etfs:
-                mfs = [c for c in equis if len(c) == 5]
+                mfs = [c for c in equis if self.is_mf(c)]
                 for m in mfs:
                     mf_to_etfs[m] = etf
         return mf_to_etfs
 
     def estimate_mf_navs(self):
-        """Estimate what mutual fund NAVs would be at the end of the day *if* the current prices of the
-        equivalent ETF held through the end of the day. Don't use this unless you know what you are doing!"""
+        """Estimate what mutual fund NAVs would be based on the current price of the equivalent ETF. Don't use
+        this unless you know what you are doing!"""
 
         mf_to_etfs = self.mf_to_etf_map()
         scaled_mf = {}
