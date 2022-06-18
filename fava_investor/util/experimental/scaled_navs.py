@@ -36,33 +36,33 @@ import statistics
 import datetime
 
 from beancount.core import getters
+from beancount.core.data import Price
+from beancount.core.amount import Amount
 from beancount.parser import printer
 from fava_investor.util.relatetickers import RelateTickers
 
 
-from beancount.core.amount import Amount
-from beancount.core.data import Price
-
 cf_option = click.option('--cf', '--commodities-file', help="Beancount commodity declarations file",
-                         envvar='BEAN_COMMODITIES_FILE', type=click.Path(exists=True))
+                         envvar='BEAN_COMMODITIES_FILE', type=click.Path(exists=True), required=True)
 prices_option = click.option('--pf', '--prices-file', help="Beancount prices declarations file",
-                             envvar='BEAN_PRICES_FILE', type=click.Path(exists=True))
+                             envvar='BEAN_PRICES_FILE', type=click.Path(exists=True), required=True)
 
 
 class ScaledNAV(RelateTickers):
     def __init__(self, cf, prices_file, date=None):
         self.cf = cf
         self.prices_file = prices_file
-        commodity_entries, _, _ = self.load_file(cf)
+        entries, _, _ = self.load_file(cf)
 
         # basic databases
-        self.db = getters.get_commodity_directives(commodity_entries)
+        self.db = getters.get_commodity_directives(entries)
 
         # equivalents databases
         self.equivalents = self.build_commodity_groups(['equivalent'])
 
         # prices database
-        self.price_entries, _, _ = self.load_file(prices_file)
+        entries, _, _ = self.load_file(prices_file)
+        self.price_entries = [entry for entry in entries if isinstance(entry, Price)]
         self.price_entries = sorted(self.price_entries, key=lambda x: x.date)
         if not date:
             date = datetime.datetime.today().date()
