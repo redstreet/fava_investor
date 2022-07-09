@@ -1,6 +1,7 @@
 from beancount.core import getters
 from fava.template_filters import cost_or_value
 from fava import __version__ as fava_version
+from packaging import version
 
 
 class FavaInvestorAPI:
@@ -26,13 +27,7 @@ class FavaInvestorAPI:
     def query_func(self, sql):
         # Based on the fava version, determine if we need to add a new
         # positional argument to fava's execute_query()
-        split_version = fava_version.split('.')
-        if len(split_version) != 2:
-            split_version = split_version[:2]
-        major, minor = split_version
-        new_execute_query = int(major) > 1 or (int(major) == 1 and int(minor) > 21)
-
-        if new_execute_query:
+        if version.parse(fava_version) >= version.parse("1.22"):
             _, rtypes, rrows = self.ledger.query_shell.execute_query(self.ledger.all_entries, sql)
         else:
             _, rtypes, rrows = self.ledger.query_shell.execute_query(sql)
