@@ -17,6 +17,8 @@ module.
 </i>
 {% endif %}
 
+<svelte-component type="charts"></svelte-component>
+
 {% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
   {% set results = extension.build_aa_by_account() %}

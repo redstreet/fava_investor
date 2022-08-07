@@ -1,0 +1,2 @@
+ticker-util gen-commodities-file --include-undeclared \
+| sed -e 's/a__asset/asset/' -e '/asset_/s/"//g' > commodities.bc

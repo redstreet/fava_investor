@@ -12,8 +12,8 @@ option "operating_currency" "USD"
 
 * Commodities
 
-include "com.bc"
-include "fava.bc"
+include "commodities.beancount"
+include "fava_config.beancount"
 
 
 * Equity Accounts

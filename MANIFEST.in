@@ -1,2 +1,2 @@
 include fava_investor/templates/*.html
-include fava_investor/huge-example.beancount
+include fava_investor/pythonanywhere/*
