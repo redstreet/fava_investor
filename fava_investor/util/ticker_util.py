@@ -130,10 +130,12 @@ def ticker_list(info, available_keys, explore):
         pdb.set_trace()
 
 
-@cli.command(aliases=['comm'])
+metadata_includes = """quoteType,longName,isin,annualReportExpenseRatio,\
+preferredPosition,bondPosition,convertiblePosition,otherPosition,cashPosition,stockPosition"""
+@cli.command(aliases=['comm'], context_settings={'show_default': True})
 @cf_option
 @click.option('--prefix', help="Metadata label prefix for generated metadata", default='a__')
-@click.option('--metadata', help="Metadata to include", default="quoteType,longName,isin,annualReportExpenseRatio")
+@click.option('--metadata', help="Metadata to include", default=metadata_includes)
 @click.option('--appends', help="Metadata to append to", default="isin")
 @click.option('--include-undeclared', is_flag=True, help="Write new commodity entries for tickers in the "
               "cached database, but not in the existing Beancount commodity declarations file")
@@ -145,10 +147,24 @@ def ticker_list(info, available_keys, explore):
 def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, write_file, confirm_overwrite):
     """Generate Beancount commodity declarations with metadata from database, and existing declarations."""
 
-    auto_metadata = metadata.split(',')
-    auto_metadata_appends = appends.split(',')
     # fava recognizes and displays 'name'
     metadata_label_map = {'longName': 'name'}
+
+    def label_transform(label, prefix):
+        if label in metadata_label_map:
+            return metadata_label_map[label]
+        if 'Position' in label:
+            # for ['preferredPosition', 'bondPosition', etc.]
+            return prefix + 'asset_allocation_' + label[:-8]
+        return prefix + label
+
+    def value_transform(val, label):
+        if 'Position' in label:
+            return str(round(float(val) * 100))
+        return str(val)
+
+    auto_metadata = metadata.split(',')
+    auto_metadata_appends = appends.split(',')
 
     tickerrel = RelateTickers(cf)
     commodities = tickerrel.db
@@ -182,8 +198,9 @@ def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, writ
                         mdval.add(str(ctdata.data[c][m]))
                         metadata.meta[prefix + m] = ','.join(sorted(list(mdval)))
                     else:
-                        label = metadata_label_map.get(m, prefix + m)
-                        metadata.meta[label] = str(ctdata.data[c][m])
+                        label = label_transform(m, prefix)
+                        value = value_transform(ctdata.data[c][m], m)
+                        metadata.meta[label] = value
     cv = list(commodities.values())
     cv.sort(key=lambda x: x.currency)
 
