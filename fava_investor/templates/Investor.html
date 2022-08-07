@@ -2,8 +2,6 @@
 {% import "_charts.html" as charts with context %}
 {% set new_querytable = extension.use_new_querytable() %}
 
-<i>Investor: Reports, analyses, and tools for investments.</i>
-
 {% set module = request.args.get('module') %}
 <div class="headerline">
   {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')), ('summarizer', _('Summarizer')) ] %}
@@ -12,10 +10,12 @@
 </div>
 
 {% if (module == None) %}
-Welcome! Fava Investor is implemented as a collection of modules. Use the tabs on the
-top to view each module.
+<i>
+Welcome! Fava Investor provides reports, analyses, and tools for investments. It
+implemented as a collection of modules. Use the tabs on the top to navigate to each
+module.
+</i>
 {% endif %}
-
 
 {% if (module == 'aa_account') %}
   <h2>Portfolio: Asset Allocation by Accounts</h2>
