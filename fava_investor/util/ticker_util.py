@@ -130,8 +130,27 @@ def ticker_list(info, available_keys, explore):
         pdb.set_trace()
 
 
+def label_transform(label, prefix):
+    # fava recognizes and displays 'name'
+    metadata_label_map = {'longName': 'name'}
+    if label in metadata_label_map:
+        return metadata_label_map[label]
+    if 'Position' in label:
+        # for ['preferredPosition', 'bondPosition', etc.]
+        return prefix + 'asset_allocation_' + label[:-8]
+    return prefix + label
+
+
+def value_transform(val, label):
+    if 'Position' in label:
+        return str(round(float(val) * 100))
+    return str(val)
+
+
 metadata_includes = """quoteType,longName,isin,annualReportExpenseRatio,\
 preferredPosition,bondPosition,convertiblePosition,otherPosition,cashPosition,stockPosition"""
+
+
 @cli.command(aliases=['comm'], context_settings={'show_default': True})
 @cf_option
 @click.option('--prefix', help="Metadata label prefix for generated metadata", default='a__')
@@ -146,22 +165,6 @@ preferredPosition,bondPosition,convertiblePosition,otherPosition,cashPosition,st
               "actually overwrite")
 def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, write_file, confirm_overwrite):
     """Generate Beancount commodity declarations with metadata from database, and existing declarations."""
-
-    # fava recognizes and displays 'name'
-    metadata_label_map = {'longName': 'name'}
-
-    def label_transform(label, prefix):
-        if label in metadata_label_map:
-            return metadata_label_map[label]
-        if 'Position' in label:
-            # for ['preferredPosition', 'bondPosition', etc.]
-            return prefix + 'asset_allocation_' + label[:-8]
-        return prefix + label
-
-    def value_transform(val, label):
-        if 'Position' in label:
-            return str(round(float(val) * 100))
-        return str(val)
 
     auto_metadata = metadata.split(',')
     auto_metadata_appends = appends.split(',')
