@@ -98,24 +98,20 @@ def bucketize(vbalance, accapi):
             # print("Warning: skipping negative balance:", pos) #TODO
             continue
 
-        pcur = pos.units.currency
-        if pcur == base_currency:
-            amount = pos.units
-        else:
-            # what we want is the conversion to be done on the end date, or on a date
-            # closest to it, either earlier or later. convert_position does this via bisect
-            amount = convert.convert_position(pos, base_currency, price_map, date=end_date)
-            if amount.currency == pos.units.currency and amount.currency != base_currency:
-                # Ideally, we would automatically figure out the currency to hop via, based on the cost currency
-                # of the position. However, with vbalance, cost currency info is not available. Hence, we hop via
-                # any available operating currency specified by the user. This is for
-                # supporting multi-currency portfolios
-                amount = convert.convert_amount(pos.units, base_currency, price_map,
-                                                via=operating_currencies, date=end_date)
-                if amount.currency != base_currency:
-                    sys.stderr.write("Error: unable to convert {} to base currency {}"
-                                     " (Missing price directive?)\n".format(pos, base_currency))
-                    sys.exit(1)
+        # what we want is the conversion to be done on the end date, or on a date
+        # closest to it, either earlier or later. convert_position does this via bisect
+        amount = convert.convert_position(pos, base_currency, price_map, date=end_date)
+        if amount.currency == pos.units.currency and amount.currency != base_currency:
+            # Ideally, we would automatically figure out the currency to hop via, based on the cost
+            # currency of the position. However, with vbalance, cost currency info is not
+            # available. Hence, we hop via any available operating currency specified by the user.
+            # This is for supporting multi-currency portfolios
+            amount = convert.convert_amount(pos.units, base_currency, price_map,
+                                            via=operating_currencies, date=end_date)
+            if amount.currency != base_currency:
+                sys.stderr.write("Error: unable to convert {} to base currency {}"
+                                 " (Missing price directive?)\n".format(pos, base_currency))
+                sys.exit(1)
 
         commodity = pos.units.currency
         metas = {} if commodities.get(commodity) is None else commodities[commodity].meta
