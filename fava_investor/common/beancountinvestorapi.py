@@ -14,9 +14,15 @@ class AccAPI:
     def __init__(self, beancount_file, options):
         self.entries, _, self.options_map = loader.load_file(beancount_file)
         self.options = options
-        self.begin = self.end = None  # Only used in fava
+
+    def end_date(self):
+        return None  # Only used in fava (UI selection context)
 
     def build_price_map(self):
+        return prices.build_price_map(self.entries)
+
+    def build_filtered_price_map(self, pos, base_currency):
+        """Ignore filtering since we are not in fava. Return all prices"""
         return prices.build_price_map(self.entries)
 
     def get_commodity_directives(self):

@@ -31,11 +31,11 @@ class AssetClassNode(Node):
 
     def pretty_print(self, indent=0):
         fmt = "{}{} {:4.2f} {:4.2f} {:4.2f} {:4.2f} {:4.2f}"
-        print(fmt.format('-'*indent, self.name,
+        print(fmt.format('-' * indent, self.name,
                          self.balance, self.balance_children,
                          self.percentage, self.percentage_children, self.percentage_parent))
         for c in self.children:
-            c.pretty_print(indent+1)
+            c.pretty_print(indent + 1)
 
 
 def compute_child_balances(node, total):
@@ -89,23 +89,34 @@ def bucketize(vbalance, accapi):
     base_currency = operating_currencies[0]
     meta_prefix = 'asset_allocation_'
     meta_prefix_len = len(meta_prefix)
+    end_date = accapi.end_date()
 
     # Main part: put each commodity's value into asset buckets
     asset_buckets = collections.defaultdict(int)
     for pos in vbalance.get_positions():
-        amount = convert.convert_position(pos, base_currency, price_map)
-        if amount.number < 0:
+        if pos.units.number < 0:
             # print("Warning: skipping negative balance:", pos) #TODO
             continue
-        if amount.currency == pos.units.currency and amount.currency != base_currency:
-            # Ideally, we would automatically figure out the currency to hop via, based on the cost currency
-            # of the position. However, with vbalance, cost currency info is not available. Hence, we hop via
-            # any available operating currency specified by the user
-            amount = convert.convert_amount(pos.units, base_currency, price_map, via=operating_currencies)
-            if amount.currency != base_currency:
-                sys.stderr.write(
-                    "Error: unable to convert {} to base currency {} (Missing price directive?)\n".format(pos, base_currency))
-                sys.exit(1)
+
+        pcur = pos.units.currency
+        if pcur == base_currency:
+            amount = pos.units
+        else:
+            # what we want is the conversion to be done on the end date, or on a date
+            # closest to it, either earlier or later. convert_position does this via bisect
+            amount = convert.convert_position(pos, base_currency, price_map, date=end_date)
+            if amount.currency == pos.units.currency and amount.currency != base_currency:
+                # Ideally, we would automatically figure out the currency to hop via, based on the cost currency
+                # of the position. However, with vbalance, cost currency info is not available. Hence, we hop via
+                # any available operating currency specified by the user. This is for
+                # supporting multi-currency portfolios
+                amount = convert.convert_amount(pos.units, base_currency, price_map,
+                                                via=operating_currencies, date=end_date)
+                if amount.currency != base_currency:
+                    sys.stderr.write("Error: unable to convert {} to base currency {}"
+                                     " (Missing price directive?)\n".format(pos, base_currency))
+                    sys.exit(1)
+
         commodity = pos.units.currency
         metas = {} if commodities.get(commodity) is None else commodities[commodity].meta
         unallocated = Decimal('100')
@@ -115,13 +126,14 @@ def bucketize(vbalance, accapi):
                 asset_buckets[bucket] += amount.number * (meta_value / 100)
                 unallocated -= meta_value
         if unallocated:
-            print("Warning: {} asset_allocation_* metadata does not add up to 100%. Padding with 'unknown'.".format(commodity))
+            print("Warning: {} asset_allocation_* metadata does not add up to 100%. "
+                  "Padding with 'unknown'.".format(commodity))
             asset_buckets['unknown'] += amount.number * (unallocated / 100)
     return asset_buckets
 
 
 def compute_percent(asset_buckets, asset, total_assets):
-    return (asset_buckets[asset]/total_assets)*100
+    return (asset_buckets[asset] / total_assets) * 100
 
 
 def compute_percent_subtotal(asset_buckets, asset, total_assets):
@@ -168,7 +180,7 @@ def tax_adjust(realacc, accapi):
         """Scale inventory by tax adjustment"""
         scaled_balance = inventory.Inventory()
         for pos in balance.get_positions():
-            scaled_pos = amount.Amount(pos.units.number * (Decimal(tax_adj/100)), pos.units.currency)
+            scaled_pos = amount.Amount(pos.units.number * (Decimal(tax_adj / 100)), pos.units.currency)
             scaled_balance.add_amount(scaled_pos)
         return scaled_balance
 

@@ -58,7 +58,7 @@ def by_account_open_metadata(accapi, config):
 def asset_allocation(nodes, accapi, include_children):
     """Compute percentage of assets in each of the given nodes."""
 
-    date = accapi.end
+    date = accapi.end_date()
     operating_currency = accapi.get_operating_currencies()[0]
     acct_type = ("account", str(str))
     bal_type = ("balance", str(Decimal))
