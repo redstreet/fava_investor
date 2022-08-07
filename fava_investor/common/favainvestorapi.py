@@ -17,7 +17,7 @@ class FavaInvestorAPI:
         return g.filtered.end_date
 
     def get_commodity_directives(self):
-        return getters.get_commodity_directives(g.filtered.ledger.entries)
+        return {entry.currency: entry for entry in g.filtered.ledger.all_entries_by_type.Commodity}
 
     def realize(self):
         return g.filtered.root_account
