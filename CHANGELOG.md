@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.3.0 (2022-08-07)
+### New
+
+- new module: summarizer to summarize and display reasonably arbitrary tables of account
+  and commodity metadata
+- Modules now respect GUI context (time interval). For example, see what your cashdrag
+  was or what you could have TLH'ed on any arbitrary day in the past
+- experimental utility: scaled mutual fund NAV estimator: estimate a mutual fund's NAV
+  based on current intra-day value of its corresponding NAV
+
+### Improvements
+
+- add footer to pretty_print. cashdrag uses it.
+- assetalloc_class: read fava config from beancount file for command line.
+- cashdrag: read fava config from beancount file for command line.
+- cli: consolidated all modules into `investor` command.
+- enable fava context and filters. Fixes #36. Also upstream favaledger.
+- pager via click.
+- ticker-util now puts asset allocation info it can find.
+- tlh: comma betweeen similars and alts lists.
+- tlh: read fava config from beancount file for command line.
+- better example (still WIP)
+- pythonanywhere config and example
+
+### Fixes
+
+- fix: use filtered entries in query_shell.
+- fix: #61 Show welcome message on initial screen when no modules are selected.
+- fix/favainvestorapi: #67 get_account_open() returns empty.
+
+### Other
+
+- several upgrades for fava 1.22 [Aaron Lindsay, Red S]
+- several doc upgrades
+- several refactors
+- refactor: ticker-util cleanup; _ to - in options.
+- test: fix assetalloc_class pytests.
+- wip: demo example #72.
+
+
 ## 0.2.5 (2022-06-12)
 ### New
 - ticker-util. See [here](https://groups.google.com/g/beancount/c/eewOW4HQKOI)
