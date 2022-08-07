@@ -29,7 +29,7 @@ class FavaInvestorAPI:
         # Based on the fava version, determine if we need to add a new
         # positional argument to fava's execute_query()
         if version.parse(fava_version) >= version.parse("1.22"):
-            _, rtypes, rrows = g.ledger.query_shell.execute_query(g.ledger.all_entries, sql)
+            _, rtypes, rrows = g.ledger.query_shell.execute_query(g.filtered.entries, sql)
         else:
             _, rtypes, rrows = g.ledger.query_shell.execute_query(sql)
         return rtypes, rrows
