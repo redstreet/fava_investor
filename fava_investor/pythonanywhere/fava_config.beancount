@@ -10,12 +10,8 @@
    'asset_alloc_by_account': [
      { 'title':            'Allocation by Taxability',
        'pattern_type':     'account_name',
-       'pattern':          'Assets:[^:]*$',
+       'pattern':          'Assets:US:[^:]*$',
        'include_children': True,
-     },
-     { 'title':            'Allocation by Account',
-       'pattern_type':     'account_name',
-       'pattern':          'Assets:Investments:.*',
      },
    ],
    
@@ -28,5 +24,15 @@
       'accounts_exclude_pattern': '^Assets:(Cash-In-Wallet.*|Zero-Sum)', 
       'metadata_label_cash'     : 'asset_allocation_cash'
   },
+  'summarizer': [
+    { 'title' : 'Commodities Summary',
+      'directive_type'  : 'commodities',
+      'active_only': True,
+      'meta_skip' : 'commodity_skip',
+      'col_labels': [ 'Ticker', 'Type', 'Equi', 'Description', 'TLH_to', 'ER', 'Market'],
+      'columns' : [ 'ticker', 'a__quoteType', 'equivalent', 'name', 'tlh_alternates', 'a__annualReportExpenseRatio', 'market_value'],
+      'sort_by' : 1,
+    },
+ ]
 }"
 

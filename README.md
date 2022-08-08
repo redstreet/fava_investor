@@ -8,7 +8,7 @@ collection of modules, with each module offering a Fava plugin, a Beancount libr
 a shell command.
 
 Interactivity and visualization are key for investing reports and tools, and hence the
-primary focus is on Fava, even though all modules will aim to have all three interfaces.
+primary focus is on Fava, even though all modules will have all three interfaces.
 
 ### Current modules:
 - [Visual, tree structured asset allocation by class](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/assetalloc_class#readme)
@@ -17,6 +17,12 @@ primary focus is on Fava, even though all modules will aim to have all three int
 - [Cash drag analysis](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/cashdrag#readme)
 - [Summarizer](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/summarizer#readme)
 
+### Demo
+***Play with the live demo at
+  [pythonanywhere](http://favainvestor.pythonanywhere.com/example-beancount-file/extension/Investor/)***.
+
+
+#### Screenshots (dated):
 ![Screenshot: TLH](./screenshot.png)
 ![Screenshot: Asset Allocation](./screenshot-assetalloc.png)
 
