@@ -3,7 +3,7 @@
 2022-08-07 commodity GLD
   a__annualReportExpenseRatio: "0.4"
   a__quoteType: "ETF"
-  asset_allocation_metals: 100
+  asset_allocation_metals_gold: 100
   name: "SPDR Gold Shares"
 
 1980-05-12 commodity IRAUSD
@@ -18,7 +18,7 @@
   name: "iShares Core S&P Total U.S. Stock Market ETF"
 
 2022-08-07 commodity RGAGX
-  asset_allocation_cash: 10
+  asset_allocation_cash_reserves: 10
   asset_allocation_stock_domestic_largecap: 90
   a__isin: "US3998748178"
   a__quoteType: "MUTUALFUND"
@@ -27,7 +27,7 @@
 1792-01-01 commodity USD
   export: "CASH"
   name: "US Dollar"
-  asset_allocation_cash: 100
+  asset_allocation_cash_USD: 100
 
 1980-05-12 commodity VACHR
   export: "IGNORE"
