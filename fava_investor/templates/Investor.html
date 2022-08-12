@@ -4,7 +4,13 @@
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
-  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')), ('summarizer', _('Summarizer')) ] %}
+  {% for key, label in [('aa_class', _('Asset Allocation Classes')),
+                        ('aa_account', _('Asset Allocation Accounts')),
+                        ('cashdrag', _('Cash Drag')),
+                        ('tlh', _('Tax Loss Harvestor')),
+                        ('summarizer', _('Summarizer')),
+                        ('minimizegains', _('Gains Minimizer'))
+                        ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for('extension_report', report_name='Investor', module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
 </div>
@@ -139,6 +145,17 @@ module.
   <i>None of the above is meant to be financial, legal, tax, or other advice.</i>
 
 
+{% endif %}
+
+
+{% if (module == 'minimizegains') %}
+  <h2>Minimize Gains</h2>
+  {% set results = extension.build_minimizegains() %}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, None, *results) }}
+  {% else %}
+    {{ querytable.querytable(None, *results) }}
+  {% endif %}
 {% endif %}
 
 {% set table_hover_text = _('Hold Shift while clicking to expand all children.

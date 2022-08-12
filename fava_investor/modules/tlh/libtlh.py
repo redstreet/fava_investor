@@ -71,6 +71,7 @@ def get_metavalue(ticker, directives, mlabel):
 
 
 def get_account_field(options):
+    """See accompanying README.md"""
     account_field = options.get('account_field', 'LEAF(account)')
     try:
         if isinstance(account_field, int):
@@ -160,6 +161,8 @@ def find_harvestable_lots(accapi, options):
                                   *split_currency(row.market_value), loss, term, wash))
 
     return retrow_types, to_sell, recent_purchases
+
+
 
 
 def harvestable_by_commodity(accapi, options, rtype, rrows):
