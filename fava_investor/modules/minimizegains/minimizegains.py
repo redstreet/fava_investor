@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Beancount Tool to find lots to sell with lowest gains"""
 
-import fava_investor.common.beancountinvestorapi as api
 import fava_investor.modules.minimizegains.libminimizegains as libmg
+import fava_investor.common.beancountinvestorapi as api
 from fava_investor.common.clicommon import pretty_print_table
 import click
 
@@ -10,8 +10,8 @@ import click
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
 @click.option('--brief', help='Summary output', is_flag=True)
-def tlh(beancount_file, brief):
-    """Finds opportunities for tax loss harvesting in a beancount file.
+def minimizegains(beancount_file, brief):
+    """Finds lots to sell with the lowest gains.
 
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
        command line.
@@ -36,4 +36,4 @@ def tlh(beancount_file, brief):
 
 
 if __name__ == '__main__':
-    tlh()
+    minimizegains()

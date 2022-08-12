@@ -7,6 +7,7 @@ import fava_investor.modules.assetalloc_class.assetalloc_class as assetalloc_cla
 import fava_investor.modules.cashdrag.cashdrag as cashdrag
 import fava_investor.modules.summarizer.summarizer as summarizer
 import fava_investor.modules.tlh.tlh as tlh
+import fava_investor.modules.minimizegains.minimizegains as minimizegains
 
 
 @click.group()
@@ -19,6 +20,7 @@ cli.add_command(assetalloc_class.assetalloc_class)
 cli.add_command(cashdrag.cashdrag)
 cli.add_command(summarizer.summarizer)
 cli.add_command(tlh.tlh)
+cli.add_command(minimizegains.minimizegains)
 
 
 if __name__ == '__main__':

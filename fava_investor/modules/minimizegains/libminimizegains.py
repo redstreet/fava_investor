@@ -33,9 +33,7 @@ def find_minimized_gains(accapi, options):
     # date) seperately, that can be sold to generate a TLH
 
     # our output table is slightly different from our query table:
-    retrow_types = rtypes[:-1] + [('gain', Decimal), ('term', str)]
-    retrow_types = libtlh.insert_column(retrow_types, 'units', Decimal, 'ticker', str)
-    retrow_types = libtlh.insert_column(retrow_types, 'market_value', Decimal, 'currency', str)
+    retrow_types = rtypes[:-1] + [('gain', Decimal), ('marginal_percent', Decimal), ('term', str)]
 
     # rtypes:
     # [('account', <class 'str'>),
@@ -52,20 +50,20 @@ def find_minimized_gains(accapi, options):
             gain = D(val(row.market_value) - val(row.basis))
             term = libtlh.gain_term(row.acquisition_date, datetime.today().date())
 
-            units, ticker = libtlh.split_currency(row.units)
-            to_sell.append(RetRow(row.account, units, ticker, row.acquisition_date,
-                                  *libtlh.split_currency(row.market_value), gain, term))
+            to_sell.append(RetRow(row.account, row.units, row.acquisition_date,
+                                  row.market_value, gain, (gain/val(row.market_value))*100, term))
 
-    to_sell.sort(key=lambda x: x.gain)
+    to_sell.sort(key=lambda x: x.marginal_percent)
 
     # add cumulative column
-    retrow_types = retrow_types + [('cumu_proceeds', Decimal), ('cumu_gains', Decimal)]
+    retrow_types = retrow_types + [('cumu_proceeds', Decimal), ('cumu_gains', Decimal),
+            ('percent', Decimal)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     retval = []
     cumu_proceeds = cumu_gains = 0
     for row in to_sell:
         cumu_gains += row.gain
-        cumu_proceeds += row.market_value
-        retval.append(RetRow(*row, cumu_proceeds, cumu_gains))
+        cumu_proceeds += val(row.market_value)
+        retval.append(RetRow(*row, cumu_proceeds, cumu_gains, (cumu_gains/cumu_proceeds)*100))
 
     return retrow_types, retval
