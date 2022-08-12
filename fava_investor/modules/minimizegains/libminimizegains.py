@@ -11,6 +11,8 @@ from fava_investor.modules.tlh import libtlh
 def find_minimized_gains(accapi, options):
     account_field = libtlh.get_account_field(options)
     accounts_pattern = options.get('accounts_pattern', '')
+    tax_rate = {'Short': Decimal(options.get('st_tax_rate', 1)),
+                'Long':  Decimal(options.get('lt_tax_rate', 1))}
 
     sql = f"""
     SELECT {account_field} as account,
@@ -33,7 +35,8 @@ def find_minimized_gains(accapi, options):
     # date) seperately, that can be sold to generate a TLH
 
     # our output table is slightly different from our query table:
-    retrow_types = rtypes[:-1] + [('gain', Decimal), ('marginal_percent', Decimal), ('term', str)]
+    retrow_types = rtypes[:-1] + [('gain', Decimal), ('term', str),
+            ('est_tax', Decimal), ('est_tax_percent', Decimal)]
 
     # rtypes:
     # [('account', <class 'str'>),
@@ -49,11 +52,12 @@ def find_minimized_gains(accapi, options):
         if row.market_value.get_only_position():
             gain = D(val(row.market_value) - val(row.basis))
             term = libtlh.gain_term(row.acquisition_date, datetime.today().date())
+            est_tax = gain * tax_rate[term]
 
-            to_sell.append(RetRow(row.account, row.units, row.acquisition_date,
-                                  row.market_value, gain, (gain/val(row.market_value))*100, term))
+            to_sell.append(RetRow(row.account, row.units, row.acquisition_date, row.market_value,
+                gain, term, est_tax, (est_tax/val(row.market_value))*100))
 
-    to_sell.sort(key=lambda x: x.marginal_percent)
+    to_sell.sort(key=lambda x: x.est_tax_percent)
 
     # add cumulative column
     retrow_types = retrow_types + [('cumu_proceeds', Decimal), ('cumu_gains', Decimal),
