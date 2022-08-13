@@ -33,6 +33,12 @@
       'columns' : [ 'ticker', 'a__quoteType', 'equivalent', 'name', 'tlh_alternates', 'a__annualReportExpenseRatio', 'market_value'],
       'sort_by' : 1,
     },
- ]
+ ],
+   'minimizegains' : {
+       'accounts_pattern': 'Assets:US',
+       'account_field': 2,
+       'st_tax_rate': 0.35,
+       'lt_tax_rate': 0.21
+   }
 }"
 

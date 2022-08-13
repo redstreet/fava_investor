@@ -1,5 +1,10 @@
 #!/bin/env python3
-"""Determine what assets to sell to minimize gains."""
+"""
+# Gains Minimizer
+_Determine lots to sell to minimize capital gains taxes._
+
+See accompanying README.txt
+"""
 
 import collections
 from datetime import datetime
