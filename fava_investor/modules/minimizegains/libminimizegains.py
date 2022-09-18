@@ -19,12 +19,14 @@ def find_minimized_gains(accapi, options):
     tax_rate = {'Short': Decimal(options.get('st_tax_rate', 1)),
                 'Long':  Decimal(options.get('lt_tax_rate', 1))}
 
+    currency = accapi.get_operating_currencies()[0]
+
     sql = f"""
     SELECT {account_field} as account,
         units(sum(position)) as units,
         cost_date as acquisition_date,
-        value(sum(position)) as market_value,
-        cost(sum(position)) as basis
+        CONVERT(value(sum(position)), '{currency}') as market_value,
+        CONVERT(cost(sum(position)), '{currency}') as basis
       WHERE account_sortkey(account) ~ "^[01]" AND
         account ~ '{accounts_pattern}'
       GROUP BY {account_field}, cost_date, currency, cost_currency, cost_number, account_sortkey(account)
