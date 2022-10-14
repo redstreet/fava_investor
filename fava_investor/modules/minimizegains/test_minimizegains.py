@@ -16,6 +16,7 @@ class TestScriptCheck(test_utils.TestCase):
     @test_utils.docfile
     def test_minimizegains_basic(self, f):
         """
+        option "operating_currency" "USD"
         2010-01-01 open Assets:Investments:Taxable:Brokerage
         2010-01-01 open Assets:Bank
 
