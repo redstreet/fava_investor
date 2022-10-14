@@ -189,8 +189,8 @@ def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, writ
     # update a_* metadata
     for c, metadata in commodities.items():
         if c in ctdata.data:
-            if tickerrel.substsimilars(c):
-                metadata.meta[prefix + 'substsimilars'] = ','.join(tickerrel.substsimilars(c))
+            if tickerrel.substidenticals(c):
+                metadata.meta[prefix + 'substidenticals'] = ','.join(tickerrel.substidenticals(c))
             if c in full_tlh_db:
                 metadata.meta[prefix + 'tlh_partners'] = ','.join(full_tlh_db[c])
             for m in auto_metadata:
@@ -270,11 +270,11 @@ def find_equivalents(cf):
 @relate.command(aliases=['sim'])
 @cf_option
 def find_similars(cf):
-    """Determine substantially similar groups of commodities from an incomplete specification. Includes
-    equivalents."""
+    """Determine substantially identical groups of commodities from an incomplete specification.
+    Includes equivalents."""
 
     tickerrel = RelateTickers(cf)
-    retval = tickerrel.build_commodity_groups(['equivalent', 'substsimilar'])
+    retval = tickerrel.build_commodity_groups(['equivalent', 'substidentical'])
     for r in retval:
         print(r)
 

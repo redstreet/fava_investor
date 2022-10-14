@@ -18,7 +18,7 @@ class RelateTickers:
         self.archived = [c for c in self.db if 'archive' in self.db[c].meta]
 
         # similars databases
-        self.ssims = self.build_commodity_groups(['equivalent', 'substsimilar'])
+        self.ssims = self.build_commodity_groups(['equivalent', 'substidentical'])
         ssimscopy = [i.copy() for i in self.ssims]
         self.ssims_preferred = {i.pop(): i for i in ssimscopy}
 
@@ -44,19 +44,19 @@ class RelateTickers:
                 retval.append(na)
         return retval
 
-    def substsimilars(self, ticker):
-        """Returns a complete list of commodities substantially similar to the given ticker. The substantially
+    def substidenticals(self, ticker):
+        """Returns a complete list of commodities substantially identical to the given ticker. The substantially
         similar set is built from an incomplete beancount commodities declaration file.
 
         If the input is a list or a set, returns a list/set for all tickers in the input.
         """
 
         if isinstance(ticker, list):
-            retval = [self.substsimilars(t) for t in ticker]
+            retval = [self.substidenticals(t) for t in ticker]
             return [j for i in retval for j in i]
 
         if isinstance(ticker, set):
-            retval = [self.substsimilars(t) for t in ticker]
+            retval = [self.substidenticals(t) for t in ticker]
             return set([j for i in retval for j in i])
 
         for group in self.ssims:
@@ -65,12 +65,12 @@ class RelateTickers:
         return []
 
     def representative(self, ticker):
-        """Consistently returns a ticker that represents a group of substantially similar tickers. For
-        example, if [AA, BB, CC, DD] are a group of substantially similar tickers, this method returns 'AA'
-        when called with any ticker in the group (AA, BB, CC, or DD).
+        """Consistently returns a ticker that represents a group of substantially identical
+        tickers. For example, if [AA, BB, CC, DD] are a group of substantially identical tickers,
+        this method returns 'AA' when called with any ticker in the group (AA, BB, CC, or DD).
 
-        This method also accepts a list or set, and returns a list of representative tickers for each ticker
-        in the list or set."""
+        This method also accepts a list or set, and returns a list of representative tickers for
+        each ticker in the list or set."""
 
         db = self.ssims_preferred
         if isinstance(ticker, list):
@@ -116,7 +116,7 @@ class RelateTickers:
         return retval
 
     def pretty_sort(self, tickers, group=False):
-        """Sort, and optionally group substantially similar tickers together.
+        """Sort, and optionally group substantially identical tickers together.
            Input: list of tickers, or a comma separated string of tickers
         """
 
@@ -131,8 +131,9 @@ class RelateTickers:
             return tickers
 
     def compute_tlh_groups(self):
-        """Given an incomplete specification of TLH partners, and complete specification of substantially similar
-        and equivalent mutual funds/ETFs/tickers, compute the full set of TLH partners."""
+        """Given an incomplete specification of TLH partners, and complete specification of
+        substantially identical and equivalent mutual funds/ETFs/tickers, compute the full set of
+        TLH partners."""
 
         tlh = defaultdict(set)
 
@@ -144,8 +145,8 @@ class RelateTickers:
                 tlh[c].update(partners)
         # printd(tlh)
 
-        # Step 2. Remove substantially similar tickers by replacing each ticker with a representative for its
-        # substantially similar group
+        # Step 2. Remove substantially identical tickers by replacing each ticker with a representative for its
+        # substantially identical group
 
         tlh = {self.representative(k): self.representative(v) for k, v in tlh.items()}
         # printd(tlh)
@@ -153,7 +154,7 @@ class RelateTickers:
         # Step 3. Apply the following rule, once (no iteration or convergence needed):
         # if we are given:
         # A -> (B, C)   # Meaning: A's TLH partners are B, C
-        # where A, B, C are mutually substantially dissimilar
+        # where A, B, C are mutually substantially nonidentical
         #
         # then we infer:
         # B -> (A, C)
@@ -171,13 +172,13 @@ class RelateTickers:
         # printd(newtlh)
         tlh = newtlh
 
-        # Step 4. Add substantially similar tickers (first to values, then to keys)
+        # Step 4. Add substantially identical tickers (first to values, then to keys)
 
-        tlh = {k: v.union(self.substsimilars(v)) for k, v in tlh.items()}
+        tlh = {k: v.union(self.substidenticals(v)) for k, v in tlh.items()}
         newtlh = tlh.copy()
         # printd(tlh)
         for k, v in tlh.items():
-            for s in self.substsimilars(k):
+            for s in self.substidenticals(k):
                 newtlh[s] = v
         # printd(newtlh)
         tlh = newtlh

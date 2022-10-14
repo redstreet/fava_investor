@@ -124,16 +124,16 @@ and
 
 ---
 
-`substantially_similars_meta_label`
+`substantially_identical_meta_label`
 
-Default: `substantially_similars`
+Default: `substantially_identical`
 
-Specify the metadata _label_ used in your config to list substantially similar funds for
-each fund in its commodity declaration. Eg:
+Specify the metadata _label_ used in your config to list substantially identical funds
+for each fund in its commodity declaration. Eg:
 
 ```
 2000-01-01 commodity VOO
-   subst_similars: VFINX,VFIAX,FXAIX
+   substantially_identical_funds: VFINX,VFIAX,FXAIX
    
 ```
 and
@@ -144,7 +144,7 @@ and
       'accounts_pattern': 'Assets:Investments:Taxable',
       'wash_pattern': 'Assets:Investments',
       'tlh_partners_meta_label': 'tlh_partners',
-      'substantially_similars_meta_label': 'subst_similars`,
+      'substantially_identical_meta_label': 'substantially_identical_funds',
    },
    ...
 }

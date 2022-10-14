@@ -32,7 +32,7 @@ Fava Investor ships with `ticker-util`, which is a collection of utilities for:
 - downloading information from Yahoo for commodities (tickers), and annotating your
   commodity declarations with metadata
 - discovering relationships between tickers in your Beancount file, such as equivalent
-  and substantially similar tickers, and tax loss harvesting partner groups, from a
+  and substantially identical tickers, and tax loss harvesting partner groups, from a
   minimal and incomplete specification
 - providing ISIN an other ticker identifying information to your importers
 

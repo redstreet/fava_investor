@@ -1,6 +1,6 @@
 #!/bin/env python3
 """Tax loss harvesting library for Beancount. Determines tax loss harvestable commodities, and potential wash
-sales, after account for substantially similar funds."""
+sales, after account for substantially identical funds."""
 
 import collections
 import locale
@@ -134,7 +134,7 @@ def find_harvestable_lots(accapi, options):
     recent_purchases = {}
     commodities = accapi.get_commodity_directives()
     wash_buy_counter = itertools.count()
-    mlabel = options.get('substantially_similars_meta_label', 'substantially_similars')
+    mlabel = options.get('substantially_identical_meta_label', 'substantially_identical')
 
     for row in rrows:
         if row.market_value.get_only_position() and \
@@ -272,7 +272,7 @@ def recently_sold_at_loss(accapi, options):
     return_rows = []
 
     commodities = accapi.get_commodity_directives()
-    mlabel = options.get('substantially_similars_meta_label', 'substantially_similars')
+    mlabel = options.get('substantially_identical_meta_label', 'substantially_identical')
     for row in rrows:
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))

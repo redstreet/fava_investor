@@ -140,13 +140,13 @@ class TestScriptCheck(test_utils.TestCase):
 
     @test_utils.docfile
     @insert_dates
-    def test_wash_substantially_similar(self, f):
+    def test_wash_substantially_identical(self, f):
         """
         2010-01-01 open Assets:Investments:Taxable:Brokerage
         2010-01-01 open Assets:Bank
 
         2010-01-01 commodity BNCT
-          substantially_similars: "ORNG"
+          substantially_identical: "ORNG"
 
         {m100} * "Buy stock"
          Assets:Investments:Taxable:Brokerage 1 BNCT {{200 USD}}
