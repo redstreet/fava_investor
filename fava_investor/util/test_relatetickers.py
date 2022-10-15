@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-        # 2005-01-01 commodity VTI
-        #   a__quoteType: "ETF"
-        #   a__substidenticals: "VTSMX,VTSAX"
-        #   equivalent: "VTSAX"
-        #   tlh_partners: "VOO,VV"
+# 2005-01-01 commodity VTI
+#   a__quoteType: "ETF"
+#   a__substidenticals: "VTSMX,VTSAX"
+#   equivalent: "VTSAX"
+#   tlh_partners: "VOO,VV"
 
 import sys
 import os
@@ -60,7 +60,6 @@ class TestRelateTickers(test_utils.TestCase):
         self.assertEqual(1, len(retval))
         self.assertSetEqual(retval[0], set(['IVV', 'SPY', 'VOO']))
 
-
     @test_utils.docfile
     def test_identicals(self, f):
         """
@@ -76,7 +75,6 @@ class TestRelateTickers(test_utils.TestCase):
 
         self.assertEqual(1, len(retval))
         self.assertSetEqual(retval[0], set(['IVV', 'SPY', 'VOO', 'VFIAX']))
-
 
     @test_utils.docfile
     def test_tlh_groups(self, f):
@@ -119,4 +117,3 @@ class TestRelateTickers(test_utils.TestCase):
         expected_value = {k: v.sort() for k, v in expected_value.items()}
         retval = {k: v.sort() for k, v in retval.items()}
         self.assertDictEqual(retval, expected_value)
-

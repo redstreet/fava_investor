@@ -163,8 +163,6 @@ def find_harvestable_lots(accapi, options):
     return retrow_types, to_sell, recent_purchases
 
 
-
-
 def harvestable_by_commodity(accapi, options, rtype, rrows):
     """Group input by sum(commodity)
     """
