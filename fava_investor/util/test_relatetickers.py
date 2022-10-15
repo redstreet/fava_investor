@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-# 2005-01-01 commodity VTI
-#   a__quoteType: "ETF"
-#   a__substidenticals: "VTSMX,VTSAX"
-#   a__equivalents: "VTSAX"
-#   tlh_partners: "VOO,VV"
-
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
@@ -94,7 +88,7 @@ class TestRelateTickers(test_utils.TestCase):
 
         2005-01-01 commodity VLCAX
           a__equivalents: "VV"
-          tlh_partners: "VTSAX,FXAIX"
+          a__tlh_partners: "VTSAX,FXAIX"
 
         2005-01-01 commodity FXAIX
           a__substidenticals: "VFIAX"
@@ -149,7 +143,7 @@ class TestRelateTickers(test_utils.TestCase):
 
         2005-01-01 commodity VLCAX
           a__equivalents: "VV"
-          tlh_partners: "VTSAX,FXAIX"
+          a__tlh_partners: "VTSAX,FXAIX"
           a__quoteType: "MUTUALFUND"
 
         2005-01-01 commodity FXAIX

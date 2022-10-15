@@ -156,8 +156,8 @@ class RelateTickers:
         # Step 1. Read tlh partners manually specified in commodity declarations. This is the incompletely
         # specification that we want to turn into a complete specification
         for c in self.db:
-            if 'tlh_partners' in self.db[c].meta:
-                partners = self.db[c].meta.get('tlh_partners', '').split(',')
+            if 'a__tlh_partners' in self.db[c].meta:
+                partners = self.db[c].meta.get('a__tlh_partners', '').split(',')
                 tlh[c].update(partners)
         # printd(tlh)
 
