@@ -136,10 +136,18 @@ class RelateTickers:
         else:
             return tickers
 
-    def compute_tlh_groups(self):
+    def compute_tlh_groups(self, same_type_funds_only=False):
         """Given an incomplete specification of TLH partners, and complete specification of
         substantially identical and equivalent mutual funds/ETFs/tickers, compute the full set of
-        TLH partners."""
+        TLH partners.
+
+        If same_type_funds_only is True, only include partners of the same type (mutual funds for
+        mutual funds, ETFs for ETFs, etc.). Type is specified via the a__quoteType commodity
+        metadata. Eg:
+        2005-01-01 commodity VFIAX
+          a__quoteType: "MUTUALFUND"
+
+        """
 
         tlh = defaultdict(set)
 
@@ -189,8 +197,20 @@ class RelateTickers:
         # printd(newtlh)
         tlh = newtlh
 
-        # Step 5: cleanup. Remove archived tickers from both keys and values, and sort into groups
+        # Step 5: cleanup. Remove archived tickers from both keys and values
+        # only include the same type (mutual funds for mutual funds, ETFs for ETFs, etc.) if
+        # requested
         tlh = {k: self.non_archived_set(v) for k, v in tlh.items() if k not in self.archived}
+
+        def fund_type(f):
+            if f in self.db:
+                return self.db[f].meta.get('a__quoteType', 'unknown')
+            return 'unknown'
+
+        if same_type_funds_only:
+            tlh = {k: [i for i in v if fund_type(i) == fund_type(k)] for k, v in tlh.items()}
+
+        # Step 6: sort into meaningful groups
         tlh = {k: self.pretty_sort(v) for k, v in tlh.items()}
 
         return tlh

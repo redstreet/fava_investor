@@ -163,7 +163,10 @@ preferredPosition,bondPosition,convertiblePosition,otherPosition,cashPosition,st
               "separate file (from your beancount sources) that you auto-generate with this utility.")
 @click.option('--confirm-overwrite', is_flag=True, help="Specify in conjunction with --write-file to "
               "actually overwrite")
-def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, write_file, confirm_overwrite):
+@click.option('-st', '--same-type', is_flag=True, help="Include only partners that are of the "
+              "same type (MF, ETF, etc.)")
+def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, write_file,
+                         confirm_overwrite, same_type):
     """Generate Beancount commodity declarations with metadata from database, and existing declarations."""
 
     auto_metadata = metadata.split(',')
@@ -171,7 +174,7 @@ def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, writ
 
     tickerrel = RelateTickers(cf)
     commodities = tickerrel.db
-    full_tlh_db = tickerrel.compute_tlh_groups()
+    full_tlh_db = tickerrel.compute_tlh_groups(same_type)
     ctdata = CachedTickerInfo(yf_cache)
 
     not_in_commodities_file = [c for c in ctdata.data if c not in commodities]
@@ -293,10 +296,11 @@ def list_archived(cf):
 
 @relate.command(aliases=['tlh'])
 @cf_option
-def find_tlh_groups(cf):
+@click.option('-st', '--same-type', is_flag=True, help="Include only partners that are of the same type (MF, ETF, etc.)")
+def find_tlh_groups(cf, same_type):
     """Determine Tax Loss Harvest partner groups."""
     tickerrel = RelateTickers(cf)
-    full_tlh_db = tickerrel.compute_tlh_groups()
+    full_tlh_db = tickerrel.compute_tlh_groups(same_type)
     for t, partners in sorted(full_tlh_db.items()):
         print("{:<5}".format(t), partners)
 

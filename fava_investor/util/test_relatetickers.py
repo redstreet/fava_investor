@@ -114,6 +114,66 @@ class TestRelateTickers(test_utils.TestCase):
                           'VTSAX': ['FXAIX', 'VFIAX', 'IVV', 'SPY', 'VOO', 'VLCAX', 'VV'],
                           'VTSMX': ['FXAIX', 'VFIAX', 'IVV', 'SPY', 'VOO', 'VLCAX', 'VV']}
 
-        expected_value = {k: v.sort() for k, v in expected_value.items()}
-        retval = {k: v.sort() for k, v in retval.items()}
+        expected_value = {k: sorted(v) for k, v in expected_value.items()}
+        retval = {k: sorted(v) for k, v in retval.items()}
+        self.assertDictEqual(retval, expected_value)
+
+    @test_utils.docfile
+    def test_tlh_sametype(self, f):
+        """
+        2005-01-01 commodity VOO
+          substidenticals: "IVV"
+          equivalent: "VFIAX"
+          a__quoteType: "ETF"
+
+        2005-01-01 commodity IVV
+          substidenticals: "SPY"
+          a__quoteType: "ETF"
+
+        2005-01-01 commodity VV
+          a__quoteType: "ETF"
+
+        2005-01-01 commodity SPY
+          a__quoteType: "ETF"
+
+        2005-01-01 commodity VTI
+          equivalent: "VTSAX"
+          a__quoteType: "ETF"
+
+        2005-01-01 commodity VTSAX
+          equivalent: "VTSMX"
+          a__quoteType: "MUTUALFUND"
+
+        2005-01-01 commodity VTSMX
+          a__quoteType: "MUTUALFUND"
+
+        2005-01-01 commodity VLCAX
+          equivalent: "VV"
+          tlh_partners: "VTSAX,FXAIX"
+          a__quoteType: "MUTUALFUND"
+
+        2005-01-01 commodity FXAIX
+          substidenticals: "VFIAX"
+          a__quoteType: "MUTUALFUND"
+
+        2005-01-01 commodity VFIAX
+          a__quoteType: "MUTUALFUND"
+
+        """
+        tickerrel = RelateTickers(f)
+        retval = tickerrel.compute_tlh_groups(same_type_funds_only=True)
+
+        expected_value = {'VLCAX': ['FXAIX', 'VFIAX', 'VTSAX', 'VTSMX'],
+                          'IVV': ['VV', 'VTI'],
+                          'VTI': ['IVV', 'SPY', 'VOO', 'VV'],
+                          'VV': ['IVV', 'SPY', 'VOO', 'VTI'],
+                          'FXAIX': ['VLCAX', 'VTSAX', 'VTSMX'],
+                          'VFIAX': ['VLCAX', 'VTSAX', 'VTSMX'],
+                          'SPY': ['VV', 'VTI'],
+                          'VOO': ['VV', 'VTI'],
+                          'VTSAX': ['FXAIX', 'VFIAX', 'VLCAX'],
+                          'VTSMX': ['FXAIX', 'VFIAX', 'VLCAX']}
+
+        expected_value = {k: sorted(v) for k, v in expected_value.items()}
+        retval = {k: sorted(v) for k, v in retval.items()}
         self.assertDictEqual(retval, expected_value)
