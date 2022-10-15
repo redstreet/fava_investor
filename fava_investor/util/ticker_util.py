@@ -267,14 +267,15 @@ def find_equivalents(cf):
         print(r)
 
 
-@relate.command(aliases=['sim'])
+@relate.command(aliases=['idents'])
 @cf_option
-def find_similars(cf):
+def find_identicals(cf):
     """Determine substantially identical groups of commodities from an incomplete specification.
     Includes equivalents."""
 
     tickerrel = RelateTickers(cf)
-    retval = tickerrel.build_commodity_groups(['equivalent', 'substidentical'])
+    # equivalents don't get rewritten into automatic meta values. Identicals do.
+    retval = tickerrel.build_commodity_groups(['equivalent', 'substidenticals', 'a__substidenticals'])
     for r in retval:
         print(r)
 

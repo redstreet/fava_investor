@@ -18,7 +18,7 @@ class RelateTickers:
         self.archived = [c for c in self.db if 'archive' in self.db[c].meta]
 
         # similars databases
-        self.ssims = self.build_commodity_groups(['equivalent', 'substidentical'])
+        self.ssims = self.build_commodity_groups(['equivalent', 'a__substidenticals', 'substidenticals'])
         ssimscopy = [i.copy() for i in self.ssims]
         self.ssims_preferred = {i.pop(): i for i in ssimscopy}
 
@@ -45,8 +45,10 @@ class RelateTickers:
         return retval
 
     def substidenticals(self, ticker):
-        """Returns a complete list of commodities substantially identical to the given ticker. The substantially
-        similar set is built from an incomplete beancount commodities declaration file.
+
+        """Returns a complete list of commodities substantially identical to the given ticker. The
+        substantially similar set is built from an incomplete beancount commodities declaration
+        file.
 
         If the input is a list or a set, returns a list/set for all tickers in the input.
         """
@@ -87,7 +89,7 @@ class RelateTickers:
         return ticker
 
     def build_commodity_groups(self, metas, only_non_archived=False):
-        """Find equivalent sets. Includes equivalents."""
+        """Find equivalent sets."""
 
         retval = []
 
@@ -118,6 +120,10 @@ class RelateTickers:
     def pretty_sort(self, tickers, group=False):
         """Sort, and optionally group substantially identical tickers together.
            Input: list of tickers, or a comma separated string of tickers
+
+           Note: this is a partial ordering, and will therefore produce different (but valid)
+           results across different runs for the same input
+
         """
 
         if isinstance(tickers, str):
