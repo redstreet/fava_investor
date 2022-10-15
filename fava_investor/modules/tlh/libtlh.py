@@ -134,7 +134,6 @@ def find_harvestable_lots(accapi, options):
     recent_purchases = {}
     commodities = accapi.get_commodity_directives()
     wash_buy_counter = itertools.count()
-    mlabel = options.get('substantially_identical_meta_label', 'substantially_identical')
 
     for row in rrows:
         if row.market_value.get_only_position() and \
@@ -147,7 +146,7 @@ def find_harvestable_lots(accapi, options):
             units, ticker = split_currency(row.units)
             recent, wash_id = recent_purchases.get(ticker, (None, None))
             if not recent:
-                similars = get_metavalue(ticker, commodities, mlabel)
+                similars = get_metavalue(ticker, commodities, 'a__substidenticals')
                 ticksims = [ticker] + similars.split(',') if similars else [ticker]
                 recent = query_recently_bought(ticksims, accapi, options)
                 wash_id = ''
@@ -270,12 +269,11 @@ def recently_sold_at_loss(accapi, options):
     return_rows = []
 
     commodities = accapi.get_commodity_directives()
-    mlabel = options.get('substantially_identical_meta_label', 'substantially_identical')
     for row in rrows:
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))
         if loss != Inventory() and val(loss) < 0:
-            similars = get_metavalue(row.currency, commodities, mlabel).replace(',', ', ')
+            similars = get_metavalue(row.currency, commodities, 'a__substidenticals').replace(',', ', ')
             return_rows.append(RetRow(row.sale_date, row.until, row.currency, similars, row.basis,
                                       row.proceeds, loss))
 

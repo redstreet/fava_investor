@@ -124,31 +124,17 @@ and
 
 ---
 
-`substantially_identical_meta_label`
+`a__substidenticals`
 
-Default: `substantially_identical`
-
-Specify the metadata _label_ used in your config to list substantially identical funds
+Use this metadata label to specify substantially identical funds
 for each fund in its commodity declaration. Eg:
 
 ```
 2000-01-01 commodity VOO
-   substantially_identical_funds: VFINX,VFIAX,FXAIX
+   a__substidenticals: VFINX,VFIAX,FXAIX
    
 ```
-and
 
-```
-2000-01-01 custom "fava-extension" "fava_investor" "{
-  'tlh' : {
-      'accounts_pattern': 'Assets:Investments:Taxable',
-      'wash_pattern': 'Assets:Investments',
-      'tlh_partners_meta_label': 'tlh_partners',
-      'substantially_identical_meta_label': 'substantially_identical_funds',
-   },
-   ...
-}
-```
 
 ## Limitations
 

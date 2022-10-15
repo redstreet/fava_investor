@@ -26,7 +26,6 @@ def tlh(beancount_file, brief):
                     'wash_pattern': 'Assets:Investments',
                     'account_field': 2,
                     'tlh_partners_meta_label': 'a__tlh_partners',
-                    'substantially_identical_meta_label': 'a__substidenticals',
            }}"
 
     """
