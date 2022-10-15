@@ -177,9 +177,8 @@ def harvestable_by_commodity(accapi, options, rtype, rrows):
 
     by_commodity = []
     commodities = accapi.get_commodity_directives()
-    mlabel = options.get('tlh_partners_meta_label', 'tlh_alternates')
     for ticker, loss in sorted(losses.items(), key=lambda x: x[1], reverse=True):
-        alts = get_metavalue(ticker, commodities, mlabel).replace(',', ', ')
+        alts = get_metavalue(ticker, commodities, 'a__tlh_partners').replace(',', ', ')
         by_commodity.append(RetRow(ticker, loss, market_value[ticker], alts))
 
     return retrow_types, by_commodity

@@ -146,7 +146,7 @@ class TestScriptCheck(test_utils.TestCase):
         2010-01-01 open Assets:Bank
 
         2010-01-01 commodity BNCT
-          substantially_identical: "ORNG"
+          a__substidenticals: "ORNG"
 
         {m100} * "Buy stock"
          Assets:Investments:Taxable:Brokerage 1 BNCT {{200 USD}}

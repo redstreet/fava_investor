@@ -97,29 +97,15 @@ include your tax advantaged and all investment accounts.
 
 ---
 
-`tlh_partners_meta_label`
+`a__tlh_partners`
 
-Default: `tlh_alternates`
-
-Specify the metadata _label_ used in your config to list "partner" funds for each fund
-in its commodity declaration. Eg:
+Use this metadata label to specify a list of "partner" or (aka substitute) funds for
+each fund in its commodity declaration. Eg:
 
 ```
 2000-01-01 commodity VTI
-   tlh_partners: ITOT,VTHR
+  a__tlh_partners: ITOT,VOO
    
-```
-and
-
-```
-2000-01-01 custom "fava-extension" "fava_investor" "{
-  'tlh' : {
-      'accounts_pattern': 'Assets:Investments:Taxable',
-      'wash_pattern': 'Assets:Investments',
-      'tlh_partners_meta_label': 'tlh_partners',
-   },
-   ...
-}
 ```
 
 ---
