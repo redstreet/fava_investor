@@ -116,7 +116,7 @@ with `ticker-util`, which ships with Fava Investor:
       'directive_type'  : 'commodities',
       'active_only': True,
       'col_labels': [ 'Ticker', 'Type', 'Equi', 'Description', 'TLH_to', 'ER', 'Market'],
-      'columns' : [ 'ticker', 'a__quoteType', 'equivalent', 'name', 'tlh_alternates', 'a__annualReportExpenseRatio', 'market_value'],
+      'columns' : [ 'ticker', 'a__quoteType', 'a__equivalents', 'name', 'tlh_alternates', 'a__annualReportExpenseRatio', 'market_value'],
       'sort_by' : 1,
     },
     { 'title' : 'TLH: Substantially Identical Funds and TLH Partners',

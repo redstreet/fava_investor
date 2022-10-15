@@ -58,7 +58,7 @@ class ScaledNAV(RelateTickers):
         self.db = getters.get_commodity_directives(entries)
 
         # equivalents databases
-        self.equivalents = self.build_commodity_groups(['equivalent'])
+        self.equivalents = self.build_commodity_groups(['a__equivalents'])
 
         # prices database
         entries, _, _ = self.load_file(prices_file)

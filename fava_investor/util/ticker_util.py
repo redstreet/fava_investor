@@ -192,6 +192,8 @@ def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, writ
     # update a_* metadata
     for c, metadata in commodities.items():
         if c in ctdata.data:
+            if tickerrel.substidenticals(c, equivalents_only=True):
+                metadata.meta[prefix + 'equivalents'] = ','.join(tickerrel.substidenticals(c, equivalents_only=True))
             if tickerrel.substidenticals(c):
                 metadata.meta[prefix + 'substidenticals'] = ','.join(tickerrel.substidenticals(c))
             if c in full_tlh_db:
@@ -265,7 +267,7 @@ def find_equivalents(cf):
     """Determine equivalent groups of commodities, from an incomplete specification."""
 
     tickerrel = RelateTickers(cf)
-    retval = tickerrel.build_commodity_groups(['equivalent'])
+    retval = tickerrel.build_commodity_groups(['a__equivalents'])
     for r in retval:
         print(r)
 
@@ -278,7 +280,7 @@ def find_identicals(cf):
 
     tickerrel = RelateTickers(cf)
     # equivalents don't get rewritten into automatic meta values. Identicals do.
-    retval = tickerrel.build_commodity_groups(['equivalent', 'a__substidenticals'])
+    retval = tickerrel.build_commodity_groups(['a__equivalents', 'a__substidenticals'])
     for r in retval:
         print(r)
 

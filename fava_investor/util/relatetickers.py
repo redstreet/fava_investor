@@ -18,7 +18,8 @@ class RelateTickers:
         self.archived = [c for c in self.db if 'archive' in self.db[c].meta]
 
         # similars databases
-        self.ssims = self.build_commodity_groups(['equivalent', 'a__substidenticals'])
+        self.equis = self.build_commodity_groups(['a__equivalents'])
+        self.ssims = self.build_commodity_groups(['a__equivalents', 'a__substidenticals'])
         ssimscopy = [i.copy() for i in self.ssims]
         self.ssims_preferred = {i.pop(): i for i in ssimscopy}
 
@@ -44,7 +45,7 @@ class RelateTickers:
                 retval.append(na)
         return retval
 
-    def substidenticals(self, ticker):
+    def substidenticals(self, ticker, equivalents_only=False):
 
         """Returns a complete list of commodities substantially identical to the given ticker. The
         substantially similar set is built from an incomplete beancount commodities declaration
@@ -61,7 +62,8 @@ class RelateTickers:
             retval = [self.substidenticals(t) for t in ticker]
             return set([j for i in retval for j in i])
 
-        for group in self.ssims:
+        equivalence_group = self.equis if equivalents_only else self.ssims
+        for group in equivalence_group:
             if ticker in group:
                 return self.pretty_sort([g for g in group if g != ticker])
         return []

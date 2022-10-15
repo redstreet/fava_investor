@@ -3,7 +3,7 @@
 # 2005-01-01 commodity VTI
 #   a__quoteType: "ETF"
 #   a__substidenticals: "VTSMX,VTSAX"
-#   equivalent: "VTSAX"
+#   a__equivalents: "VTSAX"
 #   tlh_partners: "VOO,VV"
 
 import sys
@@ -18,15 +18,15 @@ class TestRelateTickers(test_utils.TestCase):
     def test_equivalent_transitive(self, f):
         """
         2005-01-01 commodity VTI
-          equivalent: "VTSAX"
+          a__equivalents: "VTSAX"
 
         2005-01-01 commodity VTSAX
-          equivalent: "VTSMX"
+          a__equivalents: "VTSMX"
 
         2005-01-01 commodity VTSMX
         """
         tickerrel = RelateTickers(f)
-        retval = tickerrel.build_commodity_groups(['equivalent'])
+        retval = tickerrel.build_commodity_groups(['a__equivalents'])
 
         self.assertEqual(1, len(retval))
         self.assertSetEqual(retval[0], set(['VTI', 'VTSAX', 'VTSMX']))
@@ -41,7 +41,7 @@ class TestRelateTickers(test_utils.TestCase):
           a__substidenticals: "SPY"
         """
         tickerrel = RelateTickers(f)
-        retval = tickerrel.build_commodity_groups(['equivalent'])
+        retval = tickerrel.build_commodity_groups(['a__equivalents'])
 
         self.assertEqual(0, len(retval))
 
@@ -65,7 +65,7 @@ class TestRelateTickers(test_utils.TestCase):
         """
         2005-01-01 commodity VOO
           a__substidenticals: "IVV"
-          equivalent: "VFIAX"
+          a__equivalents: "VFIAX"
 
         2005-01-01 commodity IVV
           a__substidenticals: "SPY"
@@ -81,19 +81,19 @@ class TestRelateTickers(test_utils.TestCase):
         """
         2005-01-01 commodity VOO
           a__substidenticals: "IVV"
-          equivalent: "VFIAX"
+          a__equivalents: "VFIAX"
 
         2005-01-01 commodity IVV
           a__substidenticals: "SPY"
 
         2005-01-01 commodity VTI
-          equivalent: "VTSAX"
+          a__equivalents: "VTSAX"
 
         2005-01-01 commodity VTSAX
-          equivalent: "VTSMX"
+          a__equivalents: "VTSMX"
 
         2005-01-01 commodity VLCAX
-          equivalent: "VV"
+          a__equivalents: "VV"
           tlh_partners: "VTSAX,FXAIX"
 
         2005-01-01 commodity FXAIX
@@ -123,7 +123,7 @@ class TestRelateTickers(test_utils.TestCase):
         """
         2005-01-01 commodity VOO
           a__substidenticals: "IVV"
-          equivalent: "VFIAX"
+          a__equivalents: "VFIAX"
           a__quoteType: "ETF"
 
         2005-01-01 commodity IVV
@@ -137,18 +137,18 @@ class TestRelateTickers(test_utils.TestCase):
           a__quoteType: "ETF"
 
         2005-01-01 commodity VTI
-          equivalent: "VTSAX"
+          a__equivalents: "VTSAX"
           a__quoteType: "ETF"
 
         2005-01-01 commodity VTSAX
-          equivalent: "VTSMX"
+          a__equivalents: "VTSMX"
           a__quoteType: "MUTUALFUND"
 
         2005-01-01 commodity VTSMX
           a__quoteType: "MUTUALFUND"
 
         2005-01-01 commodity VLCAX
-          equivalent: "VV"
+          a__equivalents: "VV"
           tlh_partners: "VTSAX,FXAIX"
           a__quoteType: "MUTUALFUND"
 
