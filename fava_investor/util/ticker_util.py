@@ -165,7 +165,7 @@ preferredPosition,bondPosition,convertiblePosition,otherPosition,cashPosition,st
               "actually overwrite")
 @click.option('-st', '--same-type', is_flag=True, help="Include only partners that are of the "
               "same type (MF, ETF, etc.)")
-def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, write_file,
+def gen_commodities_file(cf, prefix, metadata, appends, include_undeclared, write_file,  # noqa: C901
                          confirm_overwrite, same_type):
     """Generate Beancount commodity declarations with metadata from database, and existing declarations."""
 
