@@ -18,7 +18,7 @@ class RelateTickers:
         self.archived = [c for c in self.db if 'archive' in self.db[c].meta]
 
         # similars databases
-        self.ssims = self.build_commodity_groups(['equivalent', 'a__substidenticals', 'substidenticals'])
+        self.ssims = self.build_commodity_groups(['equivalent', 'a__substidenticals'])
         ssimscopy = [i.copy() for i in self.ssims]
         self.ssims_preferred = {i.pop(): i for i in ssimscopy}
 

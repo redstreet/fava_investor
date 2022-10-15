@@ -35,10 +35,10 @@ class TestRelateTickers(test_utils.TestCase):
     def test_none(self, f):
         """
         2005-01-01 commodity VOO
-          substidenticals: "IVV"
+          a__substidenticals: "IVV"
 
         2005-01-01 commodity IVV
-          substidenticals: "SPY"
+          a__substidenticals: "SPY"
         """
         tickerrel = RelateTickers(f)
         retval = tickerrel.build_commodity_groups(['equivalent'])
@@ -49,13 +49,13 @@ class TestRelateTickers(test_utils.TestCase):
     def test_identicals_only(self, f):
         """
         2005-01-01 commodity VOO
-          substidenticals: "IVV"
+          a__substidenticals: "IVV"
 
         2005-01-01 commodity IVV
-          substidenticals: "SPY"
+          a__substidenticals: "SPY"
         """
         tickerrel = RelateTickers(f)
-        retval = tickerrel.build_commodity_groups(['substidenticals'])
+        retval = tickerrel.build_commodity_groups(['a__substidenticals'])
 
         self.assertEqual(1, len(retval))
         self.assertSetEqual(retval[0], set(['IVV', 'SPY', 'VOO']))
@@ -64,11 +64,11 @@ class TestRelateTickers(test_utils.TestCase):
     def test_identicals(self, f):
         """
         2005-01-01 commodity VOO
-          substidenticals: "IVV"
+          a__substidenticals: "IVV"
           equivalent: "VFIAX"
 
         2005-01-01 commodity IVV
-          substidenticals: "SPY"
+          a__substidenticals: "SPY"
         """
         tickerrel = RelateTickers(f)
         retval = tickerrel.ssims
@@ -80,11 +80,11 @@ class TestRelateTickers(test_utils.TestCase):
     def test_tlh_groups(self, f):
         """
         2005-01-01 commodity VOO
-          substidenticals: "IVV"
+          a__substidenticals: "IVV"
           equivalent: "VFIAX"
 
         2005-01-01 commodity IVV
-          substidenticals: "SPY"
+          a__substidenticals: "SPY"
 
         2005-01-01 commodity VTI
           equivalent: "VTSAX"
@@ -97,7 +97,7 @@ class TestRelateTickers(test_utils.TestCase):
           tlh_partners: "VTSAX,FXAIX"
 
         2005-01-01 commodity FXAIX
-          substidenticals: "VFIAX"
+          a__substidenticals: "VFIAX"
 
         """
         tickerrel = RelateTickers(f)
@@ -122,12 +122,12 @@ class TestRelateTickers(test_utils.TestCase):
     def test_tlh_sametype(self, f):
         """
         2005-01-01 commodity VOO
-          substidenticals: "IVV"
+          a__substidenticals: "IVV"
           equivalent: "VFIAX"
           a__quoteType: "ETF"
 
         2005-01-01 commodity IVV
-          substidenticals: "SPY"
+          a__substidenticals: "SPY"
           a__quoteType: "ETF"
 
         2005-01-01 commodity VV
@@ -153,7 +153,7 @@ class TestRelateTickers(test_utils.TestCase):
           a__quoteType: "MUTUALFUND"
 
         2005-01-01 commodity FXAIX
-          substidenticals: "VFIAX"
+          a__substidenticals: "VFIAX"
           a__quoteType: "MUTUALFUND"
 
         2005-01-01 commodity VFIAX

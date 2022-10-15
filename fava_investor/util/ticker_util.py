@@ -278,7 +278,7 @@ def find_identicals(cf):
 
     tickerrel = RelateTickers(cf)
     # equivalents don't get rewritten into automatic meta values. Identicals do.
-    retval = tickerrel.build_commodity_groups(['equivalent', 'substidenticals', 'a__substidenticals'])
+    retval = tickerrel.build_commodity_groups(['equivalent', 'a__substidenticals'])
     for r in retval:
         print(r)
 
