@@ -110,14 +110,31 @@ each fund in its commodity declaration. Eg:
 
 ---
 
-`a__substidenticals`
+`a__equivalents`
 
-Use this metadata label to specify substantially identical funds
-for each fund in its commodity declaration. Eg:
+Use this metadata label to specify funds that are equivalents for each fund in its
+commodity declaration. For example, VOO, VFINX, and VFIAX are just different share
+classes of the same underlying fund. Therefore:
 
 ```
 2000-01-01 commodity VOO
-   a__substidenticals: VFINX,VFIAX,FXAIX
+   a__substidenticals: VFINX,VFIAX
+   
+```
+
+
+---
+
+`a__substidenticals`
+
+Use this metadata label to specify substantially identical funds
+for each fund in its commodity declaration. For example, VFIAX and FXAIX are offered by
+different brokerages, but are considered substantially identical since they both track
+the same index (the S&P 500). Therefore:
+
+```
+2000-01-01 commodity VFIAX
+   a__substidenticals: FXAIX
    
 ```
 
