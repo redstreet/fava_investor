@@ -17,11 +17,11 @@ class RelateTickers:
         self.db = getters.get_commodity_directives(entries)
         self.archived = [c for c in self.db if 'archive' in self.db[c].meta]
 
-        # similars databases
+        # equivalents and identicals databases
         self.equis = self.build_commodity_groups(['a__equivalents'])
-        self.ssims = self.build_commodity_groups(['a__equivalents', 'a__substidenticals'])
-        ssimscopy = [i.copy() for i in self.ssims]
-        self.ssims_preferred = {i.pop(): i for i in ssimscopy}
+        self.idents = self.build_commodity_groups(['a__equivalents', 'a__substidenticals'])
+        identscopy = [i.copy() for i in self.idents]
+        self.idents_preferred = {i.pop(): i for i in identscopy}
 
     def load_file(self, cf):
         if cf is None:
@@ -62,7 +62,7 @@ class RelateTickers:
             retval = [self.substidenticals(t) for t in ticker]
             return set([j for i in retval for j in i])
 
-        equivalence_group = self.equis if equivalents_only else self.ssims
+        equivalence_group = self.equis if equivalents_only else self.idents
         for group in equivalence_group:
             if ticker in group:
                 return self.pretty_sort([g for g in group if g != ticker])
@@ -76,7 +76,7 @@ class RelateTickers:
         This method also accepts a list or set, and returns a list of representative tickers for
         each ticker in the list or set."""
 
-        db = self.ssims_preferred
+        db = self.idents_preferred
         if isinstance(ticker, list):
             return [self.representative(t) for t in ticker]
 

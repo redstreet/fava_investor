@@ -146,8 +146,8 @@ def find_harvestable_lots(accapi, options):
             units, ticker = split_currency(row.units)
             recent, wash_id = recent_purchases.get(ticker, (None, None))
             if not recent:
-                similars = get_metavalue(ticker, commodities, 'a__substidenticals')
-                ticksims = [ticker] + similars.split(',') if similars else [ticker]
+                identicals = get_metavalue(ticker, commodities, 'a__substidenticals')
+                ticksims = [ticker] + identicals.split(',') if identicals else [ticker]
                 recent = query_recently_bought(ticksims, accapi, options)
                 wash_id = ''
                 if len(recent[1]):
@@ -262,7 +262,7 @@ def recently_sold_at_loss(accapi, options):
         return [], []
 
     # filter out losses
-    rtypes = insert_column(rtypes, 'currency', None, 'similars', str)
+    rtypes = insert_column(rtypes, 'currency', None, 'identicals', str)
     rtypes = rtypes + [('loss', Inventory)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in rtypes])
     return_rows = []
@@ -272,8 +272,8 @@ def recently_sold_at_loss(accapi, options):
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))
         if loss != Inventory() and val(loss) < 0:
-            similars = get_metavalue(row.currency, commodities, 'a__substidenticals').replace(',', ', ')
-            return_rows.append(RetRow(row.sale_date, row.until, row.currency, similars, row.basis,
+            identicals = get_metavalue(row.currency, commodities, 'a__substidenticals').replace(',', ', ')
+            return_rows.append(RetRow(row.sale_date, row.until, row.currency, identicals, row.basis,
                                       row.proceeds, loss))
 
     footer = build_table_footer(rtypes, return_rows, accapi)
