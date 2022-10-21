@@ -65,7 +65,7 @@ class TestRelateTickers(test_utils.TestCase):
           a__substidenticals: "SPY"
         """
         tickerrel = RelateTickers(f)
-        retval = tickerrel.ssims
+        retval = tickerrel.idents
 
         self.assertEqual(1, len(retval))
         self.assertSetEqual(retval[0], set(['IVV', 'SPY', 'VOO', 'VFIAX']))
