@@ -55,7 +55,7 @@ class AccAPI:
 
     def get_account_open(self):
         oc = getters.get_account_open_close(self.entries)
-        opens = [e for e in oc if isinstance(e, Open)]
+        opens = [v for k, v in oc.items() if isinstance(v[0], Open)]
         return opens
 
     # def cost_or_value(self, node, date, include_children):
