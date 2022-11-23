@@ -60,7 +60,7 @@ click_aliases == 1.0.1
 # fava_investor/fava_investor/__init__.py: 3,4
 # fava_investor/fava_investor/common/beancountinvestorapi.py: 29
 # fava_investor/fava_investor/common/favainvestorapi.py: 2,3
-fava == 1.22
+fava == 1.22.3
 
 # fava_investor/.eggs/setuptools_scm-7.0.4-py3.8.egg/setuptools_scm/_entrypoints.py: 77
 importlib_metadata == 1.5.0
