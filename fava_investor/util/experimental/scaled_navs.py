@@ -159,7 +159,7 @@ from usage of this tool.
     s.show_estimates()
     if write_to_prices_file:
         s.update_prices_file()
-        print("Above was append to", pf)
+        print("Above was appended to", pf)
 
 
 if __name__ == '__main__':
