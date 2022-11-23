@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.4.0 (2022-11-22)
+
+
+### New
+
+- minimizegains module. works on cli and fava. [Red S]
+
+### Improvements
+
+- tlh/relatetickers: rename 'tlh_partners' to 'a__tlh_partners' [Red S]
+  In line with the other metadata fields, `tlh_partners` has been renamed
+  to `a__tlh_partners` and is now both an input and and auto-generated
+  field
+- tlh/relatetickers: rename and add 'a__equivalents' [Red S]
+  In line with the other metadata fields, `equivalent` has been renamed to
+  `a__equivalents` and is now both an input and and auto-generated field
+- tlh/relatetickers: remove tlh_partners_meta_label feature. [Red S]
+  this simplifies config, and clarifies.
+- tlh: removed susubstantially_identical_meta_label feature. [Red S]
+  this is a simplification to provide clarity.
+- tlh/relatetickers: Show only same type of TLH partners. [Red S]
+
+### Fixes
+
+- #79 bump fava dependency to 1.22 due to upstream filtering changes. [Red S]
+- minor: spelling. [Red S]
+- beancountinvestorapi open method needed to index into list. [Red S]
+- ticker_util: substidentical and a__substidentical are both accepted. [Red S]
+- fix (summarizer, tlh, util): rename "similar" to "identical" [Red S]
+
+  IRS uses substantially identical
+- libminimizegains: couldn't use arbitrary currencies. [Red S]
+
+### Other
+
+- relatetickers: unit test. [Red S]
+- pythonanywhere update.bash. [Red S]
+- pythonanywhere example asset alloc looks nicer now. [Red S]
+- pythonanywhere example is not too shabby now. #72 #24. [Red S]
+- ci: fix test. [Red S]
+- refactor: add tlh substantially identical based wash sale example. [Red S]
+- refactor: rename similars to idents. [Red S]
+- ci: flake ignore. [Red S]
+- doc/tlh: specifying substantially identical, and equivalent metadata. [Red S]
+- refactor: remove 'substidenticals' meta label. [Red S]
+
+  use only a__substidenticals, which is both an input field, and gets
+  overwritten
+- ci: flake. [Red S]
+- ci: flake. [Red S]
+- doc: feature todos for minimizegains. [Red S]
+- doc: minimizegains README.txt. [Red S]
+- wip: minimizegains. [Red S]
+
+
 ## 0.3.0 (2022-08-07)
 ### New
 
