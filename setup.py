@@ -22,7 +22,7 @@ setup(
         'Click >= 7.0',
         'beancount >= 2.3.2',
         'click_aliases >= 1.0.1',
-        'fava >= 1.15',
+        'fava >= 1.22',
         'packaging >= 20.3',
         'python_dateutil >= 2.8.1',
         'tabulate >= 0.8.9',
