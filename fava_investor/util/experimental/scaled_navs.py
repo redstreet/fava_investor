@@ -57,8 +57,8 @@ class ScaledNAV(RelateTickers):
         # basic databases
         self.db = getters.get_commodity_directives(entries)
 
-        # equivalents databases
-        self.equivalents = self.build_commodity_groups(['a__equivalents'])
+        # identicals databases
+        self.identicals = self.build_commodity_groups(['a__equivalents', 'a__substidenticals'])
 
         # prices database
         entries, _, _ = self.load_file(prices_file)
@@ -88,10 +88,10 @@ class ScaledNAV(RelateTickers):
         MUTUALFUND or ETF. See ticker-util to do this automatically."""
 
         mf_to_etfs = {}
-        for equis in self.equivalents:
-            etfs = [c for c in equis if self.is_etf(c)]
+        for idents in self.identicals:
+            etfs = [c for c in idents if self.is_etf(c)]
             for etf in etfs:
-                mfs = [c for c in equis if self.is_mf(c)]
+                mfs = [c for c in idents if self.is_mf(c)]
                 for m in mfs:
                     mf_to_etfs[m] = etf
         return mf_to_etfs
