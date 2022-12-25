@@ -1,7 +1,13 @@
 # Changelog
 
-## 0.4.0 (2022-11-22)
+## 0.5.0 (2022-12-25)
 
+### Improvements
+
+- asset allocation by class: fixed chart placement using upstream changes [Red S]
+
+
+## 0.4.0 (2022-11-22)
 
 ### New
 

@@ -222,10 +222,10 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 </tree-table>
 {% endmacro %}
 
-{% macro asset_allocation_hierarchy(serialised_tree, label=None) %}
+{% macro asset_allocation_hierarchy(serialised_tree, label='Asset Allocation') %}
 {% do charts.chart_data.append({
 'type': 'hierarchy',
-'label': 'Asset Allocation' if not label else label,
+'label': label,
 'data': {
   'modifier': 1,
   'root': serialised_tree,
@@ -237,9 +237,11 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
   <h2>Portfolio: Asset Allocation by Class</h2>
 
   {% set results = extension.build_assetalloc_by_class() %}
-  {{ asset_tree(results[0]) }}
 
   {{ asset_allocation_hierarchy(results[0].serialise(results[0]['currency']), label='Asset Allocation') }}
-  <script type="application/json" id="chart-data">{{ charts.chart_data|tojson|safe }}</script>
+  <svelte-component type="charts"><script type="application/json">{{ charts.chart_data|tojson }}</script></svelte-component>
+
+  {{ asset_tree(results[0]) }}
+
 
 {% endif %}
