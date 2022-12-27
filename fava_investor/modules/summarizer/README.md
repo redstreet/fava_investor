@@ -3,7 +3,7 @@
 Define arbitrary tables to summarize and view account metadata, and commodity metadata.
 For example, say you want to view the customer service phone numbers for each of your
 investment and banking accounts, which you have stored in the account metadata like so
-in your beancount file:
+in your Beancount file:
 
   ```
   2015-01-01 open Assets:Banks:Checking USD

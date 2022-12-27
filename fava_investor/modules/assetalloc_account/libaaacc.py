@@ -23,7 +23,7 @@ def by_account_name(accapi, config):
     tree = accapi.root_tree()
     pattern = config['pattern']
     include_children = config.get('include_children', False)
-    title = config.get('title', "Account names matching: '" + pattern + "'")
+    title = config.get('title', f"Account names matching: '{pattern}'")
 
     selected_accounts = []
     regexer = re.compile(pattern)
