@@ -76,7 +76,7 @@ python_dateutil == 2.8.1
 
 # fava_investor/.eggs/setuptools_scm-7.0.4-py3.8.egg/setuptools_scm/integration.py: 9
 # fava_investor/setup.py: 2
-setuptools == 45.2.0
+setuptools == 65.5.1
 
 # fava_investor/build/lib/fava_investor/common/clicommon.py: 5
 # fava_investor/build/lib/fava_investor/modules/assetalloc_class/assetalloc_class.py: 11
