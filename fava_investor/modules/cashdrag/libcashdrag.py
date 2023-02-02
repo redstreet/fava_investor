@@ -17,22 +17,23 @@ def find_cash_commodities(accapi, options):
     cash_commodities += operating_currencies
     cash_commodities = set(cash_commodities)
     commodities_pattern = '(' + '|'.join(cash_commodities) + ')'
-    return commodities_pattern
+    return commodities_pattern, operating_currencies[0]
 
 
 def find_loose_cash(accapi, options):
     """Find uninvested cash in specified accounts"""
 
-    currencies_pattern = find_cash_commodities(accapi, options)
+    currencies_pattern, main_currency = find_cash_commodities(accapi, options)
     sql = """
     SELECT account AS account,
-           sum(position) AS position
+           CONVERT(sum(position), '{main_currency}') AS position
       WHERE account ~ '{accounts_pattern}'
       AND not account ~ '{accounts_exclude_pattern}'
       AND currency ~ '{currencies_pattern}'
     GROUP BY account
-    ORDER BY sum(position) DESC
-    """.format(accounts_pattern=options.get('accounts_pattern', '^Assets'),
+    ORDER BY position DESC
+    """.format(main_currency=main_currency,
+               accounts_pattern=options.get('accounts_pattern', '^Assets'),
                accounts_exclude_pattern=options.get('accounts_exclude_pattern', '^   $'),  # TODO
                currencies_pattern=currencies_pattern,
                )
@@ -41,6 +42,9 @@ def find_loose_cash(accapi, options):
         return [], {}, [[]]
 
     rrows = [r for r in rrows if r.position != Inventory()]
+    threshold = options.get('min_threshold', 0)
+    if threshold:
+        rrows = [r for r in rrows if r.position.get_only_position().units.number >= threshold]
 
     footer = libinvestor.build_table_footer(rtypes, rrows, accapi)
     return rtypes, rrows, None, footer

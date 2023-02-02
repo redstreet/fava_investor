@@ -23,7 +23,8 @@ Configure Cashdrag by including the following lines in your Beancount source. Ex
   'cashdrag': {
      'accounts_pattern':         '^Assets:.*',
      'accounts_exclude_pattern': '^Assets:(Cash-In-Wallet.*|Zero-Sum)',
-     'metadata_label_cash'     : 'asset_allocation_Bond_Cash'
+     'metadata_label_cash'     : 'asset_allocation_Bond_Cash',
+     'min_threshold'           : 10
 }}"
 ```
 
@@ -51,3 +52,11 @@ Default: 'asset_allocation_Bond_Cash'
 
 Optional. If specified, consider all currencies that have this metadata set to `100`, to
 be cash.
+
+---
+
+#### `min_threshold`
+
+Default: 0
+
+Optional. Exclude rows where the converted amount is less than specified amount.
