@@ -67,17 +67,31 @@ def find_minimized_gains(accapi, options):
     to_sell.sort(key=lambda x: x.est_tax_percent)
 
     # add cumulative column
-    retrow_types = [('cumu_proceeds', Decimal), ('cumu_taxes', Decimal)] + retrow_types + \
-                   [('cumu_gains', Decimal), ('percent', Decimal)]
+    retrow_types = [('cumu_proceeds', Decimal), ('cumu_taxes', Decimal),
+                    ('tax_rate_avg', Decimal), ('tax_rate_marginal', Decimal)] + \
+                    retrow_types + \
+                    [('cumu_gains', Decimal), ('percent', Decimal)]  # noqa: E127
 
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     retval = []
     cumu_proceeds = cumu_gains = cumu_taxes = 0
+    prev_cumu_proceeds = 0
+    prev_cumu_taxes = 0
     for row in to_sell:
         cumu_gains += row.gain
         cumu_proceeds += val(row.market_value)
         cumu_taxes += row.est_tax
-        retval.append(RetRow(cumu_proceeds, cumu_taxes, *row, cumu_gains,
-                      (cumu_gains / cumu_proceeds) * 100))
+        tax_rate_avg = (cumu_taxes / cumu_proceeds) * 100
+        tax_rate_marginal = ((cumu_taxes - prev_cumu_taxes) / (cumu_proceeds - prev_cumu_proceeds)) * 100
+        retval.append(RetRow(round(cumu_proceeds, 0),
+                             round(cumu_taxes, 0),
+                             round(tax_rate_avg, 1),
+                             round(tax_rate_marginal, 1),
+                             *row,
+                             round(cumu_gains, 0),
+                             round((cumu_gains / cumu_proceeds) * 100, 1)))
+
+        prev_cumu_proceeds = cumu_proceeds
+        prev_cumu_taxes = cumu_taxes
 
     return retrow_types, retval
