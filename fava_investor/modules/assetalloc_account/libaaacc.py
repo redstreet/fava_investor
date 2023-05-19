@@ -63,19 +63,19 @@ def asset_allocation(nodes, accapi, include_children):
     acct_type = ("account", str(str))
     bal_type = ("balance", str(Decimal))
     alloc_type = ("allocation %", str(Decimal))
-    types = [acct_type, bal_type, alloc_type]
+    rtypes = [acct_type, bal_type, alloc_type]
 
-    rows = []
+    rrows = []
     for node in nodes:
         row = {'account': node.name}
         balance = accapi.cost_or_value(node, date, include_children)
         if operating_currency in balance:
             row["balance"] = balance[operating_currency]
-            rows.append(row)
+            rrows.append(row)
 
-    portfolio_total = sum(row['balance'] for row in rows)
-    for row in rows:
+    portfolio_total = sum(row['balance'] for row in rrows)
+    for row in rrows:
         if "balance" in row:
             row["allocation %"] = round((row["balance"] / portfolio_total) * 100, 1)
 
-    return types, rows
+    return rtypes, rrows, None, None

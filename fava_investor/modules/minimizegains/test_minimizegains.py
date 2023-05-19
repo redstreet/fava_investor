@@ -35,7 +35,8 @@ class TestScriptCheck(test_utils.TestCase):
         2018-01-01 price COFE 201 USD
         """
         accapi = api.AccAPI(f, {})
-        retrow_types, to_sell = libmg.find_minimized_gains(accapi, self.options)
+        ret = libmg.find_minimized_gains(accapi, self.options)
+        title, (retrow_types, to_sell, _, _) = ret[1]
 
         self.assertEqual(2, len(to_sell))
         self.assertEqual(100, to_sell[0].gain)

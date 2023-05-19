@@ -47,4 +47,4 @@ def find_loose_cash(accapi, options):
         rrows = [r for r in rrows if r.position.get_only_position().units.number >= threshold]
 
     footer = libinvestor.build_table_footer(rtypes, rrows, accapi)
-    return rtypes, rrows, None, footer
+    return [('Cash Drag Analysis', (rtypes, rrows, None, footer))]

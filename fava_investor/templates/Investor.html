@@ -25,46 +25,40 @@ module.
 
 <svelte-component type="charts"></svelte-component>
 
-{% if (module == 'aa_account') %}
-  <h2>Portfolio: Asset Allocation by Accounts</h2>
-  {% set results = extension.build_aa_by_account() %}
-  {% if results|length == 0 %}
-     No regexes found in configuration. See example.beancount for how to configure this module.
+<!-- -------------------------------------------------------------------------------- -->
+{% macro table_list_renderer(title, tables) -%}
+<h2>{{ title }}</h2>
+{% if tables|length == 0 %}
+   Module not configured. See example.beancount for how to configure this module.
+{% endif %}
+{% for table in tables %}
+  <h2>{{table[0]}}</h2>
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, None, *table[1]) }}
   {% else %}
-    {% for portfolio in results %}
-        <h3>{{portfolio[0]}}</h3>
-        {% if new_querytable %}
-          {{ querytable.querytable(ledger, None, *portfolio[1]) }}
-        {% else %}
-          {{ querytable.querytable(None, *portfolio[1]) }}
-        {% endif %}
-        <br />
-    {% endfor %}
+    {{ querytable.querytable(None, *table[1]) }}
   {% endif %}
+{% endfor %}
+{% endmacro %}
+<!-- -------------------------------------------------------------------------------- -->
+
+{% if (module == 'aa_account') %}
+  {{ table_list_renderer('Portfolio: Asset Allocation by Accounts', extension.build_aa_by_account()) }}
 {% endif %}
 
-
 {% if (module == 'cashdrag') %}
-  <h2>Cash Drag Analysis</h2>
-  {% set results = extension.build_cashdrag() %}
-  {% if new_querytable %}
-    {{ querytable.querytable(ledger, None, *results) }}
-  {% else %}
-    {{ querytable.querytable(None, *results) }}
-  {% endif %}
+  {{ table_list_renderer('', extension.build_cashdrag()) }}
 {% endif %}
 
 {% if (module == 'summarizer') %}
-  {% set results = extension.build_summarizer() %}
-  {% for table in results %}
-    <h2>{{table[0]}}</h2>
-    {% if new_querytable %}
-      {{ querytable.querytable(ledger, None, *table[1]) }}
-    {% else %}
-      {{ querytable.querytable(None, *table[1]) }}
-    {% endif %}
-  {% endfor %}
+  {{ table_list_renderer('', extension.build_summarizer()) }}
 {% endif %}
+
+{% if (module == 'minimizegains') %}
+  {{ table_list_renderer('', extension.build_minimizegains()) }}
+{% endif %}
+
+<!-- -------------------------------------------------------------------------------- -->
 
 {% if (module == 'tlh') %}
   <h2>Tax Loss Harvester</h2>
@@ -149,17 +143,6 @@ module.
 
 {% endif %}
 
-
-{% if (module == 'minimizegains') %}
-  <h2>Minimize Gains</h2>
-  {% set results = extension.build_minimizegains() %}
-  {% if new_querytable %}
-    {{ querytable.querytable(ledger, None, *results) }}
-  {% else %}
-    {{ querytable.querytable(None, *results) }}
-  {% endif %}
-{% endif %}
-
 {% set table_hover_text = _('Hold Shift while clicking to expand all children.
 Hold Ctrl or Cmd while clicking to expand one level.') %}
 
@@ -242,6 +225,5 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
   <svelte-component type="charts"><script type="application/json">{{ charts.chart_data|tojson }}</script></svelte-component>
 
   {{ asset_tree(results[0]) }}
-
 
 {% endif %}

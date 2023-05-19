@@ -28,8 +28,13 @@ def cashdrag(beancount_file):
     """
     accapi = api.AccAPI(beancount_file, {})
     config = accapi.get_custom_config('cashdrag')
-    rtypes, rrows, _, footer = libcashdrag.find_loose_cash(accapi, config)
-    click.echo_via_pager(pretty_print_table("Cash Balances", rtypes, rrows, footer=footer))
+    tables = libcashdrag.find_loose_cash(accapi, config)
+
+    def _gen_output():
+        for title, (rtypes, rrows, _, _) in tables:
+            yield pretty_print_table(title, rtypes, rrows, floatfmt=",.0f")
+
+    click.echo_via_pager(_gen_output())
 
 
 if __name__ == '__main__':

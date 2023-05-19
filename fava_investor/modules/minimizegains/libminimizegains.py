@@ -84,12 +84,12 @@ def find_minimized_gains(accapi, options):
         tax_rate_avg = (cumu_taxes / cumu_proceeds) * 100
         tax_rate_marginal = ((cumu_taxes - prev_cumu_taxes) / (cumu_proceeds - prev_cumu_proceeds)) * 100
         rrows.append(RetRow(round(cumu_proceeds, 0),
-                             round(cumu_taxes, 0),
-                             round(tax_rate_avg, 1),
-                             round(tax_rate_marginal, 2),
-                             *row,
-                             round(cumu_gains, 0),
-                             round((cumu_gains / cumu_proceeds) * 100, 1)))
+                            round(cumu_taxes, 0),
+                            round(tax_rate_avg, 1),
+                            round(tax_rate_marginal, 2),
+                            *row,
+                            round(cumu_gains, 0),
+                            round((cumu_gains / cumu_proceeds) * 100, 1)))
 
         prev_cumu_proceeds = cumu_proceeds
         prev_cumu_taxes = cumu_taxes
@@ -97,6 +97,7 @@ def find_minimized_gains(accapi, options):
     tables = [build_config_table(options)]
     tables.append(('Proceeds, Gains, Taxes', (retrow_types, rrows, None, None)))
     return tables
+
 
 def build_config_table(options):
     retrow_types = [('Key', str), ('Value', str)]

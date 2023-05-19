@@ -39,12 +39,12 @@ def minimizegains(beancount_file, brief):
     # - make output printing a common function
     # - for minimizegains: print config table to minimize confusion
 
-
     def _gen_output():
         for title, (rtypes, rrows, _, _) in tables:
             yield pretty_print_table(title, rtypes, rrows, floatfmt=",.0f")
 
     click.echo_via_pager(_gen_output())
+
 
 if __name__ == '__main__':
     minimizegains()
