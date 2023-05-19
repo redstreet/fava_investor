@@ -73,7 +73,7 @@ def find_minimized_gains(accapi, options):
                     [('cumu_gains', Decimal), ('percent', Decimal)]  # noqa: E127
 
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
-    retval = []
+    rrows = []
     cumu_proceeds = cumu_gains = cumu_taxes = 0
     prev_cumu_proceeds = 0
     prev_cumu_taxes = 0
@@ -83,10 +83,10 @@ def find_minimized_gains(accapi, options):
         cumu_taxes += row.est_tax
         tax_rate_avg = (cumu_taxes / cumu_proceeds) * 100
         tax_rate_marginal = ((cumu_taxes - prev_cumu_taxes) / (cumu_proceeds - prev_cumu_proceeds)) * 100
-        retval.append(RetRow(round(cumu_proceeds, 0),
+        rrows.append(RetRow(round(cumu_proceeds, 0),
                              round(cumu_taxes, 0),
                              round(tax_rate_avg, 1),
-                             round(tax_rate_marginal, 1),
+                             round(tax_rate_marginal, 2),
                              *row,
                              round(cumu_gains, 0),
                              round((cumu_gains / cumu_proceeds) * 100, 1)))
@@ -94,4 +94,12 @@ def find_minimized_gains(accapi, options):
         prev_cumu_proceeds = cumu_proceeds
         prev_cumu_taxes = cumu_taxes
 
-    return retrow_types, retval
+    tables = [build_config_table(options)]
+    tables.append(('Proceeds, Gains, Taxes', (retrow_types, rrows, None, None)))
+    return tables
+
+def build_config_table(options):
+    retrow_types = [('Key', str), ('Value', str)]
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+    rrows = [RetRow(k, str(v)) for k, v in options.items()]
+    return 'Config Summary', (retrow_types, rrows, None, None)

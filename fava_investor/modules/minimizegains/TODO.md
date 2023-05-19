@@ -5,7 +5,8 @@
 
 
 ### Improvements
-- clarify whether proceeds is gross or net
+- clarify, perhaps with text on top:
+  - whether proceeds is gross or net
 - ensure final amount is same as sum of assets (networth without liability)
 
 ## Features
@@ -15,7 +16,9 @@
 - smooth line from 0 to full
 
 ### De-emphasize remaining columns
+- marginal tax percent is repeated
 - either with color or make them into bubble help
+- remove unnecessary columns to simplify
 
 ### Optional "enter amount to liquidate"
 - slider or some nice UI

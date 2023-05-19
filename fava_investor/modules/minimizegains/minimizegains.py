@@ -31,7 +31,7 @@ def minimizegains(beancount_file, brief):
     """
     accapi = api.AccAPI(beancount_file, {})
     config = accapi.get_custom_config('minimizegains')
-    retrow_types, to_sell = libmg.find_minimized_gains(accapi, config)
+    tables = libmg.find_minimized_gains(accapi, config)
 
     # TODO:
     # - use same return return API for all of fava_investor
@@ -39,11 +39,12 @@ def minimizegains(beancount_file, brief):
     # - make output printing a common function
     # - for minimizegains: print config table to minimize confusion
 
+
     def _gen_output():
-        yield pretty_print_table("Minimized Gains Table", retrow_types, to_sell)
+        for title, (rtypes, rrows, _, _) in tables:
+            yield pretty_print_table(title, rtypes, rrows, floatfmt=",.0f")
 
     click.echo_via_pager(_gen_output())
-
 
 if __name__ == '__main__':
     minimizegains()
