@@ -26,7 +26,8 @@ def print_balances_tree(realacc, accapi):
 def formatted_tree(root):
     rows = []
     for n, level in root.pre_order(0):
-        rows.append((' ' * level + n.name, '{:,.0f}'.format(n.balance_children),
+        name = '_'.join(n.name.split('_')[level-1:])  # remove prefix (equity_domestic --> domestic)
+        rows.append(('  ' * level + name, '{:,.0f}'.format(n.balance_children),
                      '{:.1f}%'.format(n.percentage_children)))
 
     return tabulate.tabulate(rows,

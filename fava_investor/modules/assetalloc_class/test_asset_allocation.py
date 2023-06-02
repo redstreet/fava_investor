@@ -169,11 +169,11 @@ class TestScriptCheck(ClickTestCase):
         """
         result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
-        asset_type                amount    percentage
-        ----------------------  --------  ------------
-        Total                    140,000        100.0%
-         equity                  140,000        100.0%
-          equity_international   140,000        100.0%
+        asset_type           amount    percentage
+        -----------------  --------  ------------
+        Total               140,000        100.0%
+          equity            140,000        100.0%
+            international   140,000        100.0%
         """
         self.assertLines(expected_output, result.stdout)
 
@@ -212,7 +212,7 @@ class TestScriptCheck(ClickTestCase):
         ------------  --------  ------------
         Total              800        100.0%
          bond              800        100.0%
-          bond_local       400         50.0%
+          local            400         50.0%
         """
         self.assertLines(expected_output, result.stdout)
 
@@ -251,11 +251,11 @@ class TestScriptCheck(ClickTestCase):
         """
         result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
-        asset_type                amount    percentage
-        ----------------------  --------  ------------
-        Total                      1,250        100.0%
-         equity                    1,250        100.0%
-          equity_domestic            500         40.0%
-          equity_international       750         60.0%
+        asset_type           amount    percentage
+        -----------------  --------  ------------
+        Total                 1,250        100.0%
+          equity              1,250        100.0%
+            domestic            500         40.0%
+            international       750         60.0%
         """
         self.assertLines(expected_output, result.stdout)
