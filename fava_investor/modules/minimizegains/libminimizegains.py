@@ -22,10 +22,11 @@ def find_minimized_gains(accapi, options):
     currency = accapi.get_operating_currencies()[0]
 
     sql = f"""
-    SELECT {account_field} as account,
+    SELECT
+        {account_field} as account,
         units(sum(position)) as units,
-        cost_date as acquisition_date,
         CONVERT(value(sum(position)), '{currency}') as market_value,
+        cost_date as acq_date,
         CONVERT(cost(sum(position)), '{currency}') as basis
       WHERE account_sortkey(account) ~ "^[01]" AND
         account ~ '{accounts_pattern}'
@@ -42,13 +43,13 @@ def find_minimized_gains(accapi, options):
     # date) seperately, that can be sold to generate a TLH
 
     # our output table is slightly different from our query table:
-    retrow_types = rtypes[:-1] + [('gain', Decimal), ('term', str),
+    retrow_types = rtypes[:-1] + [('term', str), ('gain', Decimal),
                                   ('est_tax', Decimal), ('est_tax_percent', Decimal)]
 
     # rtypes:
     # [('account', <class 'str'>),
     #  ('units', <class 'beancount.core.inventory.Inventory'>),
-    #  ('acquisition_date', <class 'datetime.date'>),
+    #  ('acq_date', <class 'datetime.date'>),
     #  ('market_value', <class 'beancount.core.inventory.Inventory'>),
     #  ('basis', <class 'beancount.core.inventory.Inventory'>)]
 
@@ -58,21 +59,21 @@ def find_minimized_gains(accapi, options):
     for row in rrows:
         if row.market_value.get_only_position():
             gain = D(val(row.market_value) - val(row.basis))
-            term = libtlh.gain_term(row.acquisition_date, datetime.today().date())
+            term = libtlh.gain_term(row.acq_date, datetime.today().date())
             est_tax = gain * tax_rate[term]
 
-            to_sell.append(RetRow(row.account, row.units, row.acquisition_date, row.market_value,
-                           gain, term, est_tax, (est_tax / val(row.market_value)) * 100))
+            to_sell.append(RetRow(row.account, row.units, row.market_value, row.acq_date,
+                           term, gain, est_tax, (est_tax / val(row.market_value)) * 100))
 
     to_sell.sort(key=lambda x: x.est_tax_percent)
 
     # add cumulative column
-    retrow_types = [('cumu_proceeds', Decimal), ('cumu_taxes', Decimal),
-                    ('tax_rate_avg', Decimal), ('tax_rate_marginal', Decimal)] + \
-                    retrow_types + \
-                    [('cumu_gains', Decimal), ('percent', Decimal)]  # noqa: E127
+    retrow_types = [('cu_proceeds', Decimal), ('cu_taxes', Decimal),
+                    ('tax_avg', Decimal), ('tax_marg', Decimal)] + \
+                    retrow_types + [('cu_gains', Decimal)]  # noqa: E127
 
-    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+    # [:-2] is to remove est_tax and est_tax_percent:
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types[:-2]])
     rrows = []
     cumu_proceeds = cumu_gains = cumu_taxes = 0
     prev_cumu_proceeds = 0
@@ -87,13 +88,14 @@ def find_minimized_gains(accapi, options):
                             round(cumu_taxes, 0),
                             round(tax_rate_avg, 1),
                             round(tax_rate_marginal, 2),
-                            *row,
-                            round(cumu_gains, 0),
-                            round((cumu_gains / cumu_proceeds) * 100, 1)))
+                            *row[:-2],  # Remove est_tax and est_tax_percent
+                            round(cumu_gains, 0)))
 
         prev_cumu_proceeds = cumu_proceeds
         prev_cumu_taxes = cumu_taxes
 
+    retrow_types = [r for r in retrow_types if r[0] not in ['est_tax', 'est_tax_percent']]
+    # rrows, retrow_types = remove_column('gain', rrows, retrow_types)
     tables = [build_config_table(options)]
     tables.append(('Proceeds, Gains, Taxes', (retrow_types, rrows, None, None)))
     return tables

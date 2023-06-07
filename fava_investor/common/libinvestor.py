@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import collections
 import decimal
 from beancount.core.inventory import Inventory
 from beancount.core import convert
@@ -37,6 +38,24 @@ def val(inv):
     if inv.is_empty():
         return 0
     return None
+
+
+def remove_column(col_name, rows, types):
+    """Remove a column by name from a beancount query return pair of rows and types"""
+    try:
+        col = [i for i in types if i[0] == col_name][0]
+    except IndexError:  # Col not found
+        return rows, types
+    idx = types.index(col)
+
+    del types[idx]
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in types])
+    rrows = []
+    for r in rows:
+        tmp = list(r)
+        del tmp[idx]
+        rrows.append(RetRow(*tmp))
+    return rrows, types
 
 
 def build_table_footer(types, rows, accapi):

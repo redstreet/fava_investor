@@ -39,5 +39,5 @@ class TestScriptCheck(test_utils.TestCase):
         title, (retrow_types, to_sell, _, _) = ret[1]
 
         self.assertEqual(2, len(to_sell))
-        self.assertEqual(100, to_sell[0].gain)
-        self.assertEqual(5000, to_sell[1].gain)
+        self.assertEqual(20100, to_sell[0].cu_proceeds)
+        self.assertEqual(5100, to_sell[1].cu_taxes)
