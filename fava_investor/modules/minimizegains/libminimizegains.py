@@ -70,14 +70,13 @@ def find_minimized_gains(accapi, options):
     # add cumulative column
     retrow_types = [('cu_proceeds', Decimal), ('cu_taxes', Decimal),
                     ('tax_avg', Decimal), ('tax_marg', Decimal)] + \
-                    retrow_types + [('cu_gains', Decimal)]  # noqa: E127
+                    retrow_types[:-2] + [('cu_gains', Decimal)]  # noqa: E127
+                    #  [:-2] to remove est_tax and est_tax_percent
 
-    # [:-2] is to remove est_tax and est_tax_percent:
-    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types[:-2]])
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     rrows = []
     cumu_proceeds = cumu_gains = cumu_taxes = 0
-    prev_cumu_proceeds = 0
-    prev_cumu_taxes = 0
+    prev_cumu_proceeds = prev_cumu_taxes = 0
     for row in to_sell:
         cumu_gains += row.gain
         cumu_proceeds += val(row.market_value)
