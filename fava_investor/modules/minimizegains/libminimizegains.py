@@ -67,11 +67,10 @@ def find_minimized_gains(accapi, options):
 
     to_sell.sort(key=lambda x: x.est_tax_percent)
 
-    # add cumulative column
+    # add cumulative column ([:-2] to remove est_tax and est_tax_percent)
     retrow_types = [('cu_proceeds', Decimal), ('cu_taxes', Decimal),
                     ('tax_avg', Decimal), ('tax_marg', Decimal)] + \
                     retrow_types[:-2] + [('cu_gains', Decimal)]  # noqa: E127
-                    #  [:-2] to remove est_tax and est_tax_percent
 
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     rrows = []
