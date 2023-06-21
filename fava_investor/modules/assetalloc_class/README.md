@@ -16,6 +16,10 @@ The command line client also uses the same Fava configuration shown below.
 
 ## Configuration
 
+### Multi-currency portfolios
+This module supports multiple currencies. See #32 on how to configure your input
+correctly.
+
 ### Options
 Options are declared using a custom `"fava-extension"` directive, which is used both by
 the Fava plugin and the CLI, like so:
