@@ -6,7 +6,6 @@ import collections
 import re
 
 from beancount.core import convert
-from beancount.core import amount
 from beancount.core import inventory
 from beancount.core import position
 from beancount.core import realization
@@ -178,9 +177,9 @@ def tax_adjust(realacc, accapi):
         scaled_balance = inventory.Inventory()
         for pos in balance.get_positions():
             # One important assumption is that tax adjustment only ever encounters costs after realization, as
-            # having a cost spec for the total cost would change the cost per unit. 
+            # having a cost spec for the total cost would change the cost per unit.
             assert pos.cost is None or isinstance(pos.cost, position.Cost)
-            
+
             scaled_pos = pos * Decimal(tax_adj / 100)
             scaled_balance.add_position(scaled_pos)
         return scaled_balance
