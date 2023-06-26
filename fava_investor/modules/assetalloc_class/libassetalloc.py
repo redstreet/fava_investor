@@ -6,8 +6,8 @@ import collections
 import re
 
 from beancount.core import convert
-from beancount.core import amount
 from beancount.core import inventory
+from beancount.core import position
 from beancount.core import realization
 from beancount.core.number import Decimal
 
@@ -176,8 +176,12 @@ def tax_adjust(realacc, accapi):
         """Scale inventory by tax adjustment"""
         scaled_balance = inventory.Inventory()
         for pos in balance.get_positions():
-            scaled_pos = amount.Amount(pos.units.number * (Decimal(tax_adj / 100)), pos.units.currency)
-            scaled_balance.add_amount(scaled_pos)
+            # One important assumption is that tax adjustment only ever encounters costs after realization, as
+            # having a cost spec for the total cost would change the cost per unit.
+            assert pos.cost is None or isinstance(pos.cost, position.Cost)
+
+            scaled_pos = pos * Decimal(tax_adj / 100)
+            scaled_balance.add_position(scaled_pos)
         return scaled_balance
 
     account_open_close = accapi.get_account_open_close()
@@ -197,7 +201,6 @@ def assetalloc(accapi, config={}):
     # print(realization.compute_balance(realacc).reduce(convert.get_units))
 
     balance = realization.compute_balance(realacc)
-    vbalance = balance.reduce(convert.get_units)
-    asset_buckets = bucketize(vbalance, accapi)
+    asset_buckets = bucketize(balance, accapi)
 
     return treeify(asset_buckets, accapi), realacc
