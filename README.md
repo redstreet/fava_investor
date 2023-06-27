@@ -82,3 +82,7 @@ to enable shell completion in zsh, bash, or fish, which is highly recommended.
 - Monitor the terminal you are running fava from to look for error output from
   fava_investor
 - Include the error messages you see above when opening bug reports or asking for help
+
+## Contributing
+Features, fixes, and improvements welcome. Please send a pull request. This project uses
+[conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
