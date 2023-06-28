@@ -4,11 +4,8 @@ Fava Investor aims to be a comprehensive set of reports, analyses, and tools for
 investments, for [Beancount](https://beancount.github.io/) and
 [Fava](https://github.com/beancount/fava) (software for
 [plain text, double entry bookkeeping](https://plaintextaccounting.org/)). It is developed as a
-collection of modules, with each module offering a Fava plugin, a Beancount library, and
-a shell command.
-
-Interactivity and visualization are key for investing reports and tools, and hence the
-primary focus is on Fava, even though all modules will have all three interfaces.
+collection of modules, with each module offering a *Fava plugin, a Beancount library, and
+a shell command*.
 
 ### Current modules:
 - [Visual, tree structured asset allocation by class](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/assetalloc_class#readme)
@@ -16,6 +13,7 @@ primary focus is on Fava, even though all modules will have all three interfaces
 - [Tax loss harvestor](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/tlh#readme)
 - [Cash drag analysis](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/cashdrag#readme)
 - [Summarizer](https://github.com/redstreet/fava_investor/tree/main/fava_investor/modules/summarizer#readme)
+- [Gains minimizer](https://github.com/redstreet/fava_investor/blob/main/fava_investor/modules/minimizegains#readme)
 
 ### Demo
 ***Play with the live demo at
@@ -43,7 +41,7 @@ ticker-util relate --help
 ```
 
 
-## Installation via pip
+## Installation
 ```bash
 pip3 install fava-investor
 ```
