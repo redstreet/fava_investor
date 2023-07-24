@@ -80,3 +80,12 @@ def build_table_footer(types, rows, accapi):
             total = sum([getattr(r, label) for r in rows])
         ret_values.append(total)
     return list(zip(ret_types, ret_values))
+
+
+def build_config_table(options):
+    """Build a table listing the config options."""
+
+    retrow_types = [('Key', str), ('Value', str)]
+    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
+    rrows = [RetRow(k, str(v)) for k, v in options.items()]
+    return 'Config Summary', (retrow_types, rrows, None, None)

@@ -8,7 +8,7 @@ See accompanying README.txt
 
 import collections
 from datetime import datetime
-from fava_investor.common.libinvestor import val
+from fava_investor.common.libinvestor import val, build_config_table
 from beancount.core.number import Decimal, D
 from fava_investor.modules.tlh import libtlh
 
@@ -97,10 +97,3 @@ def find_minimized_gains(accapi, options):
     tables = [build_config_table(options)]
     tables.append(('Proceeds, Gains, Taxes', (retrow_types, rrows, None, None)))
     return tables
-
-
-def build_config_table(options):
-    retrow_types = [('Key', str), ('Value', str)]
-    RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
-    rrows = [RetRow(k, str(v)) for k, v in options.items()]
-    return 'Config Summary', (retrow_types, rrows, None, None)
