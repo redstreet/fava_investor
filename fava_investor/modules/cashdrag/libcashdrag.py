@@ -16,7 +16,7 @@ def find_cash_commodities(accapi, options):
     operating_currencies = accapi.get_operating_currencies()
     cash_commodities += operating_currencies
     cash_commodities = set(cash_commodities)
-    commodities_pattern = '(' + '|'.join(cash_commodities) + ')'
+    commodities_pattern = '(' + '|'.join(map(lambda cur: f'^{cur}$', cash_commodities)) + ')'
     return commodities_pattern, operating_currencies[0]
 
 
