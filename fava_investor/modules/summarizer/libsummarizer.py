@@ -8,6 +8,7 @@ from beancount.core.data import Close
 from beancount.core import realization
 from beancount.core import convert
 from fava_investor.common.libinvestor import build_table_footer
+from fava.core.conversion import convert_position
 
 
 # TODO:

@@ -7,7 +7,7 @@ from fava.context import g
 
 class FavaInvestorAPI:
     def build_price_map(self):
-        return g.ledger.price_map
+        return g.ledger.prices
 
     def build_filtered_price_map(self, pcur, base_currency):
         """pcur and base_currency are currency strings"""

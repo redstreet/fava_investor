@@ -5,6 +5,7 @@ from fava_investor.common.libinvestor import Node
 import collections
 import re
 
+from fava.core.conversion import convert_position
 from beancount.core import convert
 from beancount.core import inventory
 from beancount.core import position
@@ -100,7 +101,7 @@ def bucketize(vbalance, accapi):
 
         # what we want is the conversion to be done on the end date, or on a date
         # closest to it, either earlier or later. convert_position does this via bisect
-        amount = convert.convert_position(pos, base_currency, price_map, date=end_date)
+        amount = convert_position(pos, base_currency, price_map, date=end_date)
         if amount.currency == pos.units.currency and amount.currency != base_currency:
             # Ideally, we would automatically figure out the currency to hop via, based on the cost
             # currency of the position. However, with vbalance, cost currency info is not
