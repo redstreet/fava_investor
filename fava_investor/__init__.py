@@ -62,6 +62,8 @@ class Investor(FavaExtensionBase):  # pragma: no cover
         we have to detect the version and adjust how we call it from inside our
         template
         """
+        if "dev" in fava_version:
+            return True
         split_version = fava_version.split('.')
         if len(split_version) != 2:
             split_version = split_version[:2]
