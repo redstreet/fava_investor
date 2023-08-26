@@ -84,3 +84,8 @@ to enable shell completion in zsh, bash, or fish, which is highly recommended.
 ## Contributing
 Features, fixes, and improvements welcome. Please send a pull request. This project uses
 [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
+
+## Related Projects
+- [Fava Dashboards](https://github.com/andreasgerstmayr/fava-dashboards)
+- [Fava Portfolio Returns](https://github.com/andreasgerstmayr/fava-portfolio-returns)
+- [Beangrow](https://github.com/beancount/beangrow)
