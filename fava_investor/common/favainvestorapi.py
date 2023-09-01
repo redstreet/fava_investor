@@ -39,7 +39,7 @@ class FavaInvestorAPI:
 
     def get_operating_currencies_regex(self):
         currencies = self.get_operating_currencies()
-        return '(' + '|'.join(map(lambda cur: f'^cur$', currencies)) + ')'
+        return '(' + '|'.join(map(lambda cur: '^cur$', currencies)) + ')'
 
     def get_account_open_close(self):
         return getters.get_account_open_close(g.filtered.entries)
