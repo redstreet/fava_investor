@@ -82,8 +82,15 @@ to enable shell completion in zsh, bash, or fish, which is highly recommended.
 - Include the error messages you see above when opening bug reports or asking for help
 
 ## Contributing
-Features, fixes, and improvements welcome. Please send a pull request. This project uses
-[conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
+
+Features, fixes, and improvements welcome. Remember:
+- Feel free to send send pull requests. Please include unit tests
+- For larger changes or changes that might need discussion, please reach out and discuss
+  first to save time (open an issue) 
+- Please squash your commits (reasonably)
+- Use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages
+
+Thank you for contributing!
 
 ## Related Projects
 - [Fava Dashboards](https://github.com/andreasgerstmayr/fava-dashboards)
