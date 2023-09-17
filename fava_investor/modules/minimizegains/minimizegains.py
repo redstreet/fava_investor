@@ -10,7 +10,10 @@ import click
 @click.command()
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
 @click.option('--brief', help='Summary output', is_flag=True)
-def minimizegains(beancount_file, brief):
+@click.option('--tax-burden', help='Compute tax burden for specificed amount. If specified, '
+              'instead of printing out a table, the tax, and average and marginal rate for the '
+              'amount will be printed', default=0)
+def minimizegains(beancount_file, brief, tax_burden):
     """Finds lots to sell with the lowest gains, to minimize the tax burden of selling.
 
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
@@ -32,6 +35,11 @@ def minimizegains(beancount_file, brief):
     accapi = api.AccAPI(beancount_file, {})
     config = accapi.get_custom_config('minimizegains')
     tables = libmg.find_minimized_gains(accapi, config)
+
+    if tax_burden:
+        proceeds, cu_taxes, tax_avg, tax_marg = libmg.find_tax_burden(tables[1], tax_burden)
+        print(f"{proceeds}, {cu_taxes:.0f}, {tax_avg:.1f}, {tax_marg:.1f}")
+        return
 
     # TODO:
     # - use same return return API for all of fava_investor

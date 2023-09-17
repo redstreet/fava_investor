@@ -13,6 +13,33 @@ from beancount.core.number import Decimal, D
 from fava_investor.modules.tlh import libtlh
 
 
+def find_tax_burden(table, amount):
+    """
+    Interpolate tax burden from table for `amount`
+
+    'table' is the main table output by find_minimized_gains() below.
+
+    Eg table:
+    cu_proceeds cu_taxes
+         15       1
+         25     100
+
+    amount = 22. We interpoloate between 15 and 25:
+    25-15 = 10
+    22-15 = 7
+    Interpolated tax burden: 1 +  (  7/10 * (100-1) )
+    """
+    prev = None
+    for row in table[1][1]:
+        if row.cu_proceeds > amount:
+            ratio = (amount - prev.cu_proceeds) / (row.cu_proceeds - prev.cu_proceeds)
+            cu_taxes = prev.cu_taxes + ((row.cu_taxes - prev.cu_taxes) * ratio)
+            tax_avg = (cu_taxes / amount) * 100
+            return amount, cu_taxes, tax_avg, row.tax_marg
+        prev = row
+    return None
+
+
 def find_minimized_gains(accapi, options):
     account_field = libtlh.get_account_field(options)
     accounts_pattern = options.get('accounts_pattern', '')
