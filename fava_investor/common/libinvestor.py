@@ -58,6 +58,22 @@ def remove_column(col_name, rows, types):
     return rrows, types
 
 
+def insert_column(cols, col_name, col_type, new_col_name, new_col_type=str):
+    """Inserts a column right after col_name. in a list of data types returned by a beancount query
+    If col_type is specified (is not None), changes the type of col_name to col_type."""
+
+    retval = []
+    for col, ctype in cols:
+        if col == col_name:
+            if col_type is None:
+                col_type = ctype
+            retval.append((col_name, col_type))
+            retval.append((new_col_name, new_col_type))
+        else:
+            retval.append((col, ctype))
+    return retval
+
+
 def build_table_footer(types, rows, accapi):
     """Build a footer with sums by default. Looks like: [(<type>, <val>), ...]"""
 
@@ -89,3 +105,8 @@ def build_config_table(options):
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     rrows = [RetRow(k, str(v)) for k, v in options.items()]
     return 'Config Summary', (retrow_types, rrows, None, None)
+
+
+def split_currency(value):
+    units = value.get_only_position().units
+    return units.number, units.currency

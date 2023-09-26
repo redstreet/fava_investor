@@ -7,7 +7,7 @@ import locale
 import itertools
 from datetime import datetime
 from dateutil import relativedelta
-from fava_investor.common.libinvestor import val, build_table_footer
+from fava_investor.common.libinvestor import val, build_table_footer, insert_column, split_currency
 from beancount.core.number import Decimal, D
 from beancount.core.inventory import Inventory
 
@@ -32,26 +32,6 @@ def sort_harvestable_table(harvestable_table, by_commodity):
 
     harvestable_table[1].sort(key=order)
     return harvestable_table
-
-
-def insert_column(cols, col_name, col_type, new_col_name, new_col_type=str):
-    """Inserts a column right after col_name. If col_type is specified (is not None), changes the type fo
-    col_name to col_type"""
-    retval = []
-    for col, ctype in cols:
-        if col == col_name:
-            if col_type is None:
-                col_type = ctype
-            retval.append((col_name, col_type))
-            retval.append((new_col_name, new_col_type))
-        else:
-            retval.append((col, ctype))
-    return retval
-
-
-def split_currency(value):
-    units = value.get_only_position().units
-    return units.number, units.currency
 
 
 def gain_term(bought, sold):

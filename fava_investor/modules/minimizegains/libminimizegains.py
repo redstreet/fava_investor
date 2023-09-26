@@ -8,7 +8,7 @@ See accompanying README.txt
 
 import collections
 from datetime import datetime
-from fava_investor.common.libinvestor import val, build_config_table
+from fava_investor.common.libinvestor import val, build_config_table, insert_column, split_currency
 from beancount.core.number import Decimal, D
 from fava_investor.modules.tlh import libtlh
 
@@ -72,6 +72,8 @@ def find_minimized_gains(accapi, options):
     # our output table is slightly different from our query table:
     retrow_types = rtypes[:-1] + [('term', str), ('gain', Decimal),
                                   ('est_tax', Decimal), ('est_tax_percent', Decimal)]
+    retrow_types = insert_column(retrow_types, 'units', Decimal, 'ticker', str)
+    retrow_types = insert_column(retrow_types, 'market_value', Decimal, 'currency', str)
 
     # rtypes:
     # [('account', <class 'str'>),
@@ -89,8 +91,9 @@ def find_minimized_gains(accapi, options):
             term = libtlh.gain_term(row.acq_date, datetime.today().date())
             est_tax = gain * tax_rate[term]
 
-            to_sell.append(RetRow(row.account, row.units, row.market_value, row.acq_date,
-                           term, gain, est_tax, (est_tax / val(row.market_value)) * 100))
+            to_sell.append(RetRow(row.account, *split_currency(row.units),
+                           *split_currency(row.market_value), row.acq_date, term, gain, est_tax, 
+                           (est_tax / val(row.market_value)) * 100))
 
     to_sell.sort(key=lambda x: x.est_tax_percent)
 
@@ -105,7 +108,7 @@ def find_minimized_gains(accapi, options):
     prev_cumu_proceeds = prev_cumu_taxes = 0
     for row in to_sell:
         cumu_gains += row.gain
-        cumu_proceeds += val(row.market_value)
+        cumu_proceeds += row.market_value
         cumu_taxes += row.est_tax
         tax_rate_avg = (cumu_taxes / cumu_proceeds) * 100
         tax_rate_marginal = ((cumu_taxes - prev_cumu_taxes) / (cumu_proceeds - prev_cumu_proceeds)) * 100
