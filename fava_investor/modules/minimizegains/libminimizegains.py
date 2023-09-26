@@ -92,7 +92,7 @@ def find_minimized_gains(accapi, options):
             est_tax = gain * tax_rate[term]
 
             to_sell.append(RetRow(row.account, *split_currency(row.units),
-                           *split_currency(row.market_value), row.acq_date, term, gain, est_tax, 
+                           *split_currency(row.market_value), row.acq_date, term, gain, est_tax,
                            (est_tax / val(row.market_value)) * 100))
 
     to_sell.sort(key=lambda x: x.est_tax_percent)

@@ -11,10 +11,10 @@ import click
 @click.argument('beancount-file', type=click.Path(exists=True), envvar='BEANCOUNT_FILE')
 @click.option('--brief', help='Summary output', is_flag=True)
 @click.option('--csv-output', help='In addition to summary, output to minimizegains.csv', is_flag=True)
-@click.option('--tax-burden', help='Compute tax burden for specificed amount. If specified, '
+@click.option('--amount', help='Compute tax burden for specificed amount. If specified, '
               'instead of printing out a table, the tax, and average and marginal rate for the '
               'amount will be printed', default=0)
-def minimizegains(beancount_file, brief, csv_output, tax_burden):
+def minimizegains(beancount_file, brief, csv_output, amount):
     """Finds lots to sell with the lowest gains, to minimize the tax burden of selling.
 
        The BEANCOUNT_FILE environment variable can optionally be set instead of specifying the file on the
@@ -37,8 +37,8 @@ def minimizegains(beancount_file, brief, csv_output, tax_burden):
     config = accapi.get_custom_config('minimizegains')
     tables = libmg.find_minimized_gains(accapi, config)
 
-    if tax_burden:
-        proceeds, cu_taxes, tax_avg, tax_marg = libmg.find_tax_burden(tables[1], tax_burden)
+    if amount:
+        proceeds, cu_taxes, tax_avg, tax_marg = libmg.find_tax_burden(tables[1], amount)
         print(f"{proceeds}, {cu_taxes:.0f}, {tax_avg:.1f}, {tax_marg:.1f}")
         return
 
