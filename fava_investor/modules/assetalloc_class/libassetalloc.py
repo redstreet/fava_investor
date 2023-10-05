@@ -95,7 +95,7 @@ def bucketize(vbalance, accapi):
     asset_buckets = collections.defaultdict(int)
     for pos in vbalance.get_positions():
         if pos.units.number < 0:
-            # print("Warning: skipping negative balance:", pos) #TODO
+            print("Warning: skipping negative balance:", pos)
             continue
 
         # what we want is the conversion to be done on the end date, or on a date
