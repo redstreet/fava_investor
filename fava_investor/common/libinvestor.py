@@ -24,9 +24,12 @@ class Node(object):
                 return child
         return None
 
+    def __lt__(self, other):
+        return self.name < other.name
+
     def pre_order(self, level=0):
         yield self, level
-        for c in self.children:
+        for c in sorted(self.children):
             yield from c.pre_order(level + 1)
 
 
