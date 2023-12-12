@@ -35,6 +35,7 @@ class TestScriptCheck(ClickTestCase):
         """
         result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
+        Warning: skipping negative balance: -200 USD
         Warning: BNCT asset_allocation_* metadata does not add up to 100%. Padding with 'unknown'.
         asset_type      amount    percentage
         ------------  --------  ------------
@@ -61,11 +62,12 @@ class TestScriptCheck(ClickTestCase):
         """
         result = self.run_with_args(assetalloc_class.assetalloc_class, filename)
         expected_output = """
+        Warning: skipping negative balance: -200 USD
         asset_type      amount    percentage
         ------------  --------  ------------
         Total              200        100.0%
-         equity            120         60.0%
          bond               80         40.0%
+         equity            120         60.0%
         """
         self.assertLines(expected_output, result.stdout)
 
@@ -100,8 +102,8 @@ class TestScriptCheck(ClickTestCase):
         asset_type      amount    percentage
         ------------  --------  ------------
         Total              200        100.0%
-         equity            120         60.0%
          bond               80         40.0%
+         equity            120         60.0%
         """
         self.assertLines(expected_output, result.stdout)
 
@@ -140,8 +142,8 @@ class TestScriptCheck(ClickTestCase):
         asset_type      amount    percentage
         ------------  --------  ------------
         Total              200        100.0%
-         equity            120         60.0%
          bond               80         40.0%
+         equity            120         60.0%
         """
         self.assertLines(expected_output, result.stdout)
 
