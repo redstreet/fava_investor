@@ -1,13 +1,18 @@
 from beancount.core import getters
-from fava.template_filters import cost_or_value
+# from fava.template_filters import cost_or_value
 from fava import __version__ as fava_version
 from packaging import version
 from fava.context import g
+from fava.core.conversion import convert_position
+from beancount.core import realization
 
 
 class FavaInvestorAPI:
+    def __init__(self):
+        self.convert_position = convert_position
+
     def build_price_map(self):
-        return g.ledger.price_map
+        return g.ledger.prices
 
     def build_filtered_price_map(self, pcur, base_currency):
         """pcur and base_currency are currency strings"""
@@ -20,7 +25,7 @@ class FavaInvestorAPI:
         return {entry.currency: entry for entry in g.filtered.ledger.all_entries_by_type.Commodity}
 
     def realize(self):
-        return g.filtered.root_account
+        return realization.realize(g.filtered.entries)
 
     def root_tree(self):
         return g.filtered.root_tree
@@ -48,7 +53,7 @@ class FavaInvestorAPI:
         # TODO: below is probably fava only, and needs to be made beancount friendly
         return g.ledger.all_entries_by_type.Open
 
-    def cost_or_value(self, node, date, include_children):
-        if include_children:
-            return cost_or_value(node.balance_children, date)
-        return cost_or_value(node.balance, date)
+    # def cost_or_value(self, node, date, include_children):
+    #     if include_children:
+    #         return cost_or_value(node.balance_children, date)
+    #     return cost_or_value(node.balance, date)

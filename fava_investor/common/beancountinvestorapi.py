@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from beancount.core import convert
 from beancount import loader
 from beancount.core import getters
 from beancount.core import prices
@@ -14,6 +15,7 @@ class AccAPI:
     def __init__(self, beancount_file, options):
         self.entries, _, self.options_map = loader.load_file(beancount_file)
         self.options = options
+        self.convert_position = convert.convert_position
 
     def end_date(self):
         return None  # Only used in fava (UI selection context)

@@ -3,7 +3,8 @@
 import collections
 import decimal
 from beancount.core.inventory import Inventory
-from beancount.core import convert
+from beancount.core import convert  # noqa: F401
+from fava.core.conversion import convert_position
 
 
 class Node(object):
@@ -93,7 +94,7 @@ def build_table_footer(types, rows, accapi):
         total = ''
         if t == Inventory:
             total = sum_inventories([getattr(r, label) for r in rows])
-            total = total.reduce(convert.convert_position, accapi.get_operating_currencies()[0],
+            total = total.reduce(convert_position, accapi.get_operating_currencies()[0],
                                  accapi.build_price_map())
         elif t == decimal.Decimal:
             total = sum([getattr(r, label) for r in rows])
