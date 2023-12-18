@@ -4,7 +4,7 @@ import collections
 import decimal
 from beancount.core.inventory import Inventory
 from beancount.core import convert  # noqa: F401
-from fava.core.conversion import convert_position
+from beancount.core.convert import convert_position
 
 
 class Node(object):
