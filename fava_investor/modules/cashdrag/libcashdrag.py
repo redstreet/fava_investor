@@ -11,10 +11,10 @@ def find_cash_commodities(accapi, options):
     cash_commodities = []
     for commodity, declaration in accapi.get_commodity_directives().items():
         if declaration.meta.get(meta_label, 0) == 100:
-            cash_commodities.append(commodity)
+            cash_commodities.append(f'^{commodity}$')
 
     operating_currencies = accapi.get_operating_currencies()
-    cash_commodities += operating_currencies
+    cash_commodities += map(lambda cur: f'^{cur}$', operating_currencies)
     cash_commodities = set(cash_commodities)
     commodities_pattern = '(' + '|'.join(cash_commodities) + ')'
     return commodities_pattern, operating_currencies[0]
