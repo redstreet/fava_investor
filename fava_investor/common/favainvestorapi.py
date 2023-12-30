@@ -5,6 +5,7 @@ from packaging import version
 from fava.context import g
 from fava.core.conversion import convert_position
 from beancount.core import realization
+from beancount.core import prices
 
 
 class FavaInvestorAPI:
@@ -13,6 +14,9 @@ class FavaInvestorAPI:
 
     def build_price_map(self):
         return g.ledger.prices
+
+    def build_beancount_price_map(self):
+        return prices.build_price_map(g.ledger.all_entries)
 
     def build_filtered_price_map(self, pcur, base_currency):
         """pcur and base_currency are currency strings"""

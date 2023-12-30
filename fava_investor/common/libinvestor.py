@@ -95,7 +95,7 @@ def build_table_footer(types, rows, accapi):
         if t == Inventory:
             total = sum_inventories([getattr(r, label) for r in rows])
             total = total.reduce(convert_position, accapi.get_operating_currencies()[0],
-                                 accapi.build_price_map())
+                                 accapi.build_beancount_price_map())
         elif t == decimal.Decimal:
             total = sum([getattr(r, label) for r in rows])
         ret_values.append(total)
