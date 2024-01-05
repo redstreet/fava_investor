@@ -1,8 +1,8 @@
 # Asset Allocation
 
 Understanding the asset allocation of a portfolio is important. This module reports your
-current portfolio's asset allocation, to an arbitrary asset class hierarchy and depth of
-your choice.
+current portfolio's asset allocation, based on an arbitrary asset class hierarchy and
+depth of your choice.
 
 ## Installation
 A Fava extension, a Beancount command line client, and a library are all included.
@@ -15,6 +15,25 @@ investor assetalloc-class example.beancount
 The command line client also uses the same Fava configuration shown below.
 
 ## Configuration
+
+Price entries are needed in order for this plugin to determine the market value of the
+commodities you hold. For accuracy, it helps to have recent price entries for each
+commodity you own.
+
+You probably also want to add this plugin to your Beancount ledger to help:
+
+```
+plugin "beancount.plugins.implicit_prices"
+```
+
+Accounts with negative balances are skipped with this message:
+
+```
+Warning: skipping negative balance
+```
+
+These are probably liabilities and are not considered by this plugin.
+
 
 ### Multi-currency portfolios
 This module supports multiple currencies. See #32 on how to configure your input
