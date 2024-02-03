@@ -23,6 +23,9 @@ class AccAPI:
     def build_price_map(self):
         return prices.build_price_map(self.entries)
 
+    def build_beancount_price_map(self):
+        return self.build_price_map
+
     def build_filtered_price_map(self, pos, base_currency):
         """Ignore filtering since we are not in fava. Return all prices"""
         return prices.build_price_map(self.entries)
