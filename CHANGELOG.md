@@ -1,5 +1,68 @@
 # Changelog
 
+## (unreleased)
+
+
+### Improvements
+
+- Fix to work with upstream changes (Fava 1.25+)
+
+- Make currency regex not incorrectly match substrings (#88) [Tyler Schicke]
+
+  This changes the currency regexes use '^<currency>$' instead of just
+  matching '<currency>', so that specifying a currency only matches that
+  currency exactly, instead of also matching currencies that contain the
+  specified currency.
+- Preserve costs during tax adjustment (#83) [korrat]
+
+  * Preserve costs during tax adjustment
+
+  Previously, tax adjustment discarded the cost of positions, causing
+  beancount.core.convert.convert_position to miss some conversion paths
+  via the cost currency. This necessitated a fallback to operating
+  currencies for finding viable transitive conversions.
+
+  With this patch, tax adjustment preserves the cost of positions.
+  Therefore, the cost currency is still available for automatic detection
+  of transitive conversions when computing the asset allocation.
+
+  One important assumption is that tax adjustment only ever encounters
+  costs after realization, as having a cost spec for the total cost would
+  change the cost per unit. This assumption is checked via assert and has
+  been manually tested without error on the multicurrency example.
+
+  The patch leaves the fallback logic for conversion via operating
+  currencies in place as an alternative when conversion via cost currency
+  fails.
+  * Fix lint warnings
+
+
+- add --tax-burden to minimizegains. [Red S]
+  Interpolate tax burden from table for a specified amount
+- add config table to gains minimizer. [Red S]
+- minor: sort asset allocation output. [Red S]
+- minor: clean up columns in gains minimizer. [Red S]
+- minor: remove prefixes in asset allocation for clearer output. [Red S]
+  cli only
+- minor: minimizegains: add avg and marginal tax percentage columns. [Red S]
+- minor: cashdrag: add `min_threshold` option; convert to primary currency. [Red S]
+
+### Fixes
+
+- summarizer fail due to favapricemap vs beancount pricemap. [Red S]
+- cashdrag failed with command line (only worked with fava) [Red S]
+
+  - use beancount's convert_position, not fava
+- asset_alloc_by_account to work with upstream changes. [Red S]
+
+  - fix cost_or_value from upstream changes
+- broken tests. [Red S]
+- breaks with new fava versions #86. [Red S]
+- print warning when skipping negative positions in asset alloc. [Red S]
+- minimizegains column deletion was incorrect. [Red S]
+
+### Other
+
 ## 0.5.0 (2022-12-25)
 
 ### Improvements
