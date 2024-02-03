@@ -7,7 +7,6 @@ import fava_investor.common.libinvestor as libinvestor
 from beancount.core.data import Close
 from beancount.core import realization
 from beancount.core import convert
-from fava.core.conversion import convert_position
 from fava_investor.common.libinvestor import build_table_footer
 
 
@@ -137,7 +136,7 @@ def active_accounts_metadata(accapi, options):
 
     # balances = get_balances(accapi)
     realacc = accapi.realize()
-    pm = accapi.build_price_map()
+    pm = accapi.build_beancount_price_map()
     currency = accapi.get_operating_currencies()[0]
 
     p_acc_pattern = re.compile(options['acc_pattern'])
@@ -168,7 +167,7 @@ def get_balance(realacc, account, pm, currency):
     subtree = realization.get(realacc, account)
     balance = realization.compute_balance(subtree)
     vbalance = balance.reduce(convert.get_units)
-    market_value = vbalance.reduce(convert_position, currency, pm)
+    market_value = vbalance.reduce(convert.convert_position, currency, pm)
     val = libinvestor.val(market_value)
     return val
     # return int(val)
