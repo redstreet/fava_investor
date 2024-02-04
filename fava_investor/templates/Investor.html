@@ -1,5 +1,4 @@
 {% import "_query_table.html" as querytable with context %}
-{% set new_querytable = extension.use_new_querytable() %}
 
 {% set module = request.args.get('module') %}
 <div class="headerline">
@@ -30,11 +29,7 @@ module.
 {% endif %}
 {% for table in tables %}
   <h2>{{table[0]}}</h2>
-  {% if new_querytable %}
-    {{ querytable.querytable(ledger, None, *table[1]) }}
-  {% else %}
-    {{ querytable.querytable(None, *table[1]) }}
-  {% endif %}
+  {{ querytable.querytable(ledger, None, *table[1]) }}
 {% endfor %}
 {% endmacro %}
 <!-- -------------------------------------------------------------------------------- -->
@@ -84,22 +79,15 @@ module.
     </div>
     <div class="column">
       <h3 style="text-align:left">Losses by Commodity</h3>
-      {% if new_querytable %}
-        {{ querytable.querytable(ledger, None, *harvests[3]) }}
-      {% else %}
-        {{ querytable.querytable(None, *harvests[3]) }}
-      {% endif %}
+      {{ querytable.querytable(ledger, None, *harvests[3]) }}
       <br />
     </div>
   </div>
 
 
   <h3>Candidates for tax loss harvesting</h3>
-  {% if new_querytable %}
-    {{ querytable.querytable(ledger, None, *harvests[0]) }}
-  {% else %}
-    {{ querytable.querytable(None, *harvests[0]) }}
-  {% endif %}
+  {{ querytable.querytable(ledger, None, *harvests[0]) }}
+
   <br />
 
 
@@ -112,11 +100,7 @@ module.
   {% if harvests[2][0]|length == 0 %}
     {% set table_empty_msg = 'No purchases of the candidates above found within the last 30 days!' %}
   {% endif %}
-  {% if new_querytable %}
-    {{ querytable.querytable(ledger, table_empty_msg, *harvests[2]) }}
-  {% else %}
-    {{ querytable.querytable(table_empty_msg, *harvests[2]) }}
-  {% endif %}
+  {{ querytable.querytable(ledger, table_empty_msg, *harvests[2]) }}
   <br />
 
   <h3>What not to buy</h3>
@@ -128,11 +112,7 @@ module.
   {% if lossy_sales[1]|length == 0 %}
     {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
   {% endif %}
-  {% if new_querytable %}
-    {{ querytable.querytable(ledger, table_empty_msg, *lossy_sales) }}
-  {% else %}
-    {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
-  {% endif %}
+  {{ querytable.querytable(ledger, table_empty_msg, *lossy_sales) }}
 
   <br>
   <i>None of the above is meant to be financial, legal, tax, or other advice.</i>
