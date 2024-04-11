@@ -28,6 +28,7 @@ class AssetClassNode(Node):
             "balance_children": {currency: self.balance_children},
             "balance": {currency: self.balance},
             "children": children,
+            "has_txns": False,
         }
 
     def pretty_print(self, indent=0):

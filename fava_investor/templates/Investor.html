@@ -185,11 +185,13 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
 {% if (module == 'aa_class') %}
   <h2>Portfolio: Asset Allocation by Class</h2>
 
-  {% set chart_data = [] %}
   {% set results = extension.build_assetalloc_by_class() %}
-
-  {% set serialised_tree = results[0].serialise(results[0]['currency']) %}
-  {% set chart_data = [{ 'type': 'hierarchy', 'label': 'Asset Allocation', 'data': serialised_tree }] %}
+  {% set chart_data = [{
+    'type': 'hierarchy',
+    'label': "Asset Allocation",
+    'data': results[0].serialise(results[0]['currency'])
+    }]
+  %}
   <svelte-component type="charts"><script type="application/json">{{ chart_data|tojson }}</script></svelte-component>
 
   {{ asset_tree(results[0]) }}
