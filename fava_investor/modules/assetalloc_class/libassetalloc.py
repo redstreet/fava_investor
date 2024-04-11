@@ -84,7 +84,8 @@ def treeify(asset_buckets, accapi):
 
 
 def bucketize(vbalance, accapi):
-    price_map = accapi.build_price_map()
+    f_price_map = accapi.build_price_map()
+    b_price_map = accapi.build_beancount_price_map()
     commodities = accapi.get_commodity_directives()
     operating_currencies = accapi.get_operating_currencies()
     base_currency = operating_currencies[0]
@@ -101,13 +102,13 @@ def bucketize(vbalance, accapi):
 
         # what we want is the conversion to be done on the end date, or on a date
         # closest to it, either earlier or later. convert_position does this via bisect
-        amount = accapi.convert_position(pos, base_currency, price_map, date=end_date)
+        amount = accapi.convert_position(pos, base_currency, f_price_map, date=end_date)
         if amount.currency == pos.units.currency and amount.currency != base_currency:
             # Ideally, we would automatically figure out the currency to hop via, based on the cost
             # currency of the position. However, with vbalance, cost currency info is not
             # available. Hence, we hop via any available operating currency specified by the user.
             # This is for supporting multi-currency portfolios
-            amount = convert.convert_amount(pos.units, base_currency, price_map,
+            amount = convert.convert_amount(pos.units, base_currency, b_price_map,
                                             via=operating_currencies, date=end_date)
             if amount.currency != base_currency:
                 sys.stderr.write("Error: unable to convert {} to base currency {}"
