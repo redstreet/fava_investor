@@ -1,7 +1,20 @@
 # Changelog
 
-## (unreleased)
+## 0.7.0 (2024-02-02)
 
+This release brings fava_investor up to date with upstream changes in Fava. Primarily,
+asset allocation by class was fixed. Thanks to contributors below.
+
+### Fixes
+
+- Fix assetalloc_class chart (#93) [Adriano Di Luzio]
+- remove dead code for Fava <v1.18 (#91) [Jakob Schnitzer]
+- hierarchy chart: remove now uneeded modifier (#90) [Jakob Schnitzer]
+- libsummarizer crash in Fava (wrong pricemap) [Red S]
+- build_beancount_pricemap() was missing in cli version. [Red S]
+
+
+## 0.6.0 (2024-02-02)
 
 ### Improvements
 
