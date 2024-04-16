@@ -3,6 +3,7 @@ name: Conventional Commits
 on:
   pull_request:
     branches: [ master ]
+    types: [opened, reopened, edited]
 
 jobs:
   build:
