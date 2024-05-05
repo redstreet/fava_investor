@@ -52,6 +52,7 @@ class ScaledNAV(RelateTickers):
     def __init__(self, cf, prices_file, date=None):
         self.cf = cf
         self.prices_file = prices_file
+        self.date = date
         entries, _, _ = self.load_file(cf)
 
         # basic databases
@@ -123,9 +124,10 @@ class ScaledNAV(RelateTickers):
                     unavailable_etfs.add(etf)
 
         if unavailable_etfs:
-            print("Today's prices for these ETFs were not found:", ", ".join(sorted(unavailable_etfs)))
+            print(f"Prices for these ETFs on {self.date} were not found:",
+                  ", ".join(sorted(unavailable_etfs)))
 
-        self.estimated_price_entries = [Price({}, datetime.datetime.today().date(), mf, amt)
+        self.estimated_price_entries = [Price({}, self.date, mf, amt)
                                         for mf, (_, _, amt) in scaled_mf.items()]
 
     def show_estimates(self):
@@ -155,7 +157,9 @@ from usage of this tool.
 \n$BEAN_COMMODITIES_FILE: file with beancount commodities declarations.
 \n$BEAN_PRICES_FILE: file with beancount prices declarations.
     """
-    s = ScaledNAV(cf, pf)
+    if isinstance(date, str):
+        date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+    s = ScaledNAV(cf, pf, date=date)
     s.show_estimates()
     if write_to_prices_file:
         s.update_prices_file()
