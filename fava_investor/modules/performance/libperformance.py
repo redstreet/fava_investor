@@ -71,13 +71,17 @@ def find_xirrs(accapi, options):
         return [], {}, [[]]
 
     investments = {}
+    investments["Summary"] = []
     for row in rrows:
         if row.account not in investments.keys():
             investments[row.account] = []
         investments[row.account].append([row.date, row.market_value.number])
+        investments["Summary"].append([row.date, row.market_value.number])
     for row in remainrows:
-        if row.market_value.number != 0:
-            investments[row.account].append([date.today(), row.market_value.number])
+        if row.market_value.number == 0:
+            continue
+        investments[row.account].append([date.today(), row.market_value.number])
+        investments["Summary"].append([date.today(), row.market_value.number])
 
     xirr = {key: calculate_xirr(investments[key], accuracy) for key in investments}
 
