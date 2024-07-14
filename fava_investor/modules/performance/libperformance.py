@@ -1,7 +1,7 @@
 #!/bin/env python3
 """
-# Gains Minimizer
-_Determine lots to sell to minimize capital gains taxes._
+# Performance
+_Calculate XIRR for investments._
 
 See accompanying README.txt
 """
@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from fava_investor.common.libinvestor import build_config_table
 from beancount.core.number import Decimal
 from fava_investor.modules.tlh import libtlh
+
 
 def calculate_error_grad(investments: list[date, Decimal], guess: Decimal) -> tuple[Decimal, Decimal]:
     sum: Decimal = 0
@@ -25,6 +26,7 @@ def calculate_error_grad(investments: list[date, Decimal], guess: Decimal) -> tu
 
     return sum, grad
 
+
 def calculate_xirr(investments: list[date, Decimal], accuracy) -> Decimal:
     guess = Decimal(0.1)
 
@@ -36,6 +38,7 @@ def calculate_xirr(investments: list[date, Decimal], accuracy) -> Decimal:
             break
 
     return round(guess*100, accuracy)
+
 
 def find_xirrs(accapi, options):
     account_field = libtlh.get_account_field(options)

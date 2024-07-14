@@ -7,6 +7,7 @@ from beancount.utils import test_utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
 import libperformance as libpf
 
+
 class TestScriptCheck(test_utils.TestCase):
     def setUp(self):
         self.options = {
