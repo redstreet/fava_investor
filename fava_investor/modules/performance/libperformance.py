@@ -48,8 +48,6 @@ def find_xirrs(accapi, options):
     SELECT
         {account_field} as account,
         CONVERT(value(position, date), '{currency}') as market_value,
-        units(position),
-        GETPRICE(currency, '{currency}', date),
         date as date
       WHERE account_sortkey(account) ~ "^[01]" AND
         account ~ '{accounts_pattern}'
