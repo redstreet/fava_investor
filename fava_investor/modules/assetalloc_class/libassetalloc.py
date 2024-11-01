@@ -112,9 +112,10 @@ def bucketize(vbalance, accapi):
             amount = convert.convert_amount(pos.units, base_currency, b_price_map,
                                             via=operating_currencies, date=end_date)
             if amount.currency != base_currency:
-                sys.stderr.write("Error: unable to convert {} to base currency {}"
-                                 " (Missing price directive?)\n".format(pos, base_currency))
-                sys.exit(1)
+                print("Warning: unable to convert {} to base currency {}"
+                      " (Missing price directive?)\n"
+                      "Skipping it...".format(pos, base_currency))
+                continue
 
         commodity = pos.units.currency
         metas = {} if commodities.get(commodity) is None else commodities[commodity].meta
