@@ -114,9 +114,15 @@ class ScaledNAV(RelateTickers):
                         etf_price = etf_prices[0].amount.number
                         ratio = mf_price / etf_price
                         # print("  ", p.date, mf_price, etf_price, ratio)
-                        ratios.append(ratio)
+                        ratios.append((p.date, ratio))
             if ratios:
                 if etf in self.latest_prices:
+                    # consider only the most recent 10 values, because some ETFs and MFs that are
+                    # not share classes of each other can diverge due to how they pay dividends and
+                    # capgain distributions (eg: VINIX vs VOO)
+                    ratios.sort(key=lambda x: x[0])
+                    ratios = ratios[-10:]
+                    ratios = [i[1] for i in ratios]
                     median_ratio = statistics.median(ratios)
                     scaled_number = round(self.latest_prices[etf].number * median_ratio, 2)
                     scaled_mf[mf] = (etf, median_ratio, Amount(scaled_number, self.latest_prices[etf].currency))
