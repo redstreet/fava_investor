@@ -46,8 +46,9 @@ class AccAPI:
         # return realization.realize(self.entries)
 
     def query_func(self, sql):
-        # Convert this into Beancount v2 format
         rtypes, rrows = query.run_query(self.entries, self.options_map, sql)
+
+        # Convert this into Beancount v2 format, so the rows are namedtuples
         field_names = [t.name for t in rtypes]
         rtypes = [(t.name, t.datatype) for t in rtypes]
         Row = namedtuple("Row", field_names)
@@ -90,21 +91,3 @@ class AccAPI:
         if module_config:
             return module_config[0]
         return {}
-
-    def get_only_position(self, inventory):
-        """This function exists because Fava uses SimpleCounterInventory while beancount uses
-        beancount.core.inventory.Inventory"""
-        # TODO: assert there is only one item
-        return inventory.get_only_position()
-
-    def val(self, inv):
-        if inv is None or inv.is_empty():
-            return 0
-        pos = self.get_only_position(inv)
-        if pos is not None:
-            return pos.units.number
-        return None
-
-def split_currency(self, value):
-    units = value.get_only_position().units
-    return units.number, units.currency

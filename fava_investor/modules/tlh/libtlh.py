@@ -7,7 +7,7 @@ import locale
 import itertools
 from datetime import datetime
 from dateutil import relativedelta
-from fava_investor.common.libinvestor import build_table_footer, insert_column
+from fava_investor.common.libinvestor import val, build_table_footer, insert_column, split_currency
 from beancount.core.number import Decimal, D
 from beancount.core.inventory import Inventory
 
@@ -115,10 +115,8 @@ def find_harvestable_lots(accapi, options):
     commodities = accapi.get_commodity_directives()
     wash_buy_counter = itertools.count()
 
-    val = accapi.val
-    split_currency = accapi.split_currency
     for row in rrows:
-        if val(row.market_value) and \
+        if row.market_value.get_only_position() and \
                 (val(row.market_value) - val(row.basis) < -loss_threshold):
             loss = D(val(row.basis) - val(row.market_value))
 
@@ -253,7 +251,7 @@ def recently_sold_at_loss(accapi, options):
     for row in rrows:
         loss = Inventory(row.proceeds)
         loss.add_inventory(-(row.basis))
-        if loss != Inventory() and accapi.val(loss) < 0:
+        if loss != Inventory() and val(loss) < 0:
             identicals = get_metavalue(row.currency, commodities, 'a__substidenticals').replace(',', ', ')
             return_rows.append(RetRow(row.sale_date, row.until, row.currency, identicals, row.basis,
                                       row.proceeds, loss))

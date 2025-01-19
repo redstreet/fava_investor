@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0 (2025-01-19)
+Investor is now compatible with Beancount v3 and Fava 1.30
+
+### Improvements
+- scaled_navs now only considers last 10 most recent ratios
+ 
+ ### Fixes
+- scaled-navs was ignoring date if specified                                                                                                                                                                                         2024-04-24 10:15 +0200 c202048 Adriano Di Luzio  o fix: assetalloc_class fail due to favapricemap vs beancount pricemap (#92)
+- assetalloc_class fail due to favapricemap vs beancount pricemap (#92)
+
 ## 0.7.0 (2024-02-02)
 
 This release brings fava_investor up to date with upstream changes in Fava. Primarily,
