@@ -40,7 +40,7 @@ class FavaInvestorAPI:
         # Based on the fava version, determine if we need to add a new
         # positional argument to fava's execute_query()
         if version.parse(fava_version) >= version.parse("1.30"):
-            rtypes, rrows = query.run_query(g.ledger.all_entries, g.ledger.options, sql)
+            rtypes, rrows = query.run_query(g.filtered.entries, g.ledger.options, sql)
 
             # Convert this into Beancount v2 format, so the rows are namedtuples
             field_names = [t.name for t in rtypes]
