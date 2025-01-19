@@ -27,7 +27,8 @@ def get_active_commodities(accapi):
     ORDER BY currency, cost_currency
     """
     rtypes, rrows = accapi.query_func(sql)
-    retval = {r.units.get_only_position().units.currency: r.market_value for r in rrows if not r.units.is_empty()}
+
+    retval = {accapi.get_only_position(r).units.currency: r.market_value for r in rrows if not r.units.is_empty()}
     return retval
 
 
@@ -158,17 +159,17 @@ def active_accounts_metadata(accapi, options):
                     if add_account:
                         row['account'] = acc
                     if add_balance:
-                        row['balance'] = get_balance(realacc, acc, pm, currency)
+                        row['balance'] = get_balance(accapi, realacc, acc, pm, currency)
                     retval.append(row)
     return retval
 
 
-def get_balance(realacc, account, pm, currency):
+def get_balance(accapi, realacc, account, pm, currency):
     subtree = realization.get(realacc, account)
     balance = realization.compute_balance(subtree)
     vbalance = balance.reduce(convert.get_units)
     market_value = vbalance.reduce(convert.convert_position, currency, pm)
-    val = libinvestor.val(market_value)
+    val = accapi.val(market_value)
     return val
     # return int(val)
 

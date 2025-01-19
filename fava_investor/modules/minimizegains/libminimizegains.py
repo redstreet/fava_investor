@@ -8,7 +8,7 @@ See accompanying README.txt
 
 import collections
 from datetime import datetime
-from fava_investor.common.libinvestor import val, build_config_table, insert_column, split_currency
+from fava_investor.common.libinvestor import build_config_table, insert_column
 from beancount.core.number import Decimal, D
 from fava_investor.modules.tlh import libtlh
 
@@ -84,6 +84,8 @@ def find_minimized_gains(accapi, options):
 
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
 
+    val = accapi.val
+    split_currency = accapi.split_currency
     to_sell = []
     for row in rrows:
         if row.market_value.get_only_position():

@@ -34,16 +34,6 @@ class Node(object):
             yield from c.pre_order(level + 1)
 
 
-def val(inv):
-    if inv is not None:
-        pos = inv.get_only_position()
-        if pos is not None:
-            return pos.units.number
-    if inv.is_empty():
-        return 0
-    return None
-
-
 def remove_column(col_name, rows, types):
     """Remove a column by name from a beancount query return pair of rows and types"""
     try:
@@ -110,7 +100,3 @@ def build_config_table(options):
     rrows = [RetRow(k, str(v)) for k, v in options.items()]
     return 'Config Summary', (retrow_types, rrows, None, None)
 
-
-def split_currency(value):
-    units = value.get_only_position().units
-    return units.number, units.currency

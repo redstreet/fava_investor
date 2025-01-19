@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
+from collections import namedtuple
 from beancount.core import convert
 from beancount import loader
 from beancount.core import getters
 from beancount.core import prices
 from beancount.core import realization
-from beancount.query import query
+from beanquery import query
 from beancount.core.data import Open
 from beancount.core.data import Custom
 import ast
@@ -24,7 +25,7 @@ class AccAPI:
         return prices.build_price_map(self.entries)
 
     def build_beancount_price_map(self):
-        return self.build_price_map
+        return self.build_price_map()
 
     def build_filtered_price_map(self, pos, base_currency):
         """Ignore filtering since we are not in fava. Return all prices"""
@@ -45,7 +46,12 @@ class AccAPI:
         # return realization.realize(self.entries)
 
     def query_func(self, sql):
+        # Convert this into Beancount v2 format
         rtypes, rrows = query.run_query(self.entries, self.options_map, sql)
+        field_names = [t.name for t in rtypes]
+        rtypes = [(t.name, t.datatype) for t in rtypes]
+        Row = namedtuple("Row", field_names)
+        rrows = [Row(*row) for row in rrows]
         return rtypes, rrows
 
     def get_operating_currencies(self):
@@ -84,3 +90,21 @@ class AccAPI:
         if module_config:
             return module_config[0]
         return {}
+
+    def get_only_position(self, inventory):
+        """This function exists because Fava uses SimpleCounterInventory while beancount uses
+        beancount.core.inventory.Inventory"""
+        # TODO: assert there is only one item
+        return inventory.get_only_position()
+
+    def val(self, inv):
+        if inv is None or inv.is_empty():
+            return 0
+        pos = self.get_only_position(inv)
+        if pos is not None:
+            return pos.units.number
+        return None
+
+def split_currency(self, value):
+    units = value.get_only_position().units
+    return units.number, units.currency

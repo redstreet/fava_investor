@@ -1,4 +1,5 @@
 from beancount.core import getters
+from collections import namedtuple
 from fava.core.conversion import cost_or_value as cost_or_value_without_context
 from fava import __version__ as fava_version
 from packaging import version
@@ -6,6 +7,7 @@ from fava.context import g
 from fava.core.conversion import convert_position
 from beancount.core import realization
 from beancount.core import prices
+from beancount.core.inventory import Inventory, Amount, Position
 
 
 class FavaInvestorAPI:
@@ -37,7 +39,15 @@ class FavaInvestorAPI:
     def query_func(self, sql):
         # Based on the fava version, determine if we need to add a new
         # positional argument to fava's execute_query()
-        if version.parse(fava_version) >= version.parse("1.22"):
+        if version.parse(fava_version) >= version.parse("1.30"):
+            result = g.ledger.query_shell.execute_query_serialised(g.filtered.entries, sql)
+            # Convert this into Beancount v2 format (TODO: affects performance?)
+            field_names = [t.name for t in result.types]
+            Row = namedtuple("Row", field_names)
+
+            rtypes = [(t.name, t.dtype) for t in result.types]
+            rrows = [Row(*row) for row in result.rows]
+        elif version.parse(fava_version) >= version.parse("1.22"):
             _, rtypes, rrows = g.ledger.query_shell.execute_query(g.filtered.entries, sql)
         else:
             _, rtypes, rrows = g.ledger.query_shell.execute_query(sql)
@@ -62,3 +72,26 @@ class FavaInvestorAPI:
         if include_children:
             nodes = node.balance_children
         return cost_or_value_without_context(nodes, g.conversion, g.ledger.prices, date)
+
+    def get_only_position(self, fava_inventory):
+        """This function exists because Fava uses SimpleCounterInventory while beancount uses
+        beancount.core.inventory.Inventory"""
+        # TODO: assert there is only one item
+        beancount_inventory = Inventory()
+
+        for currency, units in fava_inventory.items():
+            # Create a Position with Amount and no cost
+            position = Position(Amount(units, currency), None)
+            # Add the Position to the Inventory
+            beancount_inventory.add_position(position)
+
+        return beancount_inventory.get_only_position()
+
+    def val(self, inv):
+        if inv.values():
+            return list(inv.values())[0]
+        return None
+
+    def split_currency(self, value):
+        currency, number = next(iter(value.items()))
+        return number, currency
