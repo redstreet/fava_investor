@@ -52,6 +52,8 @@ pip3 install git+https://github.com/redstreet/fava_investor
 ```
 See [#55](https://github.com/redstreet/fava_investor/issues/55) for MacOS installation.
 
+Note the latest version of Fava Investor is compatible with both Beancount v2 and v3.
+
 ## Running Fava Investor
 ### Running in Fava:
 Add this to your beancount source, and start up fava as usual:
