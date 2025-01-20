@@ -15,6 +15,12 @@ option "operating_currency" "USD"
      'wash_pattern': 'Assets:US',
   },
 
+  'performance' : {
+     'account_field': 'account',
+     'accounts_pattern': 'Assets:US:Vanguard',
+     'accuracy': 2,
+  },
+
   'asset_alloc_by_account': [{
       'title':            'Allocation by Account',
       'pattern_type':     'account_name',

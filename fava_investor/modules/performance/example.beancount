@@ -1,0 +1,61 @@
+option "title" "Test"
+option "operating_currency" "USD"
+option "render_commas" "True"
+option "booking_method" "FIFO"
+
+2010-01-01 open Assets:Investments:BNCT
+2010-01-01 open Assets:Investments:COFE
+2010-01-01 open Assets:Bank
+2010-01-01 open Income:Gains
+
+2010-01-01 custom "fava-extension" "fava_investor" "{
+  'performance' : {
+     'account_field': 'account',
+     'accounts_pattern': 'Assets:Investments',
+     'accuracy': 2,
+  },
+}"
+
+
+2010-01-01 commodity BNCT
+2010-01-01 commodity COFE
+
+2020-01-01 * "Buy stock"
+   Assets:Investments:BNCT                   1000 BNCT {100 USD}
+   Assets:Investments:COFE                   1000 COFE {10 USD}
+   Assets:Bank
+
+2021-03-12 * "Buy stock"
+   Assets:Investments:BNCT                   1000 BNCT {100 USD}
+   Assets:Investments:COFE                   1000 COFE {10 USD}
+   Assets:Bank
+
+2022-01-01 * "Sell stock"
+   Assets:Investments:BNCT                  -1500 BNCT {} @ 100 USD
+   Assets:Investments:COFE                  -1500 COFE {} @ 10 USD
+   Assets:Bank                          165000 USD
+   Income:Gains
+
+2022-06-01 * "Sell stock"
+   Assets:Investments:BNCT                  -500 BNCT {} @ 160 USD
+   Assets:Bank                           88000 USD
+   Income:Gains
+
+2024-07-14 * "Sell stock"
+   Assets:Investments:COFE                  -500 COFE {} @ 25 USD
+   Assets:Bank                               12500 USD
+   Income:Gains
+
+
+2020-01-01 price BNCT 100 USD
+2021-03-12 price BNCT 100 USD
+2022-01-01 price BNCT 100 USD
+2022-06-01 price BNCT 160 USD
+
+2020-01-01 price COFE 10 USD
+2021-03-12 price COFE 10 USD
+2022-01-01 price COFE 10 USD
+2022-06-01 price COFE 16 USD
+2023-01-01 price COFE 20 USD
+2024-01-01 price COFE 25 USD
+
