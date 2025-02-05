@@ -88,7 +88,7 @@ def find_xirrs(accapi, options):
 
     xirr = {key: calculate_xirr(investments[key], accuracy) for key in investments}
 
-    retrow_types = [('account', str), ('XIRR', Decimal)]
+    retrow_types = [('Account', str), ('XIRR', Decimal)]
     RetRow = collections.namedtuple('RetRow', [i[0] for i in retrow_types])
     rrows = [RetRow(key, value) for key, value in xirr.items()]
 
