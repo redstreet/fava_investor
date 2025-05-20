@@ -68,7 +68,7 @@ class FavaInvestorAPI:
         # TODO: below is probably fava only, and needs to be made beancount friendly
         return g.ledger.all_entries_by_type.Open
 
-    def cost_or_value(self, node, date, include_children, *, operating_currency = None):
+    def cost_or_value(self, node, date, include_children, *, operating_currency=None):
         nodes = node.balance
         if include_children:
             nodes = node.balance_children
