@@ -68,7 +68,7 @@ def asset_allocation(nodes, accapi, include_children):
     rrows = []
     for node in nodes:
         row = {'account': node.name}
-        balance = accapi.cost_or_value(node, date, include_children)
+        balance = accapi.cost_or_value(node, date, include_children, operating_currency=operating_currency)
         if operating_currency in balance:
             row["balance"] = balance[operating_currency]
             rrows.append(row)
