@@ -17,7 +17,7 @@ the BEAN_COMMODITIES_FILE environment variable."""
 cf_option = click.option('--cf', help=cf_help, envvar='BEAN_COMMODITIES_FILE',
                          type=click.Path(exists=True))
 bean_root = os.getenv('BEAN_ROOT', '~/')
-yf_cache = os.sep.join([bean_root, '.ticker_info.yahoo.cache'])
+yf_cache = os.path.expanduser(os.sep.join([bean_root, '.ticker_info.yahoo.cache']))
 
 
 def printd(d):
