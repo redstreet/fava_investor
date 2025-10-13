@@ -25,7 +25,7 @@ command line by including these lines:
       }]}"
   ```
   
-Other metadata (eg: transactions or postings) are not supported.
+Metadata on other types of directives (eg: transactions or postings) are not supported.
 
 ## Installation
 A Fava extension, a Beancount command line client, and a library are all included.
