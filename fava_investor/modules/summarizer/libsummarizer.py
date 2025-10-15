@@ -9,11 +9,6 @@ from beancount.core import realization
 from beancount.core import convert
 from fava_investor.common.libinvestor import build_table_footer
 
-
-# TODO:
-# - print balances nicely, sort by them, show what percent is complete
-#   - for each commodity_leaf account, ensure there is a parent, else print
-
 p_leaf = re.compile('^[A-Z0-9]*$')
 
 
@@ -49,7 +44,9 @@ def order_and_rename(header, options):
     return retval
 
 
-def is_commodity_leaf(acc, ocs):
+def is_commodity_leaf_with_parent(acc, ocs):
+    """For commodity_leaf accounts, include these in the summarizer output only if parent account
+    is absent (i.e., there is no 'open' directive on the parent account). """
     splits = acc.rsplit(':', maxsplit=1)
     parent = splits[0]
     leaf = splits[-1]
@@ -150,7 +147,7 @@ def active_accounts_metadata(accapi, options):
     add_balance = 'balance' in options.get('columns', ['balance'])
     ocs = accapi.get_account_open_close()
     for acc in ocs.keys():
-        if p_acc_pattern.match(acc) and not is_commodity_leaf(acc, ocs):
+        if p_acc_pattern.match(acc) and not is_commodity_leaf_with_parent(acc, ocs):
             closes = [e for e in ocs[acc] if isinstance(e, Close)]
             if not closes:
                 if meta_skip not in ocs[acc][0].meta:
