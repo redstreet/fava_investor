@@ -8,6 +8,7 @@ import fava_investor.modules.cashdrag.cashdrag as cashdrag
 import fava_investor.modules.summarizer.summarizer as summarizer
 import fava_investor.modules.tlh.tlh as tlh
 import fava_investor.modules.minimizegains.minimizegains as minimizegains
+import fava_investor.modules.performance.performance as performance
 
 
 @click.group()
@@ -21,6 +22,7 @@ cli.add_command(cashdrag.cashdrag)
 cli.add_command(summarizer.summarizer)
 cli.add_command(tlh.tlh)
 cli.add_command(minimizegains.minimizegains)
+cli.add_command(performance.performance)
 
 
 if __name__ == '__main__':
