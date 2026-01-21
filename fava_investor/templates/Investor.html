@@ -151,20 +151,23 @@ Hold Ctrl or Cmd while clicking to expand one level.') %}
       {{ account.name.split('_')[-1] }}
     </a>
     </span>
+    {# Only display values for first operating currency since all values are converted to base currency #}
+    {# Always show balance_children (rolled-up total) so parent nodes display correctly #}
     {% for currency in ledger.options.operating_currency %}
     <span class="num">
       <span class="balance">
-        <span class="number">{{ account.balance|format_currency(currency) }}</span>
+        <span class="number">{{ '{:,.2f}'.format(account.balance_children) if loop.first else '' }}</span>
       </span>
       <span class="balance-children">
-        <span class="number">{{ account.balance_children|format_currency(currency) }}</span>
+        <span class="number">{{ '{:,.2f}'.format(account.balance_children) if loop.first else '' }}</span>
       </span>
     </span>
     {% endfor %}
     <span class="num other">
+      {# Always show percentage_children (rolled-up total) so parent nodes display correctly #}
       {% set percentage_parent =  '{:3.0f}% of {}'.format(account.percentage_parent, account.parent.name) if account.parent else '' %}
       <span class="balance">
-        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) if account.percentage else '' }}</span>
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) if account.percentage_children else '' }}</span>
       </span>
       <span class="balance-children">
         <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) if account.percentage_children else '' }}</span>
