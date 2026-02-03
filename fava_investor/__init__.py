@@ -8,6 +8,7 @@ from .modules.assetalloc_account import libaaacc
 from .modules.cashdrag import libcashdrag
 from .modules.summarizer import libsummarizer
 from .modules.minimizegains import libminimizegains
+from .modules.performance import libperformance
 from .common.favainvestorapi import FavaInvestorAPI
 
 
@@ -49,6 +50,10 @@ class Investor(FavaExtensionBase):  # pragma: no cover
     def build_minimizegains(self):
         accapi = FavaInvestorAPI()
         return libminimizegains.find_minimized_gains(accapi, self.config.get('minimizegains', {}))
+
+    def build_performance(self):
+        accapi = FavaInvestorAPI()
+        return libperformance.find_xirrs(accapi, self.config.get('performance', {}))
 
     def recently_sold_at_loss(self):
         accapi = FavaInvestorAPI()

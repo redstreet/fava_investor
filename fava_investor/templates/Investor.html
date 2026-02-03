@@ -7,7 +7,8 @@
                         ('cashdrag', _('Cash Drag')),
                         ('tlh', _('Tax Loss Harvestor')),
                         ('summarizer', _('Summarizer')),
-                        ('minimizegains', _('Gains Minimizer'))
+                        ('minimizegains', _('Gains Minimizer')),
+                        ('performance', _('Performance'))
                         ] %}
   <h3><b>{% if not (module == key) %}<a href="{{ url_for('extension_report', extension_name='Investor', module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
   {% endfor %}
@@ -48,6 +49,10 @@ module.
 
 {% if (module == 'minimizegains') %}
   {{ table_list_renderer('', extension.build_minimizegains()) }}
+{% endif %}
+
+{% if (module == 'performance') %}
+  {{ table_list_renderer('', extension.build_performance()) }}
 {% endif %}
 
 <!-- -------------------------------------------------------------------------------- -->
